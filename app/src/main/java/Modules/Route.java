@@ -11,6 +11,7 @@ public class Route {
     public LatLng endLocation;
     public String startAddress;
     public LatLng startLocation;
+    public List<String> htmlInstructions;
 
     public List<LatLng> points;
 }

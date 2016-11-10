@@ -10,6 +10,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -89,6 +90,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void sendRequest() {
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
+        String mode = "walking"; // by default, set to walking for now
+
         if (origin.isEmpty()) {
             Toast.makeText(this, "Please enter origin address!", Toast.LENGTH_SHORT).show();
             return;
@@ -99,7 +102,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         try {
-            new DirectionFinder(this, origin, destination).execute();
+            new DirectionFinder(this, origin, destination, mode).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -129,6 +132,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
         progressDialog.dismiss();
@@ -140,6 +144,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
             ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
             ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.htmlInstructions.get(0), Html.FROM_HTML_MODE_LEGACY));
+            } else {
+                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.htmlInstructions.get(0)));
+            }
 
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))

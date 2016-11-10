@@ -21,15 +21,17 @@ import java.util.List;
 
 public class DirectionFinder {
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
-    private static final String GOOGLE_API_KEY = "AIzaSyDnwLF2-WfK8cVZt9OoDYJ9Y8kspXhEHfI";
+    private static final String GOOGLE_API_KEY = "AIzaSyBi7VkQHCcjkKUgBKKcapNDKjSEz-XsZwI";
     private DirectionFinderListener listener;
     private String origin;
     private String destination;
+    private String mode; // setting this is walking by default for now
 
-    public DirectionFinder(DirectionFinderListener listener, String origin, String destination) {
+    public DirectionFinder(DirectionFinderListener listener, String origin, String destination, String mode) {
         this.listener = listener;
         this.origin = origin;
         this.destination = destination;
+        this.mode = mode;
     }
 
     public void execute() throws UnsupportedEncodingException {
@@ -40,8 +42,9 @@ public class DirectionFinder {
     private String createUrl() throws UnsupportedEncodingException {
         String urlOrigin = URLEncoder.encode(origin, "utf-8");
         String urlDestination = URLEncoder.encode(destination, "utf-8");
+        String urlMode = URLEncoder.encode(mode, "utf-8");
 
-        return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
+        return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY + "&mode=" + urlMode;
     }
 
     private class DownloadRawData extends AsyncTask<String, Void, String> {
@@ -98,6 +101,15 @@ public class DirectionFinder {
             JSONObject jsonDuration = jsonLeg.getJSONObject("duration");
             JSONObject jsonEndLocation = jsonLeg.getJSONObject("end_location");
             JSONObject jsonStartLocation = jsonLeg.getJSONObject("start_location");
+            JSONArray jsonSteps = jsonLeg.getJSONArray("steps");
+
+            List<String> jsonHtmlInstructions = new ArrayList<String>();
+
+            for (int j = 0; j < jsonSteps.length(); j++) {
+                JSONObject jsonStep = jsonSteps.getJSONObject(j);
+                String jsonHtmlInstruction = jsonStep.getString("html_instructions");
+                jsonHtmlInstructions.add(jsonHtmlInstruction);
+            }
 
             route.distance = new Distance(jsonDistance.getString("text"), jsonDistance.getInt("value"));
             route.duration = new Duration(jsonDuration.getString("text"), jsonDuration.getInt("value"));
@@ -106,6 +118,7 @@ public class DirectionFinder {
             route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
             route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));
+            route.htmlInstructions = jsonHtmlInstructions;
 
             routes.add(route);
         }
