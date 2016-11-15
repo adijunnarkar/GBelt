@@ -1,0 +1,1779 @@
+X-acceleration: 1849.49 mg Y-acceleration: -1371.15 mg Z-acceleration: -1001.28 mg 
+X-gyro rate: 231.186 degrees/sec Y-gyro rate: -171.394 degrees/sec Z-gyro rate: -125.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 1849.49 mg Y-acceleration: -1371.15 mg Z-acceleration: -1001.28 mg 
+X-gyro rate: 231.186 degrees/sec Y-gyro rate: -171.394 degrees/sec Z-gyro rate: -125.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 1849.49 mg Y-acceleration: -1371.15 mg Z-acceleration: -1001.28 mg 
+X-gyro rate: 231.186 degrees/sec Y-gyro rate: -171.394 degrees/sec Z-gyro rate: -125.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 1849.49 mg Y-acceleration: -1371.15 mg Z-acceleration: -1001.28 mg 
+X-gyro rate: 231.186 degrees/sec Y-gyro rate: -171.394 degrees/sec Z-gyro rate: -125.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 1849.49 mg Y-acceleration: -1371.15 mg Z-acceleration: -1001.28 mg 
+X-gyro rate: 231.186 degrees/sec Y-gyro rate: -171.394 degrees/sec Z-gyro rate: -125.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.58 mg Y-acceleration: 196.29 mg Z-acceleration: 1.71 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 40.95 mg Y-acceleration: 269.53 mg Z-acceleration: 19.17 mg 
+X-gyro rate: 5.119 degrees/sec Y-gyro rate: 33.691 degrees/sec Z-gyro rate: 2.396 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 127.93 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 0.809 degrees/sec Y-gyro rate: 1.045 degrees/sec Z-gyro rate: 0.633 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 128.66 mg Z-acceleration: -81.54 mg 
+X-gyro rate: 0.565 degrees/sec Y-gyro rate: 1.022 degrees/sec Z-gyro rate: 0.359 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 126.46 mg Z-acceleration: -76.66 mg 
+X-gyro rate: -118.591 degrees/sec Y-gyro rate: 15.808 degrees/sec Z-gyro rate: -9.583 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 125.24 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.969 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.93 mg Y-acceleration: 126.46 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.854 degrees/sec Y-gyro rate: 0.633 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.64 mg Y-acceleration: 125.24 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 0.938 degrees/sec Y-gyro rate: 0.908 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 128.17 mg Z-acceleration: -80.81 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.725 degrees/sec Z-gyro rate: 0.206 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 125.98 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 0.687 degrees/sec Z-gyro rate: 0.557 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 127.69 mg Z-acceleration: -89.60 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.755 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.86 mg Y-acceleration: 125.73 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 0.786 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 6.10 mg Y-acceleration: 6.29 mg Z-acceleration: 3.23 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 0.786 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 124.51 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 1.083 degrees/sec Z-gyro rate: 0.511 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 128.17 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 0.732 degrees/sec Y-gyro rate: 0.801 degrees/sec Z-gyro rate: 0.389 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 126.46 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.778 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 125.98 mg Z-acceleration: -82.52 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.420 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 129.15 mg Z-acceleration: -80.32 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.732 degrees/sec Z-gyro rate: 0.641 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 126.22 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.717 degrees/sec Y-gyro rate: 1.137 degrees/sec Z-gyro rate: 0.465 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -954.35 mg Y-acceleration: 126.71 mg Z-acceleration: -85.21 mg 
+X-gyro rate: 0.931 degrees/sec Y-gyro rate: 1.274 degrees/sec Z-gyro rate: 0.534 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 129.64 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.694 degrees/sec Y-gyro rate: 0.809 degrees/sec Z-gyro rate: 0.587 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.15 mg Y-acceleration: 127.20 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 124.27 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.969 degrees/sec Y-gyro rate: 0.908 degrees/sec Z-gyro rate: 0.351 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.13 mg Y-acceleration: 128.66 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.633 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.88 mg Y-acceleration: 127.93 mg Z-acceleration: -89.84 mg 
+X-gyro rate: 0.847 degrees/sec Y-gyro rate: 0.816 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 124.27 mg Z-acceleration: -81.05 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.961 degrees/sec Z-gyro rate: 0.313 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -954.83 mg Y-acceleration: 124.27 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 1.099 degrees/sec Z-gyro rate: 0.679 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.39 mg Y-acceleration: 123.78 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.511 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -954.10 mg Y-acceleration: 126.22 mg Z-acceleration: -86.67 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 1.007 degrees/sec Z-gyro rate: 0.343 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 121.09 mg Z-acceleration: -91.31 mg 
+X-gyro rate: 1.068 degrees/sec Y-gyro rate: 1.099 degrees/sec Z-gyro rate: 0.610 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.34 mg Y-acceleration: 125.49 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.267 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.88 mg Y-acceleration: 126.71 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.542 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 124.76 mg Z-acceleration: -83.01 mg 
+X-gyro rate: 0.992 degrees/sec Y-gyro rate: 0.618 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 124.51 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.175 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.13 mg Y-acceleration: 126.71 mg Z-acceleration: -79.59 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.977 degrees/sec Z-gyro rate: 0.572 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 125.73 mg Z-acceleration: -78.37 mg 
+X-gyro rate: 0.671 degrees/sec Y-gyro rate: 1.083 degrees/sec Z-gyro rate: 0.702 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.93 mg Y-acceleration: 124.27 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 1.099 degrees/sec Y-gyro rate: 0.977 degrees/sec Z-gyro rate: 0.488 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 119.87 mg Z-acceleration: -82.52 mg 
+X-gyro rate: 0.626 degrees/sec Y-gyro rate: 1.144 degrees/sec Z-gyro rate: 0.549 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -955.57 mg Y-acceleration: 124.02 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 1.259 degrees/sec Y-gyro rate: 0.748 degrees/sec Z-gyro rate: 0.153 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 124.76 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.336 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 129.64 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.999 degrees/sec Z-gyro rate: 0.298 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 126.22 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 0.847 degrees/sec Y-gyro rate: 0.809 degrees/sec Z-gyro rate: 0.504 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.37 mg Y-acceleration: 125.98 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 1.083 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.259 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 130.13 mg Z-acceleration: -81.79 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.755 degrees/sec Z-gyro rate: 0.061 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 125.98 mg Z-acceleration: -87.16 mg 
+X-gyro rate: 0.977 degrees/sec Y-gyro rate: 0.847 degrees/sec Z-gyro rate: 0.259 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.44 mg Y-acceleration: 127.69 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.832 degrees/sec Z-gyro rate: 0.580 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 125.73 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.824 degrees/sec Y-gyro rate: 1.038 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 123.54 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.786 degrees/sec Z-gyro rate: 0.252 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 130.13 mg Z-acceleration: -86.67 mg 
+X-gyro rate: 0.793 degrees/sec Y-gyro rate: 0.793 degrees/sec Z-gyro rate: 0.610 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 126.71 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 1.030 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.511 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 126.22 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.748 degrees/sec Z-gyro rate: 0.526 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 125.00 mg Z-acceleration: -90.09 mg 
+X-gyro rate: 1.038 degrees/sec Y-gyro rate: 0.877 degrees/sec Z-gyro rate: 0.221 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 127.44 mg Z-acceleration: -92.77 mg 
+X-gyro rate: 0.725 degrees/sec Y-gyro rate: 1.053 degrees/sec Z-gyro rate: 0.465 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 124.76 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.969 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 126.46 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 1.015 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.145 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 8.12 mg Y-acceleration: 6.16 mg Z-acceleration: 1.16 mg 
+X-gyro rate: 1.015 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.145 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 8.12 mg Y-acceleration: 6.16 mg Z-acceleration: 1.16 mg 
+X-gyro rate: 1.015 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.145 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 8.12 mg Y-acceleration: 6.16 mg Z-acceleration: 1.16 mg 
+X-gyro rate: 1.015 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.145 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 124.27 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 1.236 degrees/sec Z-gyro rate: 0.603 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 127.93 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 0.465 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 127.69 mg Z-acceleration: -81.05 mg 
+X-gyro rate: 0.771 degrees/sec Y-gyro rate: 1.091 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 127.20 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.702 degrees/sec Y-gyro rate: 0.916 degrees/sec Z-gyro rate: 0.496 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 127.69 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 1.038 degrees/sec Z-gyro rate: 0.427 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 126.95 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.977 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -941.89 mg Y-acceleration: 122.31 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.580 degrees/sec Z-gyro rate: 0.015 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.31 mg Y-acceleration: 126.71 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 0.877 degrees/sec Z-gyro rate: 0.389 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 126.95 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 1.076 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 125.73 mg Z-acceleration: -76.90 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.671 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 125.98 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.793 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 128.66 mg Z-acceleration: -80.81 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.755 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 129.15 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 1.007 degrees/sec Y-gyro rate: 0.725 degrees/sec Z-gyro rate: 0.748 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.93 mg Y-acceleration: 127.93 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.679 degrees/sec Z-gyro rate: 0.359 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.15 mg Y-acceleration: 125.00 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 0.862 degrees/sec Y-gyro rate: 1.076 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.42 mg Y-acceleration: 127.93 mg Z-acceleration: -89.60 mg 
+X-gyro rate: 0.679 degrees/sec Y-gyro rate: 0.992 degrees/sec Z-gyro rate: 0.145 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 125.00 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 0.786 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 127.93 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 1.160 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 127.93 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.618 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 127.20 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.320 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 126.95 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 0.633 degrees/sec Y-gyro rate: 1.060 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 125.49 mg Z-acceleration: -81.30 mg 
+X-gyro rate: 1.015 degrees/sec Y-gyro rate: 0.931 degrees/sec Z-gyro rate: 0.214 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.09 mg Y-acceleration: 122.56 mg Z-acceleration: -82.76 mg 
+X-gyro rate: 1.030 degrees/sec Y-gyro rate: 1.030 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 124.27 mg Z-acceleration: -82.76 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.977 degrees/sec Z-gyro rate: 0.389 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 126.71 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.847 degrees/sec Y-gyro rate: 0.893 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 123.78 mg Z-acceleration: -81.54 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 0.984 degrees/sec Z-gyro rate: 0.389 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 128.42 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.931 degrees/sec Y-gyro rate: 0.816 degrees/sec Z-gyro rate: 0.664 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 126.46 mg Z-acceleration: -83.74 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.183 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 125.98 mg Z-acceleration: -80.81 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 0.877 degrees/sec Z-gyro rate: 0.504 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 124.76 mg Z-acceleration: -80.57 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.60 mg Y-acceleration: 127.93 mg Z-acceleration: -81.05 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 0.763 degrees/sec Z-gyro rate: 0.244 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 127.44 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.999 degrees/sec Y-gyro rate: 0.969 degrees/sec Z-gyro rate: 0.656 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 122.80 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.992 degrees/sec Y-gyro rate: 1.068 degrees/sec Z-gyro rate: 0.465 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.93 mg Y-acceleration: 123.54 mg Z-acceleration: -81.79 mg 
+X-gyro rate: 0.854 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.786 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 125.24 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 1.076 degrees/sec Y-gyro rate: 0.793 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 127.69 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 1.175 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 125.00 mg Z-acceleration: -86.67 mg 
+X-gyro rate: 0.725 degrees/sec Y-gyro rate: 1.068 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 129.88 mg Z-acceleration: -82.03 mg 
+X-gyro rate: 0.816 degrees/sec Y-gyro rate: 1.152 degrees/sec Z-gyro rate: 0.427 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.64 mg Y-acceleration: 124.51 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 1.038 degrees/sec Y-gyro rate: 1.274 degrees/sec Z-gyro rate: 0.732 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 126.95 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.183 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 124.27 mg Z-acceleration: -83.25 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 1.129 degrees/sec Z-gyro rate: 0.229 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 124.76 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.984 degrees/sec Z-gyro rate: 0.374 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 120.85 mg Z-acceleration: -88.62 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 123.54 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 1.053 degrees/sec Y-gyro rate: 0.832 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.13 mg Y-acceleration: 123.05 mg Z-acceleration: -82.76 mg 
+X-gyro rate: 1.076 degrees/sec Y-gyro rate: 0.816 degrees/sec Z-gyro rate: 0.519 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 126.46 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 0.648 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 125.00 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.938 degrees/sec Y-gyro rate: 0.885 degrees/sec Z-gyro rate: 0.496 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 124.27 mg Z-acceleration: -88.87 mg 
+X-gyro rate: 0.778 degrees/sec Y-gyro rate: 0.626 degrees/sec Z-gyro rate: 0.671 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 120.85 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 1.205 degrees/sec Y-gyro rate: 0.557 degrees/sec Z-gyro rate: 0.130 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 125.73 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.221 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 124.02 mg Z-acceleration: -91.06 mg 
+X-gyro rate: 1.015 degrees/sec Y-gyro rate: 1.015 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 123.05 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 1.205 degrees/sec Y-gyro rate: 1.106 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.44 mg Y-acceleration: 127.20 mg Z-acceleration: -85.21 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 1.198 degrees/sec Z-gyro rate: 0.542 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.07 mg Y-acceleration: 125.98 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 0.710 degrees/sec Y-gyro rate: 0.778 degrees/sec Z-gyro rate: 0.572 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 127.93 mg Z-acceleration: -81.79 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 124.51 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.252 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.64 mg Y-acceleration: 125.24 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.847 degrees/sec Y-gyro rate: 0.938 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 126.22 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.931 degrees/sec Y-gyro rate: 0.763 degrees/sec Z-gyro rate: 0.526 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 125.98 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 0.931 degrees/sec Z-gyro rate: 0.496 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 127.20 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 1.068 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 125.24 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 1.045 degrees/sec Y-gyro rate: 0.824 degrees/sec Z-gyro rate: 0.542 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 129.88 mg Z-acceleration: -87.16 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.977 degrees/sec Z-gyro rate: 0.603 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.17 mg Y-acceleration: 126.22 mg Z-acceleration: -78.86 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.244 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.34 mg Y-acceleration: 125.24 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 1.305 degrees/sec Z-gyro rate: 0.534 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 124.51 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 1.053 degrees/sec Y-gyro rate: 1.175 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 125.98 mg Z-acceleration: -82.03 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 1.022 degrees/sec Z-gyro rate: 0.778 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 123.29 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.465 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 128.91 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.732 degrees/sec Y-gyro rate: 0.877 degrees/sec Z-gyro rate: 0.809 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.36 mg Y-acceleration: 126.71 mg Z-acceleration: -93.51 mg 
+X-gyro rate: 1.091 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.175 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 125.24 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 0.885 degrees/sec Z-gyro rate: 0.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 125.49 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 1.045 degrees/sec Y-gyro rate: 0.923 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 122.80 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 0.778 degrees/sec Z-gyro rate: 0.587 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 126.22 mg Z-acceleration: -88.62 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.732 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 120.12 mg Z-acceleration: -80.57 mg 
+X-gyro rate: 0.572 degrees/sec Y-gyro rate: 1.228 degrees/sec Z-gyro rate: 0.610 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 125.73 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.664 degrees/sec Z-gyro rate: -0.023 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 124.02 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.862 degrees/sec Y-gyro rate: 0.786 degrees/sec Z-gyro rate: 0.198 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 124.27 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 125.00 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.893 degrees/sec Z-gyro rate: 0.549 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 127.93 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.374 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 126.95 mg Z-acceleration: -91.80 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.748 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.61 mg Y-acceleration: 126.71 mg Z-acceleration: -89.60 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 1.045 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 128.42 mg Z-acceleration: -77.64 mg 
+X-gyro rate: 0.977 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 126.95 mg Z-acceleration: -79.35 mg 
+X-gyro rate: 1.045 degrees/sec Y-gyro rate: 1.053 degrees/sec Z-gyro rate: 0.633 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 125.73 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.778 degrees/sec Y-gyro rate: 0.832 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 128.42 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.916 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 124.76 mg Z-acceleration: -81.54 mg 
+X-gyro rate: 0.786 degrees/sec Y-gyro rate: 1.083 degrees/sec Z-gyro rate: 0.786 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 124.51 mg Z-acceleration: -82.76 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 126.46 mg Z-acceleration: -88.87 mg 
+X-gyro rate: 0.969 degrees/sec Y-gyro rate: 0.633 degrees/sec Z-gyro rate: 0.259 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 132.08 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.717 degrees/sec Y-gyro rate: 0.595 degrees/sec Z-gyro rate: 0.099 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.66 mg Y-acceleration: 125.49 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 0.908 degrees/sec Z-gyro rate: 0.633 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 129.64 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.793 degrees/sec Y-gyro rate: 0.618 degrees/sec Z-gyro rate: 0.305 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 126.71 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.618 degrees/sec Y-gyro rate: 0.633 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 125.98 mg Z-acceleration: -87.16 mg 
+X-gyro rate: 0.793 degrees/sec Y-gyro rate: 0.824 degrees/sec Z-gyro rate: 0.427 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 120.61 mg Z-acceleration: -87.16 mg 
+X-gyro rate: 0.694 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.511 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 125.24 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.992 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.82 mg Y-acceleration: 127.93 mg Z-acceleration: -83.01 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.656 degrees/sec Z-gyro rate: 0.221 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 125.49 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 1.030 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 126.22 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.626 degrees/sec Y-gyro rate: 1.129 degrees/sec Z-gyro rate: 0.740 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 130.37 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.267 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.64 mg Y-acceleration: 130.37 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.626 degrees/sec Y-gyro rate: 1.030 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 127.20 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.641 degrees/sec Y-gyro rate: 0.824 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 132.81 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 1.091 degrees/sec Z-gyro rate: 0.305 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.86 mg Y-acceleration: 126.95 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.763 degrees/sec Y-gyro rate: 1.106 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 126.71 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 0.809 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 125.24 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.801 degrees/sec Y-gyro rate: 0.801 degrees/sec Z-gyro rate: 0.351 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.90 mg Y-acceleration: 125.49 mg Z-acceleration: -94.73 mg 
+X-gyro rate: 0.740 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.023 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 125.49 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.961 degrees/sec Z-gyro rate: 0.343 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 123.29 mg Z-acceleration: -90.33 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.694 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 125.24 mg Z-acceleration: -83.74 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 1.137 degrees/sec Z-gyro rate: 0.168 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 125.24 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 0.999 degrees/sec Z-gyro rate: 0.740 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.66 mg Y-acceleration: 126.46 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 0.664 degrees/sec Y-gyro rate: 1.190 degrees/sec Z-gyro rate: 0.374 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.88 mg Y-acceleration: 119.87 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.725 degrees/sec Y-gyro rate: 0.847 degrees/sec Z-gyro rate: 0.778 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 125.24 mg Z-acceleration: -90.58 mg 
+X-gyro rate: 0.694 degrees/sec Y-gyro rate: 0.549 degrees/sec Z-gyro rate: 0.160 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 125.49 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.725 degrees/sec Z-gyro rate: 0.069 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 122.80 mg Z-acceleration: -91.31 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.725 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 123.54 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 1.122 degrees/sec Z-gyro rate: 0.580 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.64 mg Y-acceleration: 129.15 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.710 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.641 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 120.61 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.748 degrees/sec Z-gyro rate: 0.427 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.42 mg Y-acceleration: 124.51 mg Z-acceleration: -90.58 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.221 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 123.05 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.86 mg Y-acceleration: 126.71 mg Z-acceleration: -89.84 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 0.824 degrees/sec Z-gyro rate: 0.488 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 126.46 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 0.717 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 123.78 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.977 degrees/sec Y-gyro rate: 1.099 degrees/sec Z-gyro rate: 0.031 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -958.50 mg Y-acceleration: 130.62 mg Z-acceleration: -81.54 mg 
+X-gyro rate: 0.954 degrees/sec Y-gyro rate: 0.618 degrees/sec Z-gyro rate: 0.542 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 124.02 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.969 degrees/sec Y-gyro rate: 0.717 degrees/sec Z-gyro rate: 0.671 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.39 mg Y-acceleration: 129.39 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.801 degrees/sec Z-gyro rate: 0.771 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 124.76 mg Z-acceleration: -90.33 mg 
+X-gyro rate: 0.725 degrees/sec Y-gyro rate: 1.053 degrees/sec Z-gyro rate: 0.687 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.44 mg Y-acceleration: 128.66 mg Z-acceleration: -79.83 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 1.175 degrees/sec Z-gyro rate: 0.656 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.13 mg Y-acceleration: 127.93 mg Z-acceleration: -79.59 mg 
+X-gyro rate: 1.144 degrees/sec Y-gyro rate: 0.816 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 124.51 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.526 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.90 mg Y-acceleration: 126.22 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.847 degrees/sec Y-gyro rate: 1.244 degrees/sec Z-gyro rate: 0.336 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 125.00 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.710 degrees/sec Z-gyro rate: 0.435 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 129.88 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.580 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.504 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 124.51 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.572 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.93 mg Y-acceleration: 127.69 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 127.93 mg Z-acceleration: -82.03 mg 
+X-gyro rate: 0.618 degrees/sec Y-gyro rate: 0.763 degrees/sec Z-gyro rate: 0.664 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 128.91 mg Z-acceleration: -77.64 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 124.51 mg Z-acceleration: -89.84 mg 
+X-gyro rate: 0.999 degrees/sec Y-gyro rate: 0.816 degrees/sec Z-gyro rate: 0.076 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -953.61 mg Y-acceleration: 131.84 mg Z-acceleration: -80.57 mg 
+X-gyro rate: 0.969 degrees/sec Y-gyro rate: 0.549 degrees/sec Z-gyro rate: 0.374 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 124.02 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 0.824 degrees/sec Y-gyro rate: 0.999 degrees/sec Z-gyro rate: 0.534 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.58 mg Y-acceleration: 124.76 mg Z-acceleration: -82.52 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 0.816 degrees/sec Z-gyro rate: 0.519 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 126.22 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.465 degrees/sec Y-gyro rate: 1.015 degrees/sec Z-gyro rate: 0.381 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 125.00 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.717 degrees/sec Y-gyro rate: 1.129 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 125.24 mg Z-acceleration: -91.06 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.526 degrees/sec Z-gyro rate: 0.221 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 127.44 mg Z-acceleration: -85.21 mg 
+X-gyro rate: 1.175 degrees/sec Y-gyro rate: 1.038 degrees/sec Z-gyro rate: 0.557 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 122.31 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.610 degrees/sec Z-gyro rate: 0.603 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 130.13 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 1.068 degrees/sec Y-gyro rate: 0.641 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.88 mg Y-acceleration: 124.27 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.648 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.71 mg Y-acceleration: 125.00 mg Z-acceleration: -80.81 mg 
+X-gyro rate: 0.641 degrees/sec Y-gyro rate: 0.969 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 123.54 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.778 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 124.51 mg Z-acceleration: -90.82 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 0.595 degrees/sec Z-gyro rate: 0.259 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 125.98 mg Z-acceleration: -88.87 mg 
+X-gyro rate: 0.977 degrees/sec Y-gyro rate: 0.641 degrees/sec Z-gyro rate: 0.549 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 123.54 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 0.626 degrees/sec Y-gyro rate: 0.916 degrees/sec Z-gyro rate: 0.168 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -955.57 mg Y-acceleration: 127.69 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.992 degrees/sec Y-gyro rate: 0.977 degrees/sec Z-gyro rate: 0.488 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.60 mg Y-acceleration: 127.69 mg Z-acceleration: -81.30 mg 
+X-gyro rate: 0.671 degrees/sec Y-gyro rate: 0.885 degrees/sec Z-gyro rate: 0.694 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 128.17 mg Z-acceleration: -80.08 mg 
+X-gyro rate: 1.045 degrees/sec Y-gyro rate: 0.992 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 125.24 mg Z-acceleration: -91.55 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 0.954 degrees/sec Z-gyro rate: 0.610 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 123.54 mg Z-acceleration: -87.16 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 0.809 degrees/sec Z-gyro rate: 0.359 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.15 mg Y-acceleration: 121.83 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.954 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.259 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 130.37 mg Z-acceleration: -93.02 mg 
+X-gyro rate: 1.251 degrees/sec Y-gyro rate: 0.549 degrees/sec Z-gyro rate: 0.343 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.90 mg Y-acceleration: 125.49 mg Z-acceleration: -85.21 mg 
+X-gyro rate: 1.030 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.557 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -951.17 mg Y-acceleration: 125.49 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 1.122 degrees/sec Y-gyro rate: 1.114 degrees/sec Z-gyro rate: 0.320 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.93 mg Y-acceleration: 123.78 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 1.091 degrees/sec Y-gyro rate: 1.045 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 128.91 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.801 degrees/sec Z-gyro rate: 0.534 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.46 mg Y-acceleration: 127.44 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.938 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.778 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.22 mg Y-acceleration: 123.05 mg Z-acceleration: -91.55 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 130.86 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.854 degrees/sec Y-gyro rate: 0.893 degrees/sec Z-gyro rate: 0.664 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -952.15 mg Y-acceleration: 126.22 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.786 degrees/sec Y-gyro rate: 0.755 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 123.78 mg Z-acceleration: -80.08 mg 
+X-gyro rate: 0.862 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.648 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 126.71 mg Z-acceleration: -86.67 mg 
+X-gyro rate: 1.007 degrees/sec Y-gyro rate: 0.648 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 127.69 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.954 degrees/sec Y-gyro rate: 1.274 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 124.02 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 1.091 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.183 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 124.76 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.801 degrees/sec Z-gyro rate: 0.305 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.51 mg Y-acceleration: 125.49 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 1.030 degrees/sec Y-gyro rate: 0.580 degrees/sec Z-gyro rate: 0.633 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 127.44 mg Z-acceleration: -83.25 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.931 degrees/sec Z-gyro rate: 0.420 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -955.57 mg Y-acceleration: 127.69 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 1.045 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: 7.02 mg Y-acceleration: 8.36 mg Z-acceleration: 4.76 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 1.045 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.36 mg Y-acceleration: 151.37 mg Z-acceleration: -84.23 mg 
+X-gyro rate: 0.771 degrees/sec Y-gyro rate: 1.068 degrees/sec Z-gyro rate: 0.740 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -942.63 mg Y-acceleration: 148.19 mg Z-acceleration: -82.03 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 1.068 degrees/sec Z-gyro rate: 0.526 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 154.05 mg Z-acceleration: -87.40 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.931 degrees/sec Z-gyro rate: 0.351 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 151.86 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 1.213 degrees/sec Y-gyro rate: 1.198 degrees/sec Z-gyro rate: 0.496 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.34 mg Y-acceleration: 152.34 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 0.885 degrees/sec Z-gyro rate: 0.443 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 154.79 mg Z-acceleration: -78.37 mg 
+X-gyro rate: 1.007 degrees/sec Y-gyro rate: 1.152 degrees/sec Z-gyro rate: 0.557 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 155.27 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.938 degrees/sec Y-gyro rate: 0.931 degrees/sec Z-gyro rate: 0.526 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 151.37 mg Z-acceleration: -83.25 mg 
+X-gyro rate: 1.076 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.313 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 151.37 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 1.030 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 150.88 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 1.198 degrees/sec Z-gyro rate: 0.870 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.12 mg Y-acceleration: 149.66 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 1.068 degrees/sec Y-gyro rate: 0.793 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -941.89 mg Y-acceleration: 155.27 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.931 degrees/sec Y-gyro rate: 0.969 degrees/sec Z-gyro rate: 0.458 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 149.90 mg Z-acceleration: -83.74 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 0.694 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.58 mg Y-acceleration: 148.68 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 1.122 degrees/sec Z-gyro rate: 0.565 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.58 mg Y-acceleration: 152.83 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 1.083 degrees/sec Y-gyro rate: 0.763 degrees/sec Z-gyro rate: 0.679 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 155.27 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.702 degrees/sec Y-gyro rate: 1.060 degrees/sec Z-gyro rate: 0.687 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.97 mg Y-acceleration: 152.34 mg Z-acceleration: -81.79 mg 
+X-gyro rate: 1.022 degrees/sec Y-gyro rate: 1.106 degrees/sec Z-gyro rate: 0.755 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.31 mg Y-acceleration: 153.08 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.992 degrees/sec Y-gyro rate: 0.969 degrees/sec Z-gyro rate: 0.641 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 154.30 mg Z-acceleration: -87.16 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.824 degrees/sec Z-gyro rate: 0.496 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 151.61 mg Z-acceleration: -86.67 mg 
+X-gyro rate: 1.007 degrees/sec Y-gyro rate: 1.144 degrees/sec Z-gyro rate: 0.381 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 151.61 mg Z-acceleration: -83.01 mg 
+X-gyro rate: 0.961 degrees/sec Y-gyro rate: 1.091 degrees/sec Z-gyro rate: 0.526 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.73 mg Y-acceleration: 154.05 mg Z-acceleration: -89.11 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 1.122 degrees/sec Z-gyro rate: 0.252 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 155.76 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 1.137 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.244 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.85 mg Y-acceleration: 154.05 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 1.060 degrees/sec Z-gyro rate: 0.603 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 151.86 mg Z-acceleration: -81.05 mg 
+X-gyro rate: 0.702 degrees/sec Y-gyro rate: 1.282 degrees/sec Z-gyro rate: 0.435 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.82 mg Y-acceleration: 153.56 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.816 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.366 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 152.10 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.839 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.58 mg Y-acceleration: 150.63 mg Z-acceleration: -83.01 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 0.771 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -949.95 mg Y-acceleration: 151.61 mg Z-acceleration: -88.87 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 0.984 degrees/sec Z-gyro rate: 0.664 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -942.14 mg Y-acceleration: 153.56 mg Z-acceleration: -88.13 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.717 degrees/sec Z-gyro rate: 0.420 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 152.34 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.946 degrees/sec Y-gyro rate: 0.580 degrees/sec Z-gyro rate: 0.168 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 153.56 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.923 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.404 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 156.98 mg Z-acceleration: -78.61 mg 
+X-gyro rate: 0.999 degrees/sec Y-gyro rate: 0.885 degrees/sec Z-gyro rate: 0.435 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 151.61 mg Z-acceleration: -85.94 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 0.694 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -942.87 mg Y-acceleration: 155.03 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.954 degrees/sec Y-gyro rate: 0.732 degrees/sec Z-gyro rate: 0.389 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 152.83 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.931 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.473 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 153.08 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.809 degrees/sec Y-gyro rate: 0.801 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -942.63 mg Y-acceleration: 150.63 mg Z-acceleration: -79.59 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 0.847 degrees/sec Z-gyro rate: 0.496 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.34 mg Y-acceleration: 149.66 mg Z-acceleration: -92.53 mg 
+X-gyro rate: 1.045 degrees/sec Y-gyro rate: 0.923 degrees/sec Z-gyro rate: 0.534 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 152.10 mg Z-acceleration: -85.21 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.397 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 151.12 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 1.007 degrees/sec Y-gyro rate: 1.122 degrees/sec Z-gyro rate: 0.610 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -942.38 mg Y-acceleration: 153.56 mg Z-acceleration: -78.86 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 1.106 degrees/sec Z-gyro rate: 0.389 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 149.17 mg Z-acceleration: -83.74 mg 
+X-gyro rate: 1.068 degrees/sec Y-gyro rate: 1.015 degrees/sec Z-gyro rate: 0.290 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.24 mg Y-acceleration: 155.03 mg Z-acceleration: -90.33 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.977 degrees/sec Z-gyro rate: 0.359 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -941.41 mg Y-acceleration: 152.59 mg Z-acceleration: -91.80 mg 
+X-gyro rate: 0.931 degrees/sec Y-gyro rate: 0.824 degrees/sec Z-gyro rate: 0.603 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 155.76 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 1.038 degrees/sec Y-gyro rate: 0.992 degrees/sec Z-gyro rate: 0.252 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 155.76 mg Z-acceleration: -89.60 mg 
+X-gyro rate: 0.664 degrees/sec Y-gyro rate: 1.175 degrees/sec Z-gyro rate: 0.786 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.07 mg Y-acceleration: 153.56 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.427 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.85 mg Y-acceleration: 153.08 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.656 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.648 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 156.49 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 1.205 degrees/sec Z-gyro rate: 0.519 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.09 mg Y-acceleration: 153.32 mg Z-acceleration: -85.45 mg 
+X-gyro rate: 0.870 degrees/sec Y-gyro rate: 0.786 degrees/sec Z-gyro rate: 0.557 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.36 mg Y-acceleration: 156.49 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 1.099 degrees/sec Y-gyro rate: 1.213 degrees/sec Z-gyro rate: 0.671 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -940.43 mg Y-acceleration: 153.08 mg Z-acceleration: -89.84 mg 
+X-gyro rate: 0.786 degrees/sec Y-gyro rate: 0.702 degrees/sec Z-gyro rate: 0.580 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.60 mg Y-acceleration: 156.49 mg Z-acceleration: -86.43 mg 
+X-gyro rate: 0.977 degrees/sec Y-gyro rate: 0.687 degrees/sec Z-gyro rate: 0.427 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.29 mg Y-acceleration: 151.12 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.839 degrees/sec Y-gyro rate: 0.900 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 153.56 mg Z-acceleration: -87.89 mg 
+X-gyro rate: 0.687 degrees/sec Y-gyro rate: 0.992 degrees/sec Z-gyro rate: 0.557 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 152.10 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.809 degrees/sec Y-gyro rate: 0.748 degrees/sec Z-gyro rate: 0.191 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.53 mg Y-acceleration: 154.05 mg Z-acceleration: -86.91 mg 
+X-gyro rate: 0.908 degrees/sec Y-gyro rate: 1.160 degrees/sec Z-gyro rate: 0.412 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 153.56 mg Z-acceleration: -82.28 mg 
+X-gyro rate: 0.999 degrees/sec Y-gyro rate: 1.060 degrees/sec Z-gyro rate: 0.267 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.07 mg Y-acceleration: 149.17 mg Z-acceleration: -80.57 mg 
+X-gyro rate: 0.755 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.381 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.09 mg Y-acceleration: 150.63 mg Z-acceleration: -81.54 mg 
+X-gyro rate: 0.916 degrees/sec Y-gyro rate: 0.984 degrees/sec Z-gyro rate: 0.603 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 157.23 mg Z-acceleration: -84.96 mg 
+X-gyro rate: 0.893 degrees/sec Y-gyro rate: 0.893 degrees/sec Z-gyro rate: 0.587 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 153.56 mg Z-acceleration: -82.76 mg 
+X-gyro rate: 1.183 degrees/sec Y-gyro rate: 0.946 degrees/sec Z-gyro rate: 0.465 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 156.25 mg Z-acceleration: -88.38 mg 
+X-gyro rate: 0.969 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.465 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.49 mg Y-acceleration: 155.76 mg Z-acceleration: -83.25 mg 
+X-gyro rate: 0.999 degrees/sec Y-gyro rate: 0.809 degrees/sec Z-gyro rate: 0.359 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -942.14 mg Y-acceleration: 150.39 mg Z-acceleration: -85.69 mg 
+X-gyro rate: 0.648 degrees/sec Y-gyro rate: 0.702 degrees/sec Z-gyro rate: 0.374 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 152.34 mg Z-acceleration: -83.01 mg 
+X-gyro rate: 0.740 degrees/sec Y-gyro rate: 1.030 degrees/sec Z-gyro rate: 0.359 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -948.00 mg Y-acceleration: 156.49 mg Z-acceleration: -80.81 mg 
+X-gyro rate: 0.999 degrees/sec Y-gyro rate: 0.847 degrees/sec Z-gyro rate: 0.534 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.85 mg Y-acceleration: 156.74 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 1.114 degrees/sec Y-gyro rate: 1.038 degrees/sec Z-gyro rate: 0.420 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.80 mg Y-acceleration: 155.27 mg Z-acceleration: -83.98 mg 
+X-gyro rate: 0.786 degrees/sec Y-gyro rate: 0.740 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 149.90 mg Z-acceleration: -84.72 mg 
+X-gyro rate: 0.679 degrees/sec Y-gyro rate: 0.931 degrees/sec Z-gyro rate: 0.435 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -941.89 mg Y-acceleration: 152.10 mg Z-acceleration: -89.60 mg 
+X-gyro rate: 0.900 degrees/sec Y-gyro rate: 0.595 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.36 mg Y-acceleration: 150.15 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.702 degrees/sec Y-gyro rate: 0.595 degrees/sec Z-gyro rate: 0.481 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.82 mg Y-acceleration: 150.39 mg Z-acceleration: -81.54 mg 
+X-gyro rate: 0.748 degrees/sec Y-gyro rate: 0.748 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.20 mg Y-acceleration: 152.34 mg Z-acceleration: -81.05 mg 
+X-gyro rate: 0.771 degrees/sec Y-gyro rate: 0.870 degrees/sec Z-gyro rate: 0.343 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.85 mg Y-acceleration: 154.54 mg Z-acceleration: -83.74 mg 
+X-gyro rate: 0.885 degrees/sec Y-gyro rate: 0.908 degrees/sec Z-gyro rate: 0.374 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.02 mg Y-acceleration: 153.08 mg Z-acceleration: -86.67 mg 
+X-gyro rate: 1.076 degrees/sec Y-gyro rate: 0.679 degrees/sec Z-gyro rate: 0.595 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 153.08 mg Z-acceleration: -78.86 mg 
+X-gyro rate: 1.183 degrees/sec Y-gyro rate: 1.015 degrees/sec Z-gyro rate: 0.237 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.75 mg Y-acceleration: 153.32 mg Z-acceleration: -86.18 mg 
+X-gyro rate: 0.984 degrees/sec Y-gyro rate: 1.068 degrees/sec Z-gyro rate: 0.488 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -944.58 mg Y-acceleration: 156.25 mg Z-acceleration: -84.47 mg 
+X-gyro rate: 0.969 degrees/sec Y-gyro rate: 0.916 degrees/sec Z-gyro rate: 0.420 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.60 mg Y-acceleration: 155.03 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 1.091 degrees/sec Y-gyro rate: 1.236 degrees/sec Z-gyro rate: 0.549 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -947.27 mg Y-acceleration: 154.79 mg Z-acceleration: -83.50 mg 
+X-gyro rate: 0.504 degrees/sec Y-gyro rate: 0.778 degrees/sec Z-gyro rate: 0.275 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -950.68 mg Y-acceleration: 148.68 mg Z-acceleration: -82.76 mg 
+X-gyro rate: 1.007 degrees/sec Y-gyro rate: 0.710 degrees/sec Z-gyro rate: 0.450 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -941.89 mg Y-acceleration: 151.37 mg Z-acceleration: -82.52 mg 
+X-gyro rate: 0.771 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.420 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 153.08 mg Z-acceleration: -81.79 mg 
+X-gyro rate: 0.832 degrees/sec Y-gyro rate: 0.885 degrees/sec Z-gyro rate: 0.542 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.04 mg Y-acceleration: 154.54 mg Z-acceleration: -89.36 mg 
+X-gyro rate: 0.862 degrees/sec Y-gyro rate: 0.862 degrees/sec Z-gyro rate: 0.435 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -946.78 mg Y-acceleration: 153.32 mg Z-acceleration: -87.65 mg 
+X-gyro rate: 1.068 degrees/sec Y-gyro rate: 0.854 degrees/sec Z-gyro rate: 0.656 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -945.56 mg Y-acceleration: 150.15 mg Z-acceleration: -91.06 mg 
+X-gyro rate: 0.877 degrees/sec Y-gyro rate: 0.999 degrees/sec Z-gyro rate: 0.290 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+
+
+X-acceleration: -943.85 mg Y-acceleration: 154.79 mg Z-acceleration: -80.32 mg 
+X-gyro rate: 0.725 degrees/sec Y-gyro rate: 0.565 degrees/sec Z-gyro rate: 0.580 degrees/sec
+X-mag field: -470.00 mG Y-mag field: -120.00 mG Z-mag field: -125.00 mG
+

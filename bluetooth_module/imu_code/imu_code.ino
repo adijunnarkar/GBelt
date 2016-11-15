@@ -150,139 +150,139 @@ void initMPU9250()
 }
 
 
-// Initializations
-void setup()
-{
-    delay(5000);
-    // Arduino initializations
-    Wire.begin();
-    Serial.begin(38400);
+// // Initializations
+// void setup()
+// {
+//     delay(5000);
+//     // Arduino initializations
+//     Wire.begin();
+//     Serial.begin(38400);
     
-    initMPU9250();
+//     initMPU9250();
 
-    // Read the WHO_AM_I register, this is a good test of communication
-    byte c = I2CreadByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
-    Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX); Serial.print(" I should be "); Serial.println(0x71, HEX);   
-    // // Configure gyroscope range
-    // I2CwriteByte(MPU9250_ADDRESS,27,GYRO_FULL_SCALE_2000_DPS);
-    // // Configure accelerometers range
-    // I2CwriteByte(MPU9250_ADDRESS,28,ACC_FULL_SCALE_16_G);
-    // // Set by pass mode for the magnetometers
-    // I2CwriteByte(MPU9250_ADDRESS,0x37,0x02);
+//     // Read the WHO_AM_I register, this is a good test of communication
+//     byte c = I2CreadByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
+//     Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX); Serial.print(" I should be "); Serial.println(0x71, HEX);   
+//     // // Configure gyroscope range
+//     // I2CwriteByte(MPU9250_ADDRESS,27,GYRO_FULL_SCALE_2000_DPS);
+//     // // Configure accelerometers range
+//     // I2CwriteByte(MPU9250_ADDRESS,28,ACC_FULL_SCALE_16_G);
+//     // // Set by pass mode for the magnetometers
+//     // I2CwriteByte(MPU9250_ADDRESS,0x37,0x02);
  
-    // // Request first magnetometer single measurement
-    // I2CwriteByte(MAG_ADDRESS,0x0A,0x01);
-    delay(1000);
+//     // // Request first magnetometer single measurement
+//     // I2CwriteByte(MAG_ADDRESS,0x0A,0x01);
+//     delay(1000);
 
-    if (c == 0x71) // WHO_AM_I_MPU9250 should always be return 0x71
-    {
-        Serial.println("MPU9250 is online...");
+//     if (c == 0x71) // WHO_AM_I_MPU9250 should always be return 0x71
+//     {
+//         Serial.println("MPU9250 is online...");
 
-        initMPU9250();
-        Serial.println("MPU9250 initialized for active data mode...."); // Initialize device for active mode read of accelerometer, gyroscope, magnetometer
+//         initMPU9250();
+//         Serial.println("MPU9250 initialized for active data mode...."); // Initialize device for active mode read of accelerometer, gyroscope, magnetometer
 
-        // Read the WHO_AM_I register of the magnetometer, this is a good test of communication
-        byte d = I2CreadByte(MAG_ADDRESS, WHO_AM_I_MAG);  // Read WHO_AM_I register for MAG
-        Serial.print("MAG "); Serial.print("I AM "); Serial.print(d, HEX); Serial.print(" I should be "); Serial.println(0x48, HEX);
-    }
-    else
-    {
-        Serial.print("Could not connect to MPU9250: 0x");
-        Serial.println(c, HEX);
-        while(1); // Loop forever if communication doesn't happen
-    }
-}
+//         // Read the WHO_AM_I register of the magnetometer, this is a good test of communication
+//         byte d = I2CreadByte(MAG_ADDRESS, WHO_AM_I_MAG);  // Read WHO_AM_I register for MAG
+//         Serial.print("MAG "); Serial.print("I AM "); Serial.print(d, HEX); Serial.print(" I should be "); Serial.println(0x48, HEX);
+//     }
+//     else
+//     {
+//         Serial.print("Could not connect to MPU9250: 0x");
+//         Serial.println(c, HEX);
+//         while(1); // Loop forever if communication doesn't happen
+//     }
+// }
 
 
-// Main loop, read and display data
-void loop()
-{
+// // Main loop, read and display data
+// void loop()
+// {
  
-    // _______________
-    // ::: Counter :::
+//     // _______________
+//     // ::: Counter :::
  
-    // Display data counter
-    Serial.print (cpt++,DEC);
-    Serial.print ("\t");
- 
- 
- 
-    // ____________________________________
-    // :::    accelerometer and gyroscope ::: 
- 
-    // Read accelerometer and gyroscope
-    uint8_t Buf[14];
-    I2CreadBytes(MPU9250_ADDRESS,0x3B,14,Buf);
+//     // Display data counter
+//     Serial.print (cpt++,DEC);
+//     Serial.print ("\t");
  
  
-    // Create 16 bits values from 8 bits data
  
-    // Accelerometer
-    int16_t ax=-(Buf[0]<<8 | Buf[1]);
-    int16_t ay=-(Buf[2]<<8 | Buf[3]);
-    int16_t az=(Buf[4]<<8 | Buf[5]);
+//     // ____________________________________
+//     // :::    accelerometer and gyroscope ::: 
  
-    // Gyroscope
-    int16_t gx=-(Buf[8]<<8 | Buf[9]);
-    int16_t gy=-(Buf[10]<<8 | Buf[11]);
-    int16_t gz=Buf[12]<<8 | Buf[13];
+//     // Read accelerometer and gyroscope
+//     uint8_t Buf[14];
+//     I2CreadBytes(MPU9250_ADDRESS,0x3B,14,Buf);
  
-        // Display values
+ 
+//     // Create 16 bits values from 8 bits data
+ 
+//     // Accelerometer
+//     int16_t ax=-(Buf[0]<<8 | Buf[1]);
+//     int16_t ay=-(Buf[2]<<8 | Buf[3]);
+//     int16_t az=(Buf[4]<<8 | Buf[5]);
+ 
+//     // Gyroscope
+//     int16_t gx=-(Buf[8]<<8 | Buf[9]);
+//     int16_t gy=-(Buf[10]<<8 | Buf[11]);
+//     int16_t gz=Buf[12]<<8 | Buf[13];
+ 
+//         // Display values
 
-    // Accelerometer
-    Serial.print (ax,DEC); 
-    Serial.print ("\t");
-    Serial.print (ay,DEC);
-    Serial.print ("\t");
-    Serial.print (az,DEC);    
-    Serial.print ("\t");
+//     // Accelerometer
+//     Serial.print (ax,DEC); 
+//     Serial.print ("\t");
+//     Serial.print (ay,DEC);
+//     Serial.print ("\t");
+//     Serial.print (az,DEC);    
+//     Serial.print ("\t");
 
-    // Gyroscope
-    Serial.print (gx,DEC); 
-    Serial.print ("\t");
-    Serial.print (gy,DEC);
-    Serial.print ("\t");
-    Serial.print (gz,DEC);    
-    Serial.print ("\t");
+//     // Gyroscope
+//     Serial.print (gx,DEC); 
+//     Serial.print ("\t");
+//     Serial.print (gy,DEC);
+//     Serial.print ("\t");
+//     Serial.print (gz,DEC);    
+//     Serial.print ("\t");
  
-    // _____________________
-    // :::    Magnetometer ::: 
+//     // _____________________
+//     // :::    Magnetometer ::: 
  
  
-    // Read register Status 1 and wait for the DRDY: Data Ready
+//     // Read register Status 1 and wait for the DRDY: Data Ready
 
-    uint8_t ST1;
-    //do
-    //{
-    I2CreadBytes(MAG_ADDRESS,0x02,1,&ST1);
-    //}
-    //while (!(ST1&0x01));
+//     uint8_t ST1;
+//     //do
+//     //{
+//     I2CreadBytes(MAG_ADDRESS,0x02,1,&ST1);
+//     //}
+//     //while (!(ST1&0x01));
  
-    // Read magnetometer data    
-    uint8_t Mag[7];    
-    I2CreadBytes(MAG_ADDRESS,0x03,7,Mag);
- 
- 
-    // Create 16 bits values from 8 bits data
- 
-    // Magnetometer
-    int16_t mx=-(Mag[3]<<8 | Mag[2]);
-    int16_t my=-(Mag[1]<<8 | Mag[0]);
-    int16_t mz=-(Mag[5]<<8 | Mag[4]);
+//     // Read magnetometer data    
+//     uint8_t Mag[7];    
+//     I2CreadBytes(MAG_ADDRESS,0x03,7,Mag);
  
  
-    // Magnetometer
-    Serial.print (mx+200,DEC); 
-    Serial.print ("\t");
-    Serial.print (my-70,DEC);
-    Serial.print ("\t");
-    Serial.print (mz-700,DEC);    
-    Serial.print ("\t");
+//     // Create 16 bits values from 8 bits data
+ 
+//     // Magnetometer
+//     int16_t mx=-(Mag[3]<<8 | Mag[2]);
+//     int16_t my=-(Mag[1]<<8 | Mag[0]);
+//     int16_t mz=-(Mag[5]<<8 | Mag[4]);
+ 
+ 
+//     // Magnetometer
+//     Serial.print (mx+200,DEC); 
+//     Serial.print ("\t");
+//     Serial.print (my-70,DEC);
+//     Serial.print ("\t");
+//     Serial.print (mz-700,DEC);    
+//     Serial.print ("\t");
 
-    // End of line
-    Serial.println("");
-    delay(100);        
-}
+//     // End of line
+//     Serial.println("");
+//     delay(100);        
+// }
 
 //===================================================================================================================
 //====== Set of useful function to access acceleration. gyroscope, magnetometer, and temperature data
