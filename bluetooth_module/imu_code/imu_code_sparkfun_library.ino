@@ -7,6 +7,7 @@
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 
 MPU9250 myIMU;
+int sample_counter = 0;
 
 void setup()
 {
@@ -30,7 +31,7 @@ void setup()
         // Initialize device for active mode read of acclerometer, gyroscope, and
         // temperature
         Serial.println("MPU9250 initialized for active data mode....");
-
+        delay(500);
         // Read the WHO_AM_I register of the magnetometer, this is a good test of
         // communication
         byte d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
@@ -44,7 +45,8 @@ void loop()
   // If intPin goes high, all data registers have new data
   // On interrupt, check if data ready interrupt
   if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
-  {  
+  {
+    sample_counter++;
     myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
     myIMU.getAres();
 
@@ -87,6 +89,8 @@ void loop()
 
   if(SerialDebug)
   {
+    Serial.print("Sample Count: "); Serial.println(sample_counter);
+
     // Print acceleration values in milligs!
     Serial.print("X-acceleration: "); Serial.print(1000*myIMU.ax);
     Serial.print(" mg ");
@@ -113,5 +117,5 @@ void loop()
 
     Serial.print("\n\n");
   }
-  delay(1000);
+  delay(100);
 }
