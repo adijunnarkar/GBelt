@@ -26,7 +26,7 @@ void setup()
     Serial.print(" I should be "); Serial.println(0x71, HEX);
     if (c == 0x71) // WHO_AM_I should always be 0x71
     {
-        Serial.println("MPU9250 is online...");
+        Serial.println("MPU9250 (accel and gyro) is online...");
         myIMU.initMPU9250();
         // Initialize device for active mode read of acclerometer, gyroscope, and
         // temperature
@@ -37,6 +37,15 @@ void setup()
         byte d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
         Serial.print("AK8963 "); Serial.print("I AM "); Serial.print(d, HEX);
         Serial.print(" I should be "); Serial.println(0x48, HEX);
+
+        if (d == 0x48) // AK8963 WHO_AM_I should always be 0x48
+        {
+            Serial.println("AK8963 (magnetometer) is online...");
+            myIMU.initAK8963(myIMU.magCalibration);
+            Serial.println("AK8963 initialized for active data mode....");
+            Serial.print(myIMU.magCalibration[0]); Serial.print(myIMU.magCalibration[1]); Serial.println(myIMU.magCalibration[2]);
+            delay(500);
+        }
     }
 }
 
