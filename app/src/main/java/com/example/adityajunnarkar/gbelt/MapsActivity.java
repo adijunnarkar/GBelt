@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.io.IOException;;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -52,6 +53,7 @@ import java.util.UUID;
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.Route;
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         DirectionFinderListener,
@@ -72,6 +74,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
     private ProgressDialog progressDialog;
+
+    private int mStep = 0;
+    private Route mRoute;
 
     static BluetoothDevice BluetoothDeviceForHC05;
 
@@ -200,18 +205,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
-                        Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
+//                        Toast.LENGTH_SHORT).show();
 
-                if (bluetoothDevice.getName().equals("HC-05")) {
 
-                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
-                    if(BluetoothDeviceForHC05 != null && connectingThread == null) {
-                        // Initiate a connection request in a separate thread
-                        connectingThread = new ConnectingThread(BluetoothDeviceForHC05);
-                        connectingThread.start();
-                        Toast.makeText(getApplicationContext(), "Connecting Thread Started",
-                                Toast.LENGTH_LONG).show();
+                if (bluetoothDevice.getName() != null) {
+                    if (bluetoothDevice.getName().equals("HC-05")) {
+                        BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
+                        if (BluetoothDeviceForHC05 != null && connectingThread == null) {
+                            // Initiate a connection request in a separate thread
+                            connectingThread = new ConnectingThread(BluetoothDeviceForHC05);
+                            connectingThread.start();
+                            Toast.makeText(getApplicationContext(), "Connecting Thread Started",
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
@@ -233,13 +240,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.unregisterReceiver(broadcastReceiver);
     }
 
- /* @Override
-    protected void onDestroy() {
-       super.onDestroy();
-       this.unregisterReceiver(broadcastReceiver);
 
-    }
-*/
+    /* @Override
+       protected void onDestroy() {
+          super.onDestroy();
+          this.unregisterReceiver(broadcastReceiver);
+
+       }
+   */
     private class ConnectingThread extends Thread {
         private final BluetoothSocket bluetoothSocket;
         private final BluetoothDevice bluetoothDevice;
@@ -328,14 +336,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          //   int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
-            while (true) {
-                write("#HI HANS! HOW ARE YOU DOING?~".toString().getBytes());
-                try {
-                    Thread.sleep(500);
-                } catch(InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            }
+//            write("#HI HANS! HOW ARE YOU DOING?~".toString().getBytes());
+//            try {
+//                Thread.sleep(500);
+//            } catch(InterruptedException ex) {
+//                Thread.currentThread().interrupt();
+//            }
 
         }
 
@@ -353,6 +359,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             } catch (IOException e) { }
         }
     }
+
     private void sendRequest() {
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
@@ -398,7 +405,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
         progressDialog.dismiss();
@@ -407,16 +414,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         destinationMarkers = new ArrayList<>();
 
         for (Route route : routes) {
+            mRoute = route;
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
             ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
             ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
 
+            // Display the first direction
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.htmlInstructions.get(0), Html.FROM_HTML_MODE_LEGACY));
+                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
             } else {
-                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.htmlInstructions.get(0)));
+                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.steps.get(mStep).htmlInstruction));
             }
 
+            // Add Markers for origin and destination
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
                     .title(route.startAddress)
@@ -426,18 +436,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .title(route.endAddress)
                     .position(route.endLocation)));
 
+            // Create the polyline
             PolylineOptions polylineOptions = new PolylineOptions().
                     geodesic(true).
                     color(Color.BLUE).
                     width(10);
 
+            // Iterate through the route points to create the polyline
             for (int i = 0; i < route.points.size(); i++)
                 polylineOptions.add(route.points.get(i));
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
     }
-
 
     /**
      * Manipulates the map once available.
@@ -466,7 +477,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+
     }
+
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -489,7 +502,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
-
     }
 
     @Override
@@ -507,21 +519,82 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Place current location marker
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("Current Position");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        mCurrLocationMarker = mMap.addMarker(markerOptions);
+//        MarkerOptions markerOptions = new MarkerOptions();
+//        markerOptions.position(latLng);
+//        markerOptions.title("Current Position");
+//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+//        mCurrLocationMarker = mMap.addMarker(markerOptions);
 
         //move map camera
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
-        //stop location updates
-        if (mGoogleApiClient != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        if (mRoute != null) {
+//            Toast.makeText(this, "Current LatLong: " + latLng.latitude + ", " + latLng.longitude +
+//                    " Theshold: " + mRoute.steps.get(mStep).upperThreshold.latitude + ", " + mRoute.steps.get(mStep).upperThreshold.longitude
+//                    , Toast.LENGTH_LONG).show();
+            if (latLng.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
+                    && latLng.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
+                    && latLng.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
+                    && latLng.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
+                onNextStep();
+            }
         }
 
+        //stop location updates - spent two hours trying to figure out why onLocationCalled wasn't being called
+        // ALL BECAAUSE OF THIS EVIL SNIPPET!!!
+//        if (mGoogleApiClient != null) {
+//            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+//        }
+    }
+
+    public void onNextStep() {
+        // TODO: only call this if it is not the last step
+        mStep++;
+        // Display the first direction
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
+        } else {
+            ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
+        }
+
+        byte[] vectorBytes = doubleToBytes(calculateVector());
+
+        if (connectedThread != null && connectedThread.isAlive()) {
+            connectedThread.write(vectorBytes);
+        }
+    }
+
+    public byte[] doubleToBytes(double n) {
+        byte[] bytes = new byte[8];
+        ByteBuffer.wrap(bytes).putDouble(n);
+
+        return bytes;
+    }
+
+    public double calculateVector() {
+        double vector = 0;
+
+        // Starting location
+        double x1 = mRoute.steps.get(mStep).startLocation.latitude;
+        double y1 = mRoute.steps.get(mStep).startLocation.longitude;
+
+        // Ending location
+        double x2 = mRoute.steps.get(mStep).endLocation.latitude;
+        double y2 = mRoute.steps.get(mStep).endLocation.longitude;
+
+        // TODO: rethink this with the >= and <= stuff
+        if (x2 >= x1 && y2 >= y1 ) {
+            vector = Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else if (x2 < x1 && y2 > y1) {
+            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else if (x2 < x1 && y2 > y1) {
+            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else {
+            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        }
+
+        return vector;
     }
 
     @Override

@@ -5,7 +5,8 @@
     tools:context="com.example.adityajunnarkar.gbelt.MapsActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"  >
+    android:orientation="vertical"
+    android:screenOrientation="portrait">
 
     <EditText
         android:layout_width="match_parent"

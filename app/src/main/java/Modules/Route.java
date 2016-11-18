@@ -3,6 +3,7 @@ package Modules;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
+import Modules.Step;
 
 public class Route {
     public Distance distance;
@@ -11,7 +12,7 @@ public class Route {
     public LatLng endLocation;
     public String startAddress;
     public LatLng startLocation;
-    public List<String> htmlInstructions;
+    public List<Step> steps;
 
     public List<LatLng> points;
 }
