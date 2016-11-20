@@ -8,138 +8,166 @@ int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 
 MPU9250 myIMU;
 int sample_counter = 0;
+int accel_gyro_connect_counter = 0;
+int magnetometer_connect_counter = 0;
+byte c = 0x00, d = 0x00;
 
 void setup()
 {
-    delay(5000);
+    delay(2000);
     Wire.begin();
     // TWBR = 12;  // 400 kbit/sec I2C speed
     Serial.begin(38400);
+    delay(5000);
 
     // Set up the interrupt pin, its set as active high, push-pull
     pinMode(intPin, INPUT);
     digitalWrite(intPin, LOW);
 
-    // Read the WHO_AM_I register, this is a good test of communication
-    byte c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
-    Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX);
-    Serial.print(" I should be "); Serial.println(0x71, HEX);
-    if (c == 0x71) // WHO_AM_I should always be 0x71
-    {
-        Serial.println("MPU9250 (accel and gyro) is online...");
-        myIMU.initMPU9250();
-        // Initialize device for active mode read of acclerometer, gyroscope, and
-        // temperature
-        Serial.println("MPU9250 initialized for active data mode....");
-        delay(500);
-        // Read the WHO_AM_I register of the magnetometer, this is a good test of
-        // communication
-        byte d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
-        Serial.print("AK8963 "); Serial.print("I AM "); Serial.print(d, HEX);
-        Serial.print(" I should be "); Serial.println(0x48, HEX);
-
-        if (d == 0x48) // AK8963 WHO_AM_I should always be 0x48
-        {
-            Serial.println("AK8963 (magnetometer) is online...");
-            myIMU.initAK8963(myIMU.magCalibration);
-            //calibrateMagnetometerBias(myIMU.magbias);
-            Serial.println("AK8963 initialized for active data mode....");
-            if (SerialDebug)
-            {
-                Serial.print("X-Axis sensitivity adjustment value ");
-                Serial.println(myIMU.magCalibration[0], 2);
-                Serial.print("Y-Axis sensitivity adjustment value ");
-                Serial.println(myIMU.magCalibration[1], 2);
-                Serial.print("Z-Axis sensitivity adjustment value ");
-                Serial.println(myIMU.magCalibration[2], 2);  
-
-                //Serial.print("Magnetometer Bias Values calculated: ");
-                //Serial.print("X-Axis Bias: "); Serial.print(myIMU.magbias[0]);
-                //Serial.print("  Y-Axis Bias: "); Serial.print(myIMU.magbias[1]);
-                //Serial.print("  Z-Axis Bias: "); Serial.println(myIMU.magbias[2]);
-            }
-            delay(100);
-        }
-    }
-    else
-    {
-        Serial.print("Could not connect to MPU9250: 0x");
+    // Read the WHO_AM_I register
+    do {
+        c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
         Serial.println(c, HEX);
-        while(1); // Loop forever if communication doesn't happen
+        accel_gyro_connect_counter += 1;
+        delay(500);      
+    } while(c != 0x71);
+
+    Serial.print("MPU9250 "); Serial.print("I AM "); Serial.print(c, HEX);
+    Serial.print(" I should be "); Serial.println(0x71, HEX); // WHO_AM_I should always be 0x71
+    Serial.print("Tried connecting to MPU9250: "); Serial.print(accel_gyro_connect_counter); Serial.println(" time(s)");
+
+    Serial.println("MPU9250 (accel and gyro) is online...");
+    myIMU.initMPU9250();
+    // Initialize device for active mode read of acclerometer, gyroscope, and
+    // temperature
+    Serial.println("MPU9250 initialized for active data mode....");
+    delay(500);
+
+    accelgyrocalMPU9250(myIMU.gyroBias, myIMU.accelBias);
+    delay(1000);
+
+    // Read the WHO_AM_I register of the magnetometer
+    /*
+    do {
+        d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
+        Serial.println(d, HEX);
+        magnetometer_connect_counter += 1;
+        delay(500);      
+    } while(d != 0x48);
+    */
+    Serial.print("AK8963 "); Serial.print("I AM "); Serial.print(d, HEX);
+    Serial.print(" I should be "); Serial.println(0x48, HEX); // AK8963 WHO_AM_I should always be 0x48
+    Serial.print("Tried connecting to Magnetometer: "); Serial.print(magnetometer_connect_counter); Serial.println(" time(s)");
+
+    Serial.println("AK8963 (magnetometer) is online...");
+    myIMU.initAK8963(myIMU.magCalibration);
+    //calibrateMagnetometerBias(myIMU.magbias);
+    Serial.println("AK8963 initialized for active data mode....");
+
+    if (SerialDebug)
+    {
+        Serial.print("X-Axis sensitivity adjustment value ");
+        Serial.println(myIMU.magCalibration[0], 2);
+        Serial.print("Y-Axis sensitivity adjustment value ");
+        Serial.println(myIMU.magCalibration[1], 2);
+        Serial.print("Z-Axis sensitivity adjustment value ");
+        Serial.println(myIMU.magCalibration[2], 2);  
+
+        //Serial.print("Magnetometer Bias Values calculated: ");
+        //Serial.print("X-Axis Bias: "); Serial.print(myIMU.magbias[0]);
+        //Serial.print("  Y-Axis Bias: "); Serial.print(myIMU.magbias[1]);
+        //Serial.print("  Z-Axis Bias: "); Serial.println(myIMU.magbias[2]);
     }
+    delay(100);
 }
 
 void loop()
 {
-  // If intPin goes high, all data registers have new data
-  // On interrupt, check if data ready interrupt
-  if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
-  {
-    sample_counter++;
+    // If intPin goes high, all data registers have new data
+    // On interrupt, check if data ready interrupt
+    if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
+    {
+        sample_counter++;
 
-    myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
-    myIMU.getAres();
-    //getActualAccelerometerValues();
-    myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes; // - accelBias[0];
-    myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes; // - accelBias[1];
-    myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes; // - accelBias[2];
-    
-    myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
-    myIMU.getGres();
-    //getActualGyroscopeValues();
-    myIMU.gx = (float)myIMU.gyroCount[0]*myIMU.gRes;
-    myIMU.gy = (float)myIMU.gyroCount[1]*myIMU.gRes;
-    myIMU.gz = (float)myIMU.gyroCount[2]*myIMU.gRes;
-    
-    myIMU.readMagData(myIMU.magCount);  // Read the x/y/z adc values
-    myIMU.getMres();
-    // User environmental x-axis correction in milliGauss, should be
-    // automatically calculated
-    myIMU.magbias[0] = +470.;
-    // User environmental x-axis correction in milliGauss TODO axis??
-    myIMU.magbias[1] = +120.;
-    // User environmental x-axis correction in milliGauss
-    myIMU.magbias[2] = +125.;
-    //getActualMagnetometerValues();
-    myIMU.mx = (float)myIMU.magCount[0]*myIMU.mRes*myIMU.magCalibration[0] -
-               myIMU.magbias[0];
-    myIMU.my = (float)myIMU.magCount[1]*myIMU.mRes*myIMU.magCalibration[1] -
-               myIMU.magbias[1];
-    myIMU.mz = (float)myIMU.magCount[2]*myIMU.mRes*myIMU.magCalibration[2] -
-               myIMU.magbias[2];
-  } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
+        myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
+        myIMU.getAres();
+        //getActualAccelerometerValues();
+        myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes; // - accelBias[0];
+        myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes; // - accelBias[1];
+        myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes; // - accelBias[2];
 
-  if(SerialDebug)
-  {
-    Serial.print("Sample Count: "); Serial.println(sample_counter);
+        myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
+        myIMU.getGres();
+        //getActualGyroscopeValues();
+        myIMU.gx = (float)myIMU.gyroCount[0]*myIMU.gRes;
+        myIMU.gy = (float)myIMU.gyroCount[1]*myIMU.gRes;
+        myIMU.gz = (float)myIMU.gyroCount[2]*myIMU.gRes;
 
-    // Print acceleration values in milligs!
-    Serial.print("X-accel: "); Serial.print(1000*myIMU.ax);
-    Serial.print(" mg ");
-    Serial.print("Y-accel: "); Serial.print(1000*myIMU.ay);
-    Serial.print(" mg ");
-    Serial.print("Z-accel: "); Serial.print(1000*myIMU.az);
-    Serial.println(" mg ");
-  
-    // Print gyro values in degree/sec
-    Serial.print("X-gyro rate: "); Serial.print(myIMU.gx, 3);
-    Serial.print(" deg/s ");
-    Serial.print("Y-gyro rate: "); Serial.print(myIMU.gy, 3);
-    Serial.print(" deg/s ");
-    Serial.print("Z-gyro rate: "); Serial.print(myIMU.gz, 3);
-    Serial.println(" deg/s");
-  
-    // Print mag values in degree/sec
-    Serial.print("X-mag field: "); Serial.print(myIMU.mx);
-    Serial.print(" mG ");
-    Serial.print("Y-mag field: "); Serial.print(myIMU.my);
-    Serial.print(" mG ");
-    Serial.print("Z-mag field: "); Serial.print(myIMU.mz);
-    Serial.println(" mG");
+        myIMU.readMagData(myIMU.magCount);  // Read the x/y/z adc values
+        myIMU.getMres();
+        // User environmental x-axis correction in milliGauss, should be
+        // automatically calculated
+        myIMU.magbias[0] = +470.;
+        // User environmental x-axis correction in milliGauss TODO axis??
+        myIMU.magbias[1] = +120.;
+        // User environmental x-axis correction in milliGauss
+        myIMU.magbias[2] = +125.;
+        //getActualMagnetometerValues();
+        myIMU.mx = (float)myIMU.magCount[0]*myIMU.mRes*myIMU.magCalibration[0] -
+                   myIMU.magbias[0];
+        myIMU.my = (float)myIMU.magCount[1]*myIMU.mRes*myIMU.magCalibration[1] -
+                   myIMU.magbias[1];
+        myIMU.mz = (float)myIMU.magCount[2]*myIMU.mRes*myIMU.magCalibration[2] -
+                   myIMU.magbias[2];
+    } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
 
-    Serial.print("\n\n");
-  }
-  delay(100);
+    myIMU.MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx*PI/180.0f, myIMU.gy*PI/180.0f, myIMU.gz*PI/180.0f,
+        myIMU.my, myIMU.mx, myIMU.mz);
+
+    yaw   = atan2(2.0f * (myIMU.q[1] * myIMU.q[2] + myIMU.q[0] * myIMU.q[3]), myIMU.q[0] * myIMU.q[0] + myIMU.q[1] * myIMU.q[1] - myIMU.q[2] * myIMU.q[2] - myIMU.q[3] * myIMU.q[3]);   
+    pitch = -asin(2.0f * (myIMU.q[1] * myIMU.q[3] - myIMU.q[0] * myIMU.q[2]));
+    roll  = atan2(2.0f * (myIMU.q[0] * myIMU.q[1] + myIMU.q[2] * myIMU.q[3]), myIMU.q[0] * myIMU.q[0] - myIMU.q[1] * myIMU.q[1] - myIMU.q[2] * myIMU.q[2] + myIMU.q[3] * myIMU.q[3]);
+    pitch *= 180.0f / PI;
+    yaw   *= 180.0f / PI; 
+    yaw   -= 9.65; // Declination at Waterloo, Ontario
+    roll  *= 180.0f / PI;
+     
+    if (SerialDebug)
+    {
+        Serial.print("Sample Count: "); Serial.println(sample_counter);
+
+        // Print acceleration values in milligs!
+        Serial.print("X-accel: "); Serial.print(1000*myIMU.ax);
+        Serial.print(" mg ");
+        Serial.print("Y-accel: "); Serial.print(1000*myIMU.ay);
+        Serial.print(" mg ");
+        Serial.print("Z-accel: "); Serial.print(1000*myIMU.az);
+        Serial.println(" mg ");
+
+        // Print gyro values in degree/sec
+        Serial.print("X-gyro rate: "); Serial.print(myIMU.gx, 3);
+        Serial.print(" deg/s ");
+        Serial.print("Y-gyro rate: "); Serial.print(myIMU.gy, 3);
+        Serial.print(" deg/s ");
+        Serial.print("Z-gyro rate: "); Serial.print(myIMU.gz, 3);
+        Serial.println(" deg/s");
+
+        // Print mag values in degree/sec
+        Serial.print("X-mag field: "); Serial.print(myIMU.mx);
+        Serial.print(" mG ");
+        Serial.print("Y-mag field: "); Serial.print(myIMU.my);
+        Serial.print(" mG ");
+        Serial.print("Z-mag field: "); Serial.print(myIMU.mz);
+        Serial.println(" mG");
+
+        Serial.print("\n\n");
+
+        Serial.print("Yaw, Pitch, Roll: ");
+        Serial.print(yaw, 2); Serial.print(", ");
+        Serial.print(pitch, 2); Serial.print(", ");
+        Serial.println(roll, 2);
+    }
+    delay(100);
 }
 
 void getActualMagnetometerValues()
@@ -226,4 +254,166 @@ void calibrateMagnetometerBias(float * dest1)
     dest1[1] = (float) mag_bias[1]*myIMU.mRes*myIMU.magCalibration[1];   
     dest1[2] = (float) mag_bias[2]*myIMU.mRes*myIMU.magCalibration[2];
     Serial.println("Mag Calibration done!");
+}
+
+// Function which accumulates gyro and accelerometer data after device initialization. It calculates the average
+// of the at-rest readings and then loads the resulting offsets into accelerometer and gyro bias registers.
+void accelgyrocalMPU9250(float * dest1, float * dest2)
+{
+    Serial.println("Calibrating MPU9250 (accel and gyro)...");
+    delay(2000);
+    uint8_t data[12]; // data array to hold accelerometer and gyro x, y, z, data
+    uint16_t ii, packet_count, fifo_count;
+    int32_t gyro_bias[3]  = {0, 0, 0}, accel_bias[3] = {0, 0, 0};
+
+    // reset device
+    myIMU.writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x80); // Write a one to bit 7 reset bit; toggle reset device
+    delay(100);
+
+    // get stable time source; Auto select clock source to be PLL gyroscope reference if ready 
+    // else use the internal oscillator, bits 2:0 = 001
+    myIMU.writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x01);  
+    myIMU.writeByte(MPU9250_ADDRESS, PWR_MGMT_2, 0x00);
+    delay(200);                                    
+
+    // Configure device for bias calculation
+    myIMU.writeByte(MPU9250_ADDRESS, INT_ENABLE, 0x00);   // Disable all interrupts
+    myIMU.writeByte(MPU9250_ADDRESS, FIFO_EN, 0x00);      // Disable FIFO
+    myIMU.writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x00);   // Turn on internal clock source
+    myIMU.writeByte(MPU9250_ADDRESS, I2C_MST_CTRL, 0x00); // Disable I2C master
+    myIMU.writeByte(MPU9250_ADDRESS, USER_CTRL, 0x00);    // Disable FIFO and I2C master modes
+    myIMU.writeByte(MPU9250_ADDRESS, USER_CTRL, 0x0C);    // Reset FIFO and DMP
+    delay(15);
+
+    // Configure MPU6050 gyro and accelerometer for bias calculation
+    myIMU.writeByte(MPU9250_ADDRESS, CONFIG, 0x01);      // Set low-pass filter to 188 Hz
+    myIMU.writeByte(MPU9250_ADDRESS, SMPLRT_DIV, 0x00);  // Set sample rate to 1 kHz
+    myIMU.writeByte(MPU9250_ADDRESS, GYRO_CONFIG, 0x00);  // Set gyro full-scale to 250 degrees per second, maximum sensitivity
+    myIMU.writeByte(MPU9250_ADDRESS, ACCEL_CONFIG, 0x00); // Set accelerometer full-scale to 2 g, maximum sensitivity
+
+    uint16_t  gyrosensitivity  = 131;   // = 131 LSB/degrees/sec
+    uint16_t  accelsensitivity = 16384;  // = 16384 LSB/g
+
+    // Configure FIFO to capture accelerometer and gyro data for bias calculation
+    myIMU.writeByte(MPU9250_ADDRESS, USER_CTRL, 0x40);   // Enable FIFO  
+    myIMU.writeByte(MPU9250_ADDRESS, FIFO_EN, 0x78);     // Enable gyro and accelerometer sensors for FIFO  (max size 512 bytes in MPU-9150)
+    delay(40); // accumulate 40 samples in 40 milliseconds = 480 bytes
+
+    // At end of sample accumulation, turn off FIFO sensor read
+    myIMU.writeByte(MPU9250_ADDRESS, FIFO_EN, 0x00);        // Disable gyro and accelerometer sensors for FIFO
+    myIMU.readBytes(MPU9250_ADDRESS, FIFO_COUNTH, 2, &data[0]); // read FIFO sample count
+    fifo_count = ((uint16_t)data[0] << 8) | data[1];
+    packet_count = fifo_count/12;// How many sets of full gyro and accelerometer data for averaging
+
+    for (ii = 0; ii < packet_count; ii++) {
+        int16_t accel_temp[3] = {0, 0, 0}, gyro_temp[3] = {0, 0, 0};
+        myIMU.readBytes(MPU9250_ADDRESS, FIFO_R_W, 12, &data[0]); // read data for averaging
+        accel_temp[0] = (int16_t) (((int16_t)data[0] << 8) | data[1]  ) ;  // Form signed 16-bit integer for each sample in FIFO
+        accel_temp[1] = (int16_t) (((int16_t)data[2] << 8) | data[3]  ) ;
+        accel_temp[2] = (int16_t) (((int16_t)data[4] << 8) | data[5]  ) ;    
+        gyro_temp[0]  = (int16_t) (((int16_t)data[6] << 8) | data[7]  ) ;
+        gyro_temp[1]  = (int16_t) (((int16_t)data[8] << 8) | data[9]  ) ;
+        gyro_temp[2]  = (int16_t) (((int16_t)data[10] << 8) | data[11]) ;
+
+        accel_bias[0] += (int32_t) accel_temp[0]; // Sum individual signed 16-bit biases to get accumulated signed 32-bit biases
+        accel_bias[1] += (int32_t) accel_temp[1];
+        accel_bias[2] += (int32_t) accel_temp[2];
+        gyro_bias[0]  += (int32_t) gyro_temp[0];
+        gyro_bias[1]  += (int32_t) gyro_temp[1];
+        gyro_bias[2]  += (int32_t) gyro_temp[2];
+    }
+
+    accel_bias[0] /= (int32_t) packet_count; // Normalize sums to get average count biases
+    accel_bias[1] /= (int32_t) packet_count;
+    accel_bias[2] /= (int32_t) packet_count;
+    gyro_bias[0]  /= (int32_t) packet_count;
+    gyro_bias[1]  /= (int32_t) packet_count;
+    gyro_bias[2]  /= (int32_t) packet_count;
+
+    if (accel_bias[2] > 0L) {
+        accel_bias[2] -= (int32_t) accelsensitivity;
+    }  // Remove gravity from the z-axis accelerometer bias calculation
+    else {
+        accel_bias[2] += (int32_t) accelsensitivity;
+    }
+   
+    // Construct the gyro biases for push to the hardware gyro bias registers, which are reset to zero upon device startup
+    data[0] = (-gyro_bias[0]/4  >> 8) & 0xFF; // Divide by 4 to get 32.9 LSB per deg/s to conform to expected bias input format
+    data[1] = (-gyro_bias[0]/4)       & 0xFF; // Biases are additive, so change sign on calculated average gyro biases
+    data[2] = (-gyro_bias[1]/4  >> 8) & 0xFF;
+    data[3] = (-gyro_bias[1]/4)       & 0xFF;
+    data[4] = (-gyro_bias[2]/4  >> 8) & 0xFF;
+    data[5] = (-gyro_bias[2]/4)       & 0xFF;
+  
+    // Push gyro biases to hardware registers
+    myIMU.writeByte(MPU9250_ADDRESS, XG_OFFSET_H, data[0]);
+    myIMU.writeByte(MPU9250_ADDRESS, XG_OFFSET_L, data[1]);
+    myIMU.writeByte(MPU9250_ADDRESS, YG_OFFSET_H, data[2]);
+    myIMU.writeByte(MPU9250_ADDRESS, YG_OFFSET_L, data[3]);
+    myIMU.writeByte(MPU9250_ADDRESS, ZG_OFFSET_H, data[4]);
+    myIMU.writeByte(MPU9250_ADDRESS, ZG_OFFSET_L, data[5]);
+
+    // Output scaled gyro biases for display in the main program
+    dest1[0] = (float) gyro_bias[0]/(float) gyrosensitivity;  
+    dest1[1] = (float) gyro_bias[1]/(float) gyrosensitivity;
+    dest1[2] = (float) gyro_bias[2]/(float) gyrosensitivity;
+
+    // Construct the accelerometer biases for push to the hardware accelerometer bias registers. These registers contain
+    // factory trim values which must be added to the calculated accelerometer biases; on boot up these registers will hold
+    // non-zero values. In addition, bit 0 of the lower byte must be preserved since it is used for temperature
+    // compensation calculations. Accelerometer bias registers expect bias input as 2048 LSB per g, so that
+    // the accelerometer biases calculated above must be divided by 8.
+
+    int32_t accel_bias_reg[3] = {0, 0, 0}; // A place to hold the factory accelerometer trim biases
+    myIMU.readBytes(MPU9250_ADDRESS, XA_OFFSET_H, 2, &data[0]); // Read factory accelerometer trim values
+    accel_bias_reg[0] = (int32_t) (((int16_t)data[0] << 8) | data[1]);
+    myIMU.readBytes(MPU9250_ADDRESS, YA_OFFSET_H, 2, &data[0]);
+    accel_bias_reg[1] = (int32_t) (((int16_t)data[0] << 8) | data[1]);
+    myIMU.readBytes(MPU9250_ADDRESS, ZA_OFFSET_H, 2, &data[0]);
+    accel_bias_reg[2] = (int32_t) (((int16_t)data[0] << 8) | data[1]);
+
+    uint32_t mask = 1uL; // Define mask for temperature compensation bit 0 of lower byte of accelerometer bias registers
+    uint8_t mask_bit[3] = {0, 0, 0}; // Define array to hold mask bit for each accelerometer bias axis
+
+    for(ii = 0; ii < 3; ii++) {
+        if ((accel_bias_reg[ii] & mask)) mask_bit[ii] = 0x01; // If temperature compensation bit is set, record that fact in mask_bit
+    }
+  
+    // Construct total accelerometer bias, including calculated average accelerometer bias from above
+    accel_bias_reg[0] -= (accel_bias[0]/8); // Subtract calculated averaged accelerometer bias scaled to 2048 LSB/g (16 g full scale)
+    accel_bias_reg[1] -= (accel_bias[1]/8);
+    accel_bias_reg[2] -= (accel_bias[2]/8);
+
+    data[0] = (accel_bias_reg[0] >> 8) & 0xFF;
+    data[1] = (accel_bias_reg[0])      & 0xFF;
+    data[1] = data[1] | mask_bit[0]; // preserve temperature compensation bit when writing back to accelerometer bias registers
+    data[2] = (accel_bias_reg[1] >> 8) & 0xFF;
+    data[3] = (accel_bias_reg[1])      & 0xFF;
+    data[3] = data[3] | mask_bit[1]; // preserve temperature compensation bit when writing back to accelerometer bias registers
+    data[4] = (accel_bias_reg[2] >> 8) & 0xFF;
+    data[5] = (accel_bias_reg[2])      & 0xFF;
+    data[5] = data[5] | mask_bit[2]; // preserve temperature compensation bit when writing back to accelerometer bias registers
+
+    // Apparently this is not working for the acceleration biases in the MPU-9250
+    // Are we handling the temperature correction bit properly?
+    // Push accelerometer biases to hardware registers
+    /*  myIMU.writeByte(MPU9250_ADDRESS, XA_OFFSET_H, data[0]);
+    myIMU.writeByte(MPU9250_ADDRESS, XA_OFFSET_L, data[1]);
+    myIMU.writeByte(MPU9250_ADDRESS, YA_OFFSET_H, data[2]);
+    myIMU.writeByte(MPU9250_ADDRESS, YA_OFFSET_L, data[3]);
+    myIMU.writeByte(MPU9250_ADDRESS, ZA_OFFSET_H, data[4]);
+    myIMU.writeByte(MPU9250_ADDRESS, ZA_OFFSET_L, data[5]);
+    */
+    // Output scaled accelerometer biases for display in the main program
+    dest2[0] = (float)accel_bias[0]/(float)accelsensitivity; 
+    dest2[1] = (float)accel_bias[1]/(float)accelsensitivity;
+    dest2[2] = (float)accel_bias[2]/(float)accelsensitivity;
+
+    if (SerialDebug) {
+        Serial.print("Accelerometer Bias Values: ");
+        Serial.print(" X-Axis: "); Serial.print(dest2[0]);
+        Serial.print(" Y-Axis: "); Serial.print(dest2[1]);
+        Serial.print(" Z-Axis: "); Serial.println(dest2[2]);
+    }
+    Serial.println("DONE Calibrating MPU9250 (accel and gyro).");
 }
