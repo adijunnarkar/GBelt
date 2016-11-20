@@ -42,10 +42,30 @@ void setup()
         {
             Serial.println("AK8963 (magnetometer) is online...");
             myIMU.initAK8963(myIMU.magCalibration);
+            //calibrateMagnetometerBias(myIMU.magbias);
             Serial.println("AK8963 initialized for active data mode....");
-            Serial.print(myIMU.magCalibration[0]); Serial.print(myIMU.magCalibration[1]); Serial.println(myIMU.magCalibration[2]);
-            delay(500);
+            if (SerialDebug)
+            {
+                Serial.print("X-Axis sensitivity adjustment value ");
+                Serial.println(myIMU.magCalibration[0], 2);
+                Serial.print("Y-Axis sensitivity adjustment value ");
+                Serial.println(myIMU.magCalibration[1], 2);
+                Serial.print("Z-Axis sensitivity adjustment value ");
+                Serial.println(myIMU.magCalibration[2], 2);  
+
+                //Serial.print("Magnetometer Bias Values calculated: ");
+                //Serial.print("X-Axis Bias: "); Serial.print(myIMU.magbias[0]);
+                //Serial.print("  Y-Axis Bias: "); Serial.print(myIMU.magbias[1]);
+                //Serial.print("  Z-Axis Bias: "); Serial.println(myIMU.magbias[2]);
+            }
+            delay(100);
         }
+    }
+    else
+    {
+        Serial.print("Could not connect to MPU9250: 0x");
+        Serial.println(c, HEX);
+        while(1); // Loop forever if communication doesn't happen
     }
 }
 
@@ -56,24 +76,21 @@ void loop()
   if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
   {
     sample_counter++;
+
     myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
     myIMU.getAres();
-
-    // Now we'll calculate the accleration value into actual g's
-    // This depends on scale being set
+    //getActualAccelerometerValues();
     myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes; // - accelBias[0];
     myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes; // - accelBias[1];
     myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes; // - accelBias[2];
-
+    
     myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
     myIMU.getGres();
-
-    // Calculate the gyro value into actual degrees per second
-    // This depends on scale being set
+    //getActualGyroscopeValues();
     myIMU.gx = (float)myIMU.gyroCount[0]*myIMU.gRes;
     myIMU.gy = (float)myIMU.gyroCount[1]*myIMU.gRes;
     myIMU.gz = (float)myIMU.gyroCount[2]*myIMU.gRes;
-
+    
     myIMU.readMagData(myIMU.magCount);  // Read the x/y/z adc values
     myIMU.getMres();
     // User environmental x-axis correction in milliGauss, should be
@@ -83,11 +100,7 @@ void loop()
     myIMU.magbias[1] = +120.;
     // User environmental x-axis correction in milliGauss
     myIMU.magbias[2] = +125.;
-
-    // Calculate the magnetometer values in milliGauss
-    // Include factory calibration per data sheet and user environmental
-    // corrections
-    // Get actual magnetometer value, this depends on scale being set
+    //getActualMagnetometerValues();
     myIMU.mx = (float)myIMU.magCount[0]*myIMU.mRes*myIMU.magCalibration[0] -
                myIMU.magbias[0];
     myIMU.my = (float)myIMU.magCount[1]*myIMU.mRes*myIMU.magCalibration[1] -
@@ -101,20 +114,20 @@ void loop()
     Serial.print("Sample Count: "); Serial.println(sample_counter);
 
     // Print acceleration values in milligs!
-    Serial.print("X-acceleration: "); Serial.print(1000*myIMU.ax);
+    Serial.print("X-accel: "); Serial.print(1000*myIMU.ax);
     Serial.print(" mg ");
-    Serial.print("Y-acceleration: "); Serial.print(1000*myIMU.ay);
+    Serial.print("Y-accel: "); Serial.print(1000*myIMU.ay);
     Serial.print(" mg ");
-    Serial.print("Z-acceleration: "); Serial.print(1000*myIMU.az);
+    Serial.print("Z-accel: "); Serial.print(1000*myIMU.az);
     Serial.println(" mg ");
   
     // Print gyro values in degree/sec
     Serial.print("X-gyro rate: "); Serial.print(myIMU.gx, 3);
-    Serial.print(" degrees/sec ");
+    Serial.print(" deg/s ");
     Serial.print("Y-gyro rate: "); Serial.print(myIMU.gy, 3);
-    Serial.print(" degrees/sec ");
+    Serial.print(" deg/s ");
     Serial.print("Z-gyro rate: "); Serial.print(myIMU.gz, 3);
-    Serial.println(" degrees/sec");
+    Serial.println(" deg/s");
   
     // Print mag values in degree/sec
     Serial.print("X-mag field: "); Serial.print(myIMU.mx);
@@ -127,4 +140,90 @@ void loop()
     Serial.print("\n\n");
   }
   delay(100);
+}
+
+void getActualMagnetometerValues()
+{
+    /*
+    Calculate the magnetometer values in milliGauss
+    Include factory calibration per data sheet and user environmental corrections
+    Get actual magnetometer value, this depends on scale being set.
+    */
+
+    myIMU.mx = (float)myIMU.magCount[0]*myIMU.mRes*myIMU.magCalibration[0] -
+               myIMU.magbias[0];
+    myIMU.my = (float)myIMU.magCount[1]*myIMU.mRes*myIMU.magCalibration[1] -
+               myIMU.magbias[1];
+    myIMU.mz = (float)myIMU.magCount[2]*myIMU.mRes*myIMU.magCalibration[2] -
+               myIMU.magbias[2];
+}
+
+void getActualAccelerometerValues()
+{
+    /*
+    Calculate the acceleration value into actual g's
+    This depends on scale being set.
+    */
+
+    myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes; // - accelBias[0];
+    myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes; // - accelBias[1];
+    myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes; // - accelBias[2];
+} 
+
+void getActualGyroscopeValues()
+{
+    /*
+    Calculate the gyro value into actual degrees per second
+    This depends on scale being set.
+    */
+
+    myIMU.gx = (float)myIMU.gyroCount[0]*myIMU.gRes;
+    myIMU.gy = (float)myIMU.gyroCount[1]*myIMU.gRes;
+    myIMU.gz = (float)myIMU.gyroCount[2]*myIMU.gRes;
+}
+
+void calibrateMagnetometerBias(float * dest1)
+{
+    /*
+    Calibrate magnetometer by waving device in a variety of figure eight patters.
+    
+    The 'magBias' (x, y, and z) values are needed to ensure that the appropriate offset 
+    is used when calculating the actual magnetometer values.
+
+    Currently only implementing the hard iron correction for magnetometer.
+    */
+
+    uint16_t ii = 0, sample_count = 0;
+    int32_t mag_bias[3] = {0, 0, 0};
+    int16_t mag_max[3] = {-32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
+
+    Serial.println("Mag Calibration: Wave device in a figure eight until done!");
+    delay(4000);
+
+    // shoot for ~fifteen seconds of mag data
+    if(Mmode == 0x02) sample_count = 128;  // at 8 Hz ODR, new mag data is available every 125 ms
+    if(Mmode == 0x06) sample_count = 1500;  // at 100 Hz ODR, new mag data is available every 10 ms
+    for(ii = 0; ii < sample_count; ii++) {
+        myIMU.readMagData(mag_temp);  // Read the mag data   
+        for (int jj = 0; jj < 3; jj++) {
+          if(mag_temp[jj] > mag_max[jj]) mag_max[jj] = mag_temp[jj];
+          if(mag_temp[jj] < mag_min[jj]) mag_min[jj] = mag_temp[jj];
+        }
+        if(Mmode == 0x02) delay(135);  // at 8 Hz ODR, new mag data is available every 125 ms
+        if(Mmode == 0x06) delay(12);  // at 100 Hz ODR, new mag data is available every 10 ms
+    }
+
+    Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
+    Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
+    Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
+
+    // Get hard iron correction
+    mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
+    mag_bias[1]  = (mag_max[1] + mag_min[1])/2;  // get average y mag bias in counts
+    mag_bias[2]  = (mag_max[2] + mag_min[2])/2;  // get average z mag bias in counts
+
+    dest1[0] = (float) mag_bias[0]*myIMU.mRes*myIMU.magCalibration[0];  // save mag biases in G for main program
+    dest1[1] = (float) mag_bias[1]*myIMU.mRes*myIMU.magCalibration[1];   
+    dest1[2] = (float) mag_bias[2]*myIMU.mRes*myIMU.magCalibration[2];
+    Serial.println("Mag Calibration done!");
 }
