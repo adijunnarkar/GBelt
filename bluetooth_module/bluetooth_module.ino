@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 int led = 13;
 //Char used for reading in Serial characters
 char inbyte = 0;

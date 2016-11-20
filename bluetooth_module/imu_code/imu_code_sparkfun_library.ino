@@ -1,16 +1,21 @@
-#include <SPI.h>
-#include "MPU9250.h"
+#include <Arduino.h>
 
+#include <SPI.h>
+#include "quaternionFilters.h"
+#include "MPU9250.h"
+#include "math.h"
 #define SerialDebug true  // Set to true to get Serial output for debugging
 
 // Pin definitions
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 
 MPU9250 myIMU;
+
 int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
 int magnetometer_connect_counter = 0;
 byte c = 0x00, d = 0x00;
+float pitch, yaw, roll;
 
 void setup()
 {
@@ -42,6 +47,21 @@ void setup()
     // temperature
     Serial.println("MPU9250 initialized for active data mode....");
     delay(500);
+
+    // Start by performing self test and reporting values
+    myIMU.MPU9250SelfTest(myIMU.SelfTest);
+    Serial.print("x-axis self test: acceleration trim within : ");
+    Serial.print(myIMU.SelfTest[0],1); Serial.println("% of factory value");
+    Serial.print("y-axis self test: acceleration trim within : ");
+    Serial.print(myIMU.SelfTest[1],1); Serial.println("% of factory value");
+    Serial.print("z-axis self test: acceleration trim within : ");
+    Serial.print(myIMU.SelfTest[2],1); Serial.println("% of factory value");
+    Serial.print("x-axis self test: gyration trim within : ");
+    Serial.print(myIMU.SelfTest[3],1); Serial.println("% of factory value");
+    Serial.print("y-axis self test: gyration trim within : ");
+    Serial.print(myIMU.SelfTest[4],1); Serial.println("% of factory value");
+    Serial.print("z-axis self test: gyration trim within : ");
+    Serial.print(myIMU.SelfTest[5],1); Serial.println("% of factory value");
 
     accelgyrocalMPU9250(myIMU.gyroBias, myIMU.accelBias);
     delay(1000);
@@ -92,9 +112,9 @@ void loop()
         myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
         myIMU.getAres();
         //getActualAccelerometerValues();
-        myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes; // - accelBias[0];
-        myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes; // - accelBias[1];
-        myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes; // - accelBias[2];
+        myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes - myIMU.accelBias[0];
+        myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes - myIMU.accelBias[1];
+        myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes - myIMU.accelBias[2];
 
         myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
         myIMU.getGres();
@@ -121,17 +141,27 @@ void loop()
                    myIMU.magbias[2];
     } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
 
-    myIMU.MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx*PI/180.0f, myIMU.gy*PI/180.0f, myIMU.gz*PI/180.0f,
-        myIMU.my, myIMU.mx, myIMU.mz);
+    // Must be called before updating quaternions!
+    myIMU.updateTime();
 
-    yaw   = atan2(2.0f * (myIMU.q[1] * myIMU.q[2] + myIMU.q[0] * myIMU.q[3]), myIMU.q[0] * myIMU.q[0] + myIMU.q[1] * myIMU.q[1] - myIMU.q[2] * myIMU.q[2] - myIMU.q[3] * myIMU.q[3]);   
-    pitch = -asin(2.0f * (myIMU.q[1] * myIMU.q[3] - myIMU.q[0] * myIMU.q[2]));
-    roll  = atan2(2.0f * (myIMU.q[0] * myIMU.q[1] + myIMU.q[2] * myIMU.q[3]), myIMU.q[0] * myIMU.q[0] - myIMU.q[1] * myIMU.q[1] - myIMU.q[2] * myIMU.q[2] + myIMU.q[3] * myIMU.q[3]);
-    pitch *= 180.0f / PI;
-    yaw   *= 180.0f / PI; 
-    yaw   -= 9.65; // Declination at Waterloo, Ontario
-    roll  *= 180.0f / PI;
-     
+    MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx*PI/180.0f, myIMU.gy*PI/180.0f, myIMU.gz*PI/180.0f, myIMU.my, myIMU.mx, myIMU.mz, myIMU.deltat);
+    myIMU.yaw = atan2(2.0f * (*(getQ()+1) * *(getQ()+2) + *getQ() *
+            *(getQ()+3)), *getQ() * *getQ() + *(getQ()+1) * *(getQ()+1)
+            - *(getQ()+2) * *(getQ()+2) - *(getQ()+3) * *(getQ()+3));
+    myIMU.pitch = -asin(2.0f * (*(getQ()+1) * *(getQ()+3) - *getQ() *
+            *(getQ()+2)));
+    myIMU.roll = atan2(2.0f * (*getQ() * *(getQ()+1) + *(getQ()+2) *
+            *(getQ()+3)), *getQ() * *getQ() - *(getQ()+1) * *(getQ()+1)
+            - *(getQ()+2) * *(getQ()+2) + *(getQ()+3) * *(getQ()+3));
+    myIMU.pitch *= RAD_TO_DEG;
+    myIMU.yaw   *= RAD_TO_DEG;
+    myIMU.yaw   -= 9.65; // Declination at Waterloo, Ontario
+    myIMU.roll  *= RAD_TO_DEG;
+
+    pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
+    roll = atan2(-myIMU.ax, myIMU.az) * RAD_TO_DEG;
+    //yaw = 
+
     if (SerialDebug)
     {
         Serial.print("Sample Count: "); Serial.println(sample_counter);
@@ -160,14 +190,19 @@ void loop()
         Serial.print("Z-mag field: "); Serial.print(myIMU.mz);
         Serial.println(" mG");
 
-        Serial.print("\n\n");
+        Serial.print("Mahoney Filter Yaw, Pitch, Roll: ");
+        Serial.print(myIMU.yaw, 2); Serial.print(", ");
+        Serial.print(myIMU.pitch, 2); Serial.print(", ");
+        Serial.println(myIMU.roll, 2);
 
-        Serial.print("Yaw, Pitch, Roll: ");
+        Serial.print("Manual Calcul. Yaw, Pitch, Roll: ");
         Serial.print(yaw, 2); Serial.print(", ");
         Serial.print(pitch, 2); Serial.print(", ");
         Serial.println(roll, 2);
+
+        Serial.print("\n\n");
     }
-    delay(100);
+    delay(2000);
 }
 
 void getActualMagnetometerValues()
