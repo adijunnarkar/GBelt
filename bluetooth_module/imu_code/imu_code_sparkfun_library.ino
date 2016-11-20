@@ -1,9 +1,9 @@
 #include <Arduino.h>
-
 #include <SPI.h>
 #include "quaternionFilters.h"
 #include "MPU9250.h"
 #include "math.h"
+
 #define SerialDebug true  // Set to true to get Serial output for debugging
 
 // Pin definitions
@@ -15,7 +15,7 @@ int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
 int magnetometer_connect_counter = 0;
 byte c = 0x00, d = 0x00;
-float pitch, yaw, roll;
+float pitch, yaw, roll, Xh, Yh;
 
 void setup()
 {
@@ -83,7 +83,7 @@ void setup()
 
     Serial.println("AK8963 (magnetometer) is online...");
     myIMU.initAK8963(myIMU.magCalibration);
-    //calibrateMagnetometerBias(myIMU.magbias);
+    calibrateMagnetometerBias(myIMU.magbias);
     Serial.println("AK8963 initialized for active data mode....");
 
     if (SerialDebug)
@@ -95,10 +95,10 @@ void setup()
         Serial.print("Z-Axis sensitivity adjustment value ");
         Serial.println(myIMU.magCalibration[2], 2);  
 
-        //Serial.print("Magnetometer Bias Values calculated: ");
-        //Serial.print("X-Axis Bias: "); Serial.print(myIMU.magbias[0]);
-        //Serial.print("  Y-Axis Bias: "); Serial.print(myIMU.magbias[1]);
-        //Serial.print("  Z-Axis Bias: "); Serial.println(myIMU.magbias[2]);
+        Serial.print("Magnetometer Bias Values calculated: ");
+        Serial.print("X-Axis Bias: "); Serial.print(myIMU.magbias[0]);
+        Serial.print("  Y-Axis Bias: "); Serial.print(myIMU.magbias[1]);
+        Serial.print("  Z-Axis Bias: "); Serial.println(myIMU.magbias[2]);
     }
     delay(100);
 }
@@ -162,7 +162,10 @@ void loop()
 
     pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
     roll = atan2(-myIMU.ax, myIMU.az) * RAD_TO_DEG;
-    //yaw = 
+
+    Xh = myIMU.mx * cos(pitch*DEG_TO_RAD) + myIMU.my * sin(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD) - myIMU.mz * cos(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD);
+    Yh = myIMU.my * cos(roll*DEG_TO_RAD) + myIMU.mz * sin(roll*DEG_TO_RAD);
+    yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
 
     if (SerialDebug)
     {
