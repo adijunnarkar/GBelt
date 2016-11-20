@@ -66,15 +66,17 @@ void setup()
     accelgyrocalMPU9250(myIMU.gyroBias, myIMU.accelBias);
     delay(1000);
 
+    myIMU.writeByte(MPU9250_ADDRESS, INT_PIN_CFG, 0x22);
+    Serial.print("WHO_AM_I_AK8963: "); Serial.println(WHO_AM_I_AK8963, HEX);
+
     // Read the WHO_AM_I register of the magnetometer
-    /*
     do {
         d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
         Serial.println(d, HEX);
         magnetometer_connect_counter += 1;
         delay(500);      
     } while(d != 0x48);
-    */
+
     Serial.print("AK8963 "); Serial.print("I AM "); Serial.print(d, HEX);
     Serial.print(" I should be "); Serial.println(0x48, HEX); // AK8963 WHO_AM_I should always be 0x48
     Serial.print("Tried connecting to Magnetometer: "); Serial.print(magnetometer_connect_counter); Serial.println(" time(s)");
@@ -203,46 +205,6 @@ void loop()
         Serial.print("\n\n");
     }
     delay(2000);
-}
-
-void getActualMagnetometerValues()
-{
-    /*
-    Calculate the magnetometer values in milliGauss
-    Include factory calibration per data sheet and user environmental corrections
-    Get actual magnetometer value, this depends on scale being set.
-    */
-
-    myIMU.mx = (float)myIMU.magCount[0]*myIMU.mRes*myIMU.magCalibration[0] -
-               myIMU.magbias[0];
-    myIMU.my = (float)myIMU.magCount[1]*myIMU.mRes*myIMU.magCalibration[1] -
-               myIMU.magbias[1];
-    myIMU.mz = (float)myIMU.magCount[2]*myIMU.mRes*myIMU.magCalibration[2] -
-               myIMU.magbias[2];
-}
-
-void getActualAccelerometerValues()
-{
-    /*
-    Calculate the acceleration value into actual g's
-    This depends on scale being set.
-    */
-
-    myIMU.ax = (float)myIMU.accelCount[0]*myIMU.aRes; // - accelBias[0];
-    myIMU.ay = (float)myIMU.accelCount[1]*myIMU.aRes; // - accelBias[1];
-    myIMU.az = (float)myIMU.accelCount[2]*myIMU.aRes; // - accelBias[2];
-} 
-
-void getActualGyroscopeValues()
-{
-    /*
-    Calculate the gyro value into actual degrees per second
-    This depends on scale being set.
-    */
-
-    myIMU.gx = (float)myIMU.gyroCount[0]*myIMU.gRes;
-    myIMU.gy = (float)myIMU.gyroCount[1]*myIMU.gRes;
-    myIMU.gz = (float)myIMU.gyroCount[2]*myIMU.gRes;
 }
 
 void calibrateMagnetometerBias(float * dest1)
