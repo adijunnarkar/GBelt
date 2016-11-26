@@ -1,3 +1,6 @@
+#include <MPU9250.h>
+#include <quaternionFilters.h>
+
 #include <Arduino.h>
 
 #include <MPU9250.h>

@@ -8,7 +8,10 @@
 
 // Pin definitions
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
-
+int ledN = 1;
+int ledS = 2;
+int ledW = 3;
+int ledE = 4;
 MPU9250 myIMU;
 
 int sample_counter = 0;
@@ -47,7 +50,7 @@ void setup()
     // temperature
     Serial.println("MPU9250 initialized for active data mode....");
     delay(500);
-
+/*
     // Start by performing self test and reporting values
     myIMU.MPU9250SelfTest(myIMU.SelfTest);
     Serial.print("x-axis self test: acceleration trim within : ");
@@ -62,7 +65,7 @@ void setup()
     Serial.print(myIMU.SelfTest[4],1); Serial.println("% of factory value");
     Serial.print("z-axis self test: gyration trim within : ");
     Serial.print(myIMU.SelfTest[5],1); Serial.println("% of factory value");
-
+*/
     accelgyrocalMPU9250(myIMU.gyroBias, myIMU.accelBias);
     delay(1000);
 
@@ -129,11 +132,11 @@ void loop()
         myIMU.getMres();
         // User environmental x-axis correction in milliGauss, should be
         // automatically calculated
-        myIMU.magbias[0] = +470.;
+       // myIMU.magbias[0] = +470.;
         // User environmental x-axis correction in milliGauss TODO axis??
-        myIMU.magbias[1] = +120.;
+       // myIMU.magbias[1] = +120.;
         // User environmental x-axis correction in milliGauss
-        myIMU.magbias[2] = +125.;
+       // myIMU.magbias[2] = +125.;
         //getActualMagnetometerValues();
         myIMU.mx = (float)myIMU.magCount[0]*myIMU.mRes*myIMU.magCalibration[0] -
                    myIMU.magbias[0];
@@ -159,14 +162,18 @@ void loop()
     myIMU.yaw   *= RAD_TO_DEG;
     myIMU.yaw   -= 9.65; // Declination at Waterloo, Ontario
     myIMU.roll  *= RAD_TO_DEG;
-
+    
     pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
     roll = atan2(-myIMU.ax, myIMU.az) * RAD_TO_DEG;
 
     Xh = myIMU.mx * cos(pitch*DEG_TO_RAD) + myIMU.my * sin(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD) - myIMU.mz * cos(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD);
     Yh = myIMU.my * cos(roll*DEG_TO_RAD) + myIMU.mz * sin(roll*DEG_TO_RAD);
     yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
-
+    yaw = (360 - (int)yaw) % 360;
+    Xh = myIMU.mx * cos(pitch*DEG_TO_RAD) + myIMU.my * sin(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD) + myIMU.mz * cos(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD);
+    Yh = myIMU.my * cos(roll*DEG_TO_RAD) - myIMU.mz * sin(roll*DEG_TO_RAD);
+    yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
+    yaw = (360 + (int)yaw) % 360;
     if (SerialDebug)
     {
         Serial.print("Sample Count: "); Serial.println(sample_counter);
@@ -188,23 +195,25 @@ void loop()
         Serial.println(" deg/s");
 
         // Print mag values in degree/sec
+       /* Serial.print("X-mag field: "); Serial.print(myIMU.magCount[0]);
+        Serial.print(" mG ");
+        Serial.print("Y-mag field: "); Serial.print(myIMU.magCount[1]);
+        Serial.print(" mG ");
+        Serial.print("Z-mag field: "); Serial.print(myIMU.magCount[2]);
+        Serial.println(" mG");*/
         Serial.print("X-mag field: "); Serial.print(myIMU.mx);
         Serial.print(" mG ");
         Serial.print("Y-mag field: "); Serial.print(myIMU.my);
         Serial.print(" mG ");
         Serial.print("Z-mag field: "); Serial.print(myIMU.mz);
         Serial.println(" mG");
-
-        Serial.print("Mahoney Filter Yaw, Pitch, Roll: ");
-        Serial.print(myIMU.yaw, 2); Serial.print(", ");
-        Serial.print(myIMU.pitch, 2); Serial.print(", ");
-        Serial.println(myIMU.roll, 2);
-
+     
         Serial.print("Manual Calcul. Yaw, Pitch, Roll: ");
         Serial.print(yaw, 2); Serial.print(", ");
         Serial.print(pitch, 2); Serial.print(", ");
         Serial.println(roll, 2);
-
+        
+        
         Serial.print("\n\n");
     }
     delay(2000);
@@ -222,7 +231,7 @@ void calibrateMagnetometerBias(float * dest1)
     */
 
     uint16_t ii = 0, sample_count = 0;
-    int32_t mag_bias[3] = {0, 0, 0};
+    int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
     int16_t mag_max[3] = {-32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
 
     Serial.println("Mag Calibration: Wave device in a figure eight until done!");
@@ -244,15 +253,29 @@ void calibrateMagnetometerBias(float * dest1)
     Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
     Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
     Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
-
+    mag_max[0] = 516; mag_min[0] = -112;
+    mag_max[1] = 421; mag_min[1] = -98;
+    mag_max[2] = -8; mag_min[2] = -575;
+    
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
     mag_bias[1]  = (mag_max[1] + mag_min[1])/2;  // get average y mag bias in counts
     mag_bias[2]  = (mag_max[2] + mag_min[2])/2;  // get average z mag bias in counts
-
+    myIMU.getMres();
+    Serial.println("Mag bias"); Serial.println(mag_bias[0]); Serial.println(mag_bias[1]);Serial.println(mag_bias[2]);
     dest1[0] = (float) mag_bias[0]*myIMU.mRes*myIMU.magCalibration[0];  // save mag biases in G for main program
     dest1[1] = (float) mag_bias[1]*myIMU.mRes*myIMU.magCalibration[1];   
     dest1[2] = (float) mag_bias[2]*myIMU.mRes*myIMU.magCalibration[2];
+    
+    //Get Soft iron correction
+    mag_scale[0]  = (mag_max[0] - mag_min[0])/2;  // get average x axis max chord length in counts
+    mag_scale[1]  = (mag_max[1] - mag_min[1])/2;  // get average y axis max chord length in counts
+    mag_scale[2]  = (mag_max[2] - mag_min[2])/2;  // get average z axis max chord length in counts
+    
+    float avg_rad = (mag_scale[0] + mag_scale[1] + mag_scale[2])/3.0;
+ 
+
+    //
     Serial.println("Mag Calibration done!");
 }
 
