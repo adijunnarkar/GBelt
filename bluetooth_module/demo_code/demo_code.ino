@@ -1,9 +1,10 @@
 #include <Arduino.h>
-
+#include <SoftwareSerial.h>
 
 ///////////////////////////
 // CONSTANTS DECLARATION //
 ///////////////////////////
+SoftwareSerial BTSerial(10,11); // RX | Tx
 
 int ledNorth = 5, ledEast = 4, ledSouth = 2, ledWest = 3;
 int secondLEDIndex, secondLEDNumber, i, theta;
@@ -22,16 +23,22 @@ String direction = "";
 
 void setup() {
     Serial.begin(9600);
+    BTSerial.begin(9600);
     pinMode(ledNorth, OUTPUT);
     pinMode(ledEast, OUTPUT);
     pinMode(ledSouth, OUTPUT);
     pinMode(ledWest, OUTPUT);
+    digitalWrite(ledNorth, LOW);
+    digitalWrite(ledSouth, LOW);
+    digitalWrite(ledWest, LOW);
+    digitalWrite(ledEast, LOW);
 }
 
 void loop() {
-    if (Serial.available() > 0)
+    if (BTSerial.available() > 0)
     {
-        inByte = Serial.read();
+        inByte = BTSerial.read();
+        //Serial.println(inByte);
         if (inByte == '#')
         {
             startReadingData = true;
@@ -42,7 +49,7 @@ void loop() {
             startReadingData = false;
             newDirectionReady = true;
         }
-        if ((startReadingData) && (inByte != "#") && (inByte != "~"))
+        if ((startReadingData) && (inByte != '#') && (inByte != '~'))
         {
             direction += inByte;
         }
@@ -50,6 +57,10 @@ void loop() {
     if (newDirectionReady)
     {
         theta = direction.toInt();
+        digitalWrite(ledNorth, LOW);
+        digitalWrite(ledSouth, LOW);
+        digitalWrite(ledWest, LOW);
+        digitalWrite(ledEast, LOW);
         if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
             digitalWrite(ledNorth, HIGH);
         else if (inRange(theta, 10, 80)) // Northeast

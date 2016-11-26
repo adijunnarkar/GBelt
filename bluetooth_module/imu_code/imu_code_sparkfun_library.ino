@@ -8,10 +8,10 @@
 
 // Pin definitions
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
-int ledN = 1;
-int ledS = 2;
-int ledW = 3;
-int ledE = 4;
+int ledN = 3;
+int ledS = 4;
+int ledW = 2;
+int ledE = 5;
 MPU9250 myIMU;
 
 int sample_counter = 0;
@@ -30,8 +30,17 @@ void setup()
 
     // Set up the interrupt pin, its set as active high, push-pull
     pinMode(intPin, INPUT);
+    pinMode(ledN, OUTPUT);
+    pinMode(ledS, OUTPUT);
+    pinMode(ledW, OUTPUT);
+    pinMode(ledE, OUTPUT);
+    
     digitalWrite(intPin, LOW);
-
+    digitalWrite(ledN, LOW);
+    digitalWrite(ledS, LOW);
+    digitalWrite(ledW, LOW);
+    digitalWrite(ledE, LOW);
+    
     // Read the WHO_AM_I register
     do {
         c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
@@ -108,6 +117,7 @@ void setup()
 
 void loop()
 {
+    int newangle = 120;
     // If intPin goes high, all data registers have new data
     // On interrupt, check if data ready interrupt
     if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
@@ -174,6 +184,87 @@ void loop()
     Yh = myIMU.my * cos(roll*DEG_TO_RAD) - myIMU.mz * sin(roll*DEG_TO_RAD);
     yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
     yaw = (360 + (int)yaw) % 360;
+    if(abs(yaw - newangle) <= 30){
+        //light up north
+    }
+    if(newangle >= 0 && newangle <= 90){
+        err = yaw - newangle;
+        if(err < 0){ 
+             //light north and east
+             
+        } else if( err <= 90){
+            //light north and west
+        } else if(err <= 150){
+            //light west and south
+        } else if (err <= 210){
+            //light south
+        } else if (err <= 270){
+            //light south and east
+        } else if (err <= 330){
+            //light north and east
+        }
+    }  
+    if(newangle >= 90 && newangle <= 180){
+        err = yaw - newangle;
+        if(err < 0){ 
+            if( err >= -90){
+                //light north and east
+            } else if (err >= -150){
+                //light east and south
+            } else  if(err <= -180){
+                //light south
+            }
+             
+        } else if( err <= 90){
+            //light north and west
+        } else if(err <= 150){
+            //light west and south
+        } else if (err <= 210){
+            //light south
+        } else if (err <= 240){
+            //light south and east
+        }
+    }  
+    if(newangle >= 180 && newangle <= 270){
+        err = yaw - newangle;
+        if(err > 0){ 
+            if( err >= 90){
+                //light north and west
+            } else if (err >= 150){
+                //light west and south
+            } else if(err >= 180){
+                //light south
+            }
+             
+        } else if( err >= -90){
+            //light north and east
+        } else if(err >= -150){
+            //light east and south
+        } else if(err >= -210){
+            //light south
+        } else if (err >= -240){
+            //light south and west
+        }
+     }  
+     if(newangle >= 270 && newangle <= 360){
+        err = yaw - newangle;
+         if(err > 0){ 
+             //light north and west
+        } else if( err >= -90){
+            //light north and east
+        } else if(err >= -150){
+            //light east and south
+        } else if (err >= -210){
+            //light south
+        } else if (err >= -270){
+            //light south and west
+        } else if (err >= -330){
+            //light north and west
+        }
+    }  
+            
+        
+    }
     if (SerialDebug)
     {
         Serial.print("Sample Count: "); Serial.println(sample_counter);
