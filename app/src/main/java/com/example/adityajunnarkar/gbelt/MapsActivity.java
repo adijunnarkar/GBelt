@@ -12,6 +12,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
@@ -56,6 +60,7 @@ import Modules.Route;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
+        SensorEventListener,
         DirectionFinderListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
@@ -67,6 +72,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
     BluetoothAdapter mBluetoothAdapter;
+
+    private Compass compass;
+    private SensorManager sensorManager;
+    private Sensor gsensor;
+    private Sensor msensor;
+    float azimuth = 0;
+
     private Button btnFindPath;
     private EditText etOrigin;
     private EditText etDestination;
@@ -120,14 +132,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 discoverDevices();
 
             }
-
-
         }
+
+        compass = new Compass(this);
+        sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
+        gsensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        msensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        sensorManager.registerListener(this, gsensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, msensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+
+        compass.start();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        // because i am too lazy to type it out
+        ((EditText) findViewById(R.id.etOrigin)).setText("339 King Street North, Waterloo");
+        ((EditText) findViewById(R.id.etDestination)).setText("University of Waterloo");
 
         btnFindPath = (Button) findViewById(R.id.btnFindPath);
         etOrigin = (EditText) findViewById(R.id.etOrigin);
@@ -305,11 +330,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     void manageBluetoothConnection(BluetoothSocket bluetoothSocket){
-
         connectedThread = new ConnectedThread(bluetoothSocket);
         connectedThread.start();
-      //  Toast.makeText(getApplicationContext(), "Connected Thread Started",
-      //          Toast.LENGTH_LONG).show();
     }
 
     private class ConnectedThread extends Thread {
@@ -336,13 +358,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          //   int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
-//            write("#HI HANS! HOW ARE YOU DOING?~".toString().getBytes());
-//            try {
-//                Thread.sleep(500);
-//            } catch(InterruptedException ex) {
-//                Thread.currentThread().interrupt();
-//            }
-
+//            Toast.makeText(this, "Hi Hans sent", Toast.LENGTH_SHORT).show();
+            while (true) {
+//                write("#Hi Hans~".toString().getBytes());
+//
+//                try {
+//                    Thread.sleep(500);
+//                } catch(InterruptedException ex) {
+//                    Thread.currentThread().interrupt();
+//                }
+            }
         }
 
         /* Call this from the main activity to send data to HC 05 */
@@ -557,19 +582,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
         }
-
-        byte[] vectorBytes = doubleToBytes(calculateVector());
-
-        if (connectedThread != null && connectedThread.isAlive()) {
-            connectedThread.write(vectorBytes);
-        }
-    }
-
-    public byte[] doubleToBytes(double n) {
-        byte[] bytes = new byte[8];
-        ByteBuffer.wrap(bytes).putDouble(n);
-
-        return bytes;
     }
 
     public double calculateVector() {
@@ -667,4 +679,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // You can add here other case statements according to your requirement.
         }
     }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        azimuth = compass.getAzimuth();
+        ((TextView) findViewById(R.id.azimuth)).setText("Azimuth: " + azimuth);
+
+        if (mRoute != null) {
+            transmitVector();
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+        // hehe do nothing. it's complaining about not having this
+    }
+
+    public float calculateTheta() {
+        float theta = 0;
+
+        float theta1 = azimuth;
+        float theta2 = (float) calculateVector(); // actually might want to save vector as a global variable so we don't calculate it every time
+
+        if (theta1 > theta2) {
+            theta = 360 - (theta1-theta2);
+        } else {
+            theta = theta2 - theta1;
+        }
+
+        return theta;
+    }
+
+    public void transmitVector() {
+        float theta = calculateTheta();
+
+        ((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + theta);
+
+        String message = "#" + theta + "~";
+
+        byte[] vectorBytes = message.getBytes();
+
+        if (connectedThread != null) { // && connectedThread.isAlive()
+//            Toast.makeText(this, "Transmitting", Toast.LENGTH_LONG).show();
+            connectedThread.write(vectorBytes);
+        }
+    }
+
 }
