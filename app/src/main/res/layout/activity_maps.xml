@@ -5,7 +5,8 @@
     tools:context="com.example.adityajunnarkar.gbelt.MapsActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"  >
+    android:orientation="vertical"
+    android:screenOrientation="portrait">
 
     <EditText
         android:layout_width="match_parent"
@@ -63,6 +64,18 @@
         android:layout_height="wrap_content"
         android:text="Current Direction:"
         android:id="@+id/instruction" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Azimuth:"
+        android:id="@+id/azimuth" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Belt Vector:"
+        android:id="@+id/beltVector" />
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"

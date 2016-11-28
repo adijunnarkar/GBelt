@@ -5,6 +5,10 @@ int led = 13;
 char inbyte = 0;
 String one_transmission = "";
 bool start_reading_data = false;
+<<<<<<< HEAD
+//*******************************************************************************************
+=======
+>>>>>>> hans_stuff
 
 void setup() {
   // initialise serial communications at 9600 bps:
