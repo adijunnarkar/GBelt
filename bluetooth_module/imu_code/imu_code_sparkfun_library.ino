@@ -8,10 +8,10 @@
 
 // Pin definitions
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
-int ledN = 3;
-int ledS = 4;
-int ledW = 2;
-int ledE = 5;
+int ledNorth = 3;
+int ledSouth = 4;
+int ledWest = 2;
+int ledEast = 5;
 MPU9250 myIMU;
 
 int sample_counter = 0;
@@ -30,17 +30,17 @@ void setup()
 
     // Set up the interrupt pin, its set as active high, push-pull
     pinMode(intPin, INPUT);
-    pinMode(ledN, OUTPUT);
-    pinMode(ledS, OUTPUT);
-    pinMode(ledW, OUTPUT);
-    pinMode(ledE, OUTPUT);
+    pinMode(ledNorth, OUTPUT);
+    pinMode(ledSouth, OUTPUT);
+    pinMode(ledWest, OUTPUT);
+    pinMode(ledEast, OUTPUT);
     
     digitalWrite(intPin, LOW);
-    digitalWrite(ledN, LOW);
-    digitalWrite(ledS, LOW);
-    digitalWrite(ledW, LOW);
-    digitalWrite(ledE, LOW);
-    
+    digitalWrite(ledNorth, LOW);
+    digitalWrite(ledSouth, LOW);
+    digitalWrite(ledWest, LOW);
+    digitalWrite(ledEast, LOW);
+    Serial.print("MPU9250 ");
     // Read the WHO_AM_I register
     do {
         c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
@@ -117,7 +117,7 @@ void setup()
 
 void loop()
 {
-    int newangle = 120;
+    int newangle = 120, theta = 0;
     // If intPin goes high, all data registers have new data
     // On interrupt, check if data ready interrupt
     if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
@@ -184,87 +184,47 @@ void loop()
     Yh = myIMU.my * cos(roll*DEG_TO_RAD) - myIMU.mz * sin(roll*DEG_TO_RAD);
     yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
     yaw = (360 + (int)yaw) % 360;
-    if(abs(yaw - newangle) <= 30){
-        //light up north
+    
+    digitalWrite(ledNorth, LOW);
+    digitalWrite(ledSouth, LOW);
+    digitalWrite(ledWest, LOW);
+    digitalWrite(ledEast, LOW);
+    
+    if(yaw > newangle){
+        theta = 360 - (yaw - newangle);
+    } else {
+        theta = newangle - yaw;
     }
-    if(newangle >= 0 && newangle <= 90){
-        err = yaw - newangle;
-        if(err < 0){ 
-             //light north and east
-             
-        } else if( err <= 90){
-            //light north and west
-        } else if(err <= 150){
-            //light west and south
-        } else if (err <= 210){
-            //light south
-        } else if (err <= 270){
-            //light south and east
-        } else if (err <= 330){
-            //light north and east
-        }
-    }  
-    if(newangle >= 90 && newangle <= 180){
-        err = yaw - newangle;
-        if(err < 0){ 
-            if( err >= -90){
-                //light north and east
-            } else if (err >= -150){
-                //light east and south
-            } else  if(err <= -180){
-                //light south
-            }
-             
-        } else if( err <= 90){
-            //light north and west
-        } else if(err <= 150){
-            //light west and south
-        } else if (err <= 210){
-            //light south
-        } else if (err <= 240){
-            //light south and east
-        }
-    }  
-    if(newangle >= 180 && newangle <= 270){
-        err = yaw - newangle;
-        if(err > 0){ 
-            if( err >= 90){
-                //light north and west
-            } else if (err >= 150){
-                //light west and south
-            } else if(err >= 180){
-                //light south
-            }
-             
-        } else if( err >= -90){
-            //light north and east
-        } else if(err >= -150){
-            //light east and south
-        } else if(err >= -210){
-            //light south
-        } else if (err >= -240){
-            //light south and west
-        }
-     }  
-     if(newangle >= 270 && newangle <= 360){
-        err = yaw - newangle;
-         if(err > 0){ 
-             //light north and west
-        } else if( err >= -90){
-            //light north and east
-        } else if(err >= -150){
-            //light east and south
-        } else if (err >= -210){
-            //light south
-        } else if (err >= -270){
-            //light south and west
-        } else if (err >= -330){
-            //light north and west
-        }
-    }  
             
-        
-    }
+    if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
+            digitalWrite(ledNorth, HIGH);
+    else if (inRange(theta, 10, 80)) // Northeast
+    {
+            digitalWrite(ledNorth, HIGH);
+            digitalWrite(ledEast, HIGH);
+     }
+     else if (inRange(theta, 80, 100)) // East
+            digitalWrite(ledEast, HIGH);
+    else if (inRange(theta, 100, 170)) // Southeast
+     {
+            digitalWrite(ledSouth, HIGH);
+            digitalWrite(ledEast, HIGH);
+      }
+    else if (inRange(theta, 170, 190)) // South
+            digitalWrite(ledSouth, HIGH);
+    else if (inRange(theta, 190, 260)) // Southwest
+      {
+            digitalWrite(ledSouth, HIGH);
+            digitalWrite(ledWest, HIGH);
+       }
+     else if (inRange(theta, 260, 280)) // West
+            digitalWrite(ledWest, HIGH);
+     else if (inRange(theta, 280, 350)) // Northwest
+        {
+            digitalWrite(ledNorth, HIGH);
+            digitalWrite(ledWest, HIGH);
+        }    
+    
     if (SerialDebug)
     {
         Serial.print("Sample Count: "); Serial.println(sample_counter);
@@ -286,19 +246,19 @@ void loop()
         Serial.println(" deg/s");
 
         // Print mag values in degree/sec
-       /* Serial.print("X-mag field: "); Serial.print(myIMU.magCount[0]);
+        Serial.print("X-mag field: "); Serial.print(myIMU.magCount[0]);
         Serial.print(" mG ");
         Serial.print("Y-mag field: "); Serial.print(myIMU.magCount[1]);
         Serial.print(" mG ");
         Serial.print("Z-mag field: "); Serial.print(myIMU.magCount[2]);
-        Serial.println(" mG");*/
-        Serial.print("X-mag field: "); Serial.print(myIMU.mx);
+        Serial.println(" mG");
+      /*  Serial.print("X-mag field: "); Serial.print(myIMU.mx);
         Serial.print(" mG ");
         Serial.print("Y-mag field: "); Serial.print(myIMU.my);
         Serial.print(" mG ");
         Serial.print("Z-mag field: "); Serial.print(myIMU.mz);
         Serial.println(" mG");
-     
+     */
         Serial.print("Manual Calcul. Yaw, Pitch, Roll: ");
         Serial.print(yaw, 2); Serial.print(", ");
         Serial.print(pitch, 2); Serial.print(", ");
@@ -308,6 +268,11 @@ void loop()
         Serial.print("\n\n");
     }
     delay(2000);
+}
+
+bool inRange(int val, int min, int max)
+{
+    return ((min <= val) && (val <= max));
 }
 
 void calibrateMagnetometerBias(float * dest1)
@@ -344,9 +309,12 @@ void calibrateMagnetometerBias(float * dest1)
     Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
     Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
     Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
-    mag_max[0] = 516; mag_min[0] = -112;
-    mag_max[1] = 421; mag_min[1] = -98;
-    mag_max[2] = -8; mag_min[2] = -575;
+   // mag_max[0] = 516; mag_min[0] = -112;
+   // mag_max[1] = 421; mag_min[1] = -98;
+  //  mag_max[2] = -8; mag_min[2] = -575;
+     mag_max[0] = 493; mag_min[0] = -36;
+    mag_max[1] = 496; mag_min[1] = -51;
+    mag_max[2] = 172; mag_min[2] = -362;
     
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
