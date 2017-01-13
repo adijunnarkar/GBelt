@@ -473,6 +473,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
+
+        // transmit the desired theta to Arduino
+        if (mRoute != null) {
+            transmitVector();
+        }
     }
 
     /**
@@ -597,11 +602,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // TODO: rethink this with the >= and <= stuff
         if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 > y1) {
+            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        } else if (x2 > x1 && y2 < y1) {
             vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 > y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else if (x2 < x1 && y2 < y1) {
+            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
         } else {
             vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
         }
@@ -682,12 +687,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        azimuth = compass.getAzimuth();
-        ((TextView) findViewById(R.id.azimuth)).setText("Azimuth: " + azimuth);
+        ;
+        //azimuth = compass.getAzimuth();
+        //((TextView) findViewById(R.id.azimuth)).setText("Azimuth: " + azimuth);
 
-        if (mRoute != null) {
-            transmitVector();
-        }
+        //if (mRoute != null) {
+            //transmitVector();
+        //}
     }
 
     @Override
@@ -711,11 +717,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void transmitVector() {
-        float theta = calculateTheta();
+        float desired_theta = 0;
 
-        ((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + theta);
+        //float theta = calculateTheta();
+        //((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + theta);
 
-        String message = "#" + theta + "~";
+        desired_theta = (float) calculateVector();
+        ((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + desired_theta);
+        String message = "#" + desired_theta + "~";
 
         byte[] vectorBytes = message.getBytes();
 

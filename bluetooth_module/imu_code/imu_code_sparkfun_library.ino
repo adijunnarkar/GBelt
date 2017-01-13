@@ -3,8 +3,11 @@
 #include "quaternionFilters.h"
 #include "MPU9250.h"
 #include "math.h"
+#include <SoftwareSerial.h>
 
 #define SerialDebug true  // Set to true to get Serial output for debugging
+
+SoftwareSerial BTSerial(10,11); // RX | Tx
 
 // Pin definitions
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
@@ -12,13 +15,25 @@ int ledNorth = 3;
 int ledSouth = 4;
 int ledWest = 2;
 int ledEast = 5;
-MPU9250 myIMU;
 
 int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
 int magnetometer_connect_counter = 0;
+
+float pitch, yaw, roll, Xh, Yh, theta, thetaDesired;
+
+//Char used for reading in Serial characters
+char inByte = 0;
+
+bool startReadingData = false;
+bool newDirectionReady = false; // indicates when a new direction from phone is available
+
+String ledToLightUp = "";
+String direction = "";
+
 byte c = 0x00, d = 0x00;
-float pitch, yaw, roll, Xh, Yh;
+
+MPU9250 myIMU;
 
 void setup()
 {
@@ -26,6 +41,7 @@ void setup()
     Wire.begin();
     // TWBR = 12;  // 400 kbit/sec I2C speed
     Serial.begin(38400);
+    BTSerial.begin(9600);
     delay(5000);
 
     // Set up the interrupt pin, its set as active high, push-pull
@@ -117,7 +133,6 @@ void setup()
 
 void loop()
 {
-    int newangle = 120, theta = 0;
     // If intPin goes high, all data registers have new data
     // On interrupt, check if data ready interrupt
     if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
@@ -157,9 +172,9 @@ void loop()
     } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
 
     // Must be called before updating quaternions!
-    myIMU.updateTime();
+    //myIMU.updateTime();
 
-    MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx*PI/180.0f, myIMU.gy*PI/180.0f, myIMU.gz*PI/180.0f, myIMU.my, myIMU.mx, myIMU.mz, myIMU.deltat);
+   /* MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx*PI/180.0f, myIMU.gy*PI/180.0f, myIMU.gz*PI/180.0f, myIMU.my, myIMU.mx, myIMU.mz, myIMU.deltat);
     myIMU.yaw = atan2(2.0f * (*(getQ()+1) * *(getQ()+2) + *getQ() *
             *(getQ()+3)), *getQ() * *getQ() + *(getQ()+1) * *(getQ()+1)
             - *(getQ()+2) * *(getQ()+2) - *(getQ()+3) * *(getQ()+3));
@@ -172,7 +187,7 @@ void loop()
     myIMU.yaw   *= RAD_TO_DEG;
     myIMU.yaw   -= 9.65; // Declination at Waterloo, Ontario
     myIMU.roll  *= RAD_TO_DEG;
-    
+    */
     pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
     roll = atan2(-myIMU.ax, myIMU.az) * RAD_TO_DEG;
 
@@ -185,45 +200,74 @@ void loop()
     yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
     yaw = (360 + (int)yaw) % 360;
     
-    digitalWrite(ledNorth, LOW);
-    digitalWrite(ledSouth, LOW);
-    digitalWrite(ledWest, LOW);
-    digitalWrite(ledEast, LOW);
-    
-    if(yaw > newangle){
-        theta = 360 - (yaw - newangle);
-    } else {
-        theta = newangle - yaw;
-    }
-            
-    if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
-            digitalWrite(ledNorth, HIGH);
-    else if (inRange(theta, 10, 80)) // Northeast
+    if (BTSerial.available() > 0)
     {
+        newDirectionReady= true;
+        inByte = BTSerial.read();
+        //Serial.println(inByte);
+        if (inByte == '#')
+        {
+            startReadingData = true;
+        }
+        if (inByte == '~')
+        {
+            Serial.println(direction);
+            startReadingData = false;
+            newDirectionReady = true;
+        }
+        if ((startReadingData) && (inByte != '#') && (inByte != '~'))
+        {
+            direction += inByte;
+        }
+    }
+
+    if (newDirectionReady)
+    {
+        digitalWrite(ledNorth, LOW);
+        digitalWrite(ledSouth, LOW);
+        digitalWrite(ledWest, LOW);
+        digitalWrite(ledEast, LOW);
+
+        thetaDesired = direction.toInt();
+        Serial.println(thetaDesired);
+        if(yaw > thetaDesired) {
+            theta = 360 - (yaw - thetaDesired);
+        } 
+        else {
+            theta = thetaDesired - yaw;
+        }
+
+        if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
+            digitalWrite(ledNorth, HIGH);
+        else if (inRange(theta, 10, 80)) // Northeast
+        {
             digitalWrite(ledNorth, HIGH);
             digitalWrite(ledEast, HIGH);
-     }
-     else if (inRange(theta, 80, 100)) // East
+        }
+        else if (inRange(theta, 80, 100)) // East
             digitalWrite(ledEast, HIGH);
-    else if (inRange(theta, 100, 170)) // Southeast
-     {
+        else if (inRange(theta, 100, 170)) // Southeast
+        {
             digitalWrite(ledSouth, HIGH);
             digitalWrite(ledEast, HIGH);
-      }
-    else if (inRange(theta, 170, 190)) // South
+        }
+        else if (inRange(theta, 170, 190)) // South
             digitalWrite(ledSouth, HIGH);
-    else if (inRange(theta, 190, 260)) // Southwest
-      {
+        else if (inRange(theta, 190, 260)) // Southwest
+        {
             digitalWrite(ledSouth, HIGH);
             digitalWrite(ledWest, HIGH);
-       }
-     else if (inRange(theta, 260, 280)) // West
+        }
+        else if (inRange(theta, 260, 280)) // West
             digitalWrite(ledWest, HIGH);
-     else if (inRange(theta, 280, 350)) // Northwest
+        else if (inRange(theta, 280, 350)) // Northwest
         {
             digitalWrite(ledNorth, HIGH);
             digitalWrite(ledWest, HIGH);
-        }    
+        }
+        // newDirectionReady = false; 
+        direction = "";
+    }  
     
     if (SerialDebug)
     {
@@ -267,7 +311,6 @@ void loop()
         
         Serial.print("\n\n");
     }
-    delay(2000);
 }
 
 bool inRange(int val, int min, int max)
@@ -290,11 +333,11 @@ void calibrateMagnetometerBias(float * dest1)
     int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
     int16_t mag_max[3] = {-32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
 
-    Serial.println("Mag Calibration: Wave device in a figure eight until done!");
-    delay(4000);
+   // Serial.println("Mag Calibration: Wave device in a figure eight until done!");
+   // delay(4000);
 
     // shoot for ~fifteen seconds of mag data
-    if(Mmode == 0x02) sample_count = 128;  // at 8 Hz ODR, new mag data is available every 125 ms
+  /*  if(Mmode == 0x02) sample_count = 128;  // at 8 Hz ODR, new mag data is available every 125 ms
     if(Mmode == 0x06) sample_count = 1500;  // at 100 Hz ODR, new mag data is available every 10 ms
     for(ii = 0; ii < sample_count; ii++) {
         myIMU.readMagData(mag_temp);  // Read the mag data   
@@ -309,6 +352,7 @@ void calibrateMagnetometerBias(float * dest1)
     Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
     Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
     Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
+    */
    // mag_max[0] = 516; mag_min[0] = -112;
    // mag_max[1] = 421; mag_min[1] = -98;
   //  mag_max[2] = -8; mag_min[2] = -575;
@@ -321,7 +365,7 @@ void calibrateMagnetometerBias(float * dest1)
     mag_bias[1]  = (mag_max[1] + mag_min[1])/2;  // get average y mag bias in counts
     mag_bias[2]  = (mag_max[2] + mag_min[2])/2;  // get average z mag bias in counts
     myIMU.getMres();
-    Serial.println("Mag bias"); Serial.println(mag_bias[0]); Serial.println(mag_bias[1]);Serial.println(mag_bias[2]);
+    //Serial.println("Mag bias"); Serial.println(mag_bias[0]); Serial.println(mag_bias[1]);Serial.println(mag_bias[2]);
     dest1[0] = (float) mag_bias[0]*myIMU.mRes*myIMU.magCalibration[0];  // save mag biases in G for main program
     dest1[1] = (float) mag_bias[1]*myIMU.mRes*myIMU.magCalibration[1];   
     dest1[2] = (float) mag_bias[2]*myIMU.mRes*myIMU.magCalibration[2];

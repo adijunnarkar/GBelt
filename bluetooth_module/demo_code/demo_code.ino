@@ -7,7 +7,7 @@
 SoftwareSerial BTSerial(10,11); // RX | Tx
 
 int ledNorth = 5, ledEast = 4, ledSouth = 2, ledWest = 3;
-int secondLEDIndex, secondLEDNumber, i, theta;
+int theta;
 
 int lightUp[2];
 
