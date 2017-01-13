@@ -189,10 +189,20 @@ void loop()
     myIMU.roll  *= RAD_TO_DEG;
     */
     pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
+    
+    /*pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
     roll = atan2(-myIMU.ax, myIMU.az) * RAD_TO_DEG;
 
     Xh = myIMU.mx * cos(pitch*DEG_TO_RAD) + myIMU.my * sin(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD) - myIMU.mz * cos(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD);
     Yh = myIMU.my * cos(roll*DEG_TO_RAD) + myIMU.mz * sin(roll*DEG_TO_RAD);
+    yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
+    yaw = (360 - (int)yaw) % 360;
+    */
+    pitch = atan2(-myIMU.ax, sqrt(myIMU.ay*myIMU.ay + myIMU.az*myIMU.az)) * RAD_TO_DEG;
+    roll = atan2(myIMU.ay, myIMU.az) * RAD_TO_DEG;
+
+    Xh = -myIMU.my * cos(pitch*DEG_TO_RAD) - myIMU.mx * sin(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD) - myIMU.mz * cos(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD);
+    Yh = -myIMU.mx * cos(roll*DEG_TO_RAD) + myIMU.mz * sin(roll*DEG_TO_RAD);
     yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
     yaw = (360 - (int)yaw) % 360;
     Xh = myIMU.mx * cos(pitch*DEG_TO_RAD) + myIMU.my * sin(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD) + myIMU.mz * cos(roll*DEG_TO_RAD)*sin(pitch*DEG_TO_RAD);
@@ -356,9 +366,10 @@ void calibrateMagnetometerBias(float * dest1)
    // mag_max[0] = 516; mag_min[0] = -112;
    // mag_max[1] = 421; mag_min[1] = -98;
   //  mag_max[2] = -8; mag_min[2] = -575;
-     mag_max[0] = 493; mag_min[0] = -36;
-    mag_max[1] = 496; mag_min[1] = -51;
-    mag_max[2] = 172; mag_min[2] = -362;
+    
+    mag_max[0] = 493; mag_min[0] = -36;
+    mag_max[1] = 496;  mag_min[1] = -51;
+    mag_max[2] = 172;  mag_min[2] = -362;
     
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
