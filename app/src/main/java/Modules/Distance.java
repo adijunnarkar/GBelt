@@ -1,6 +1,8 @@
 package Modules;
 
-public class Distance {
+import java.io.Serializable;
+
+public class Distance implements Serializable {
     public String text;
     public int value;
 

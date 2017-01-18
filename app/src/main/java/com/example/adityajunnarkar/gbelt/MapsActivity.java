@@ -11,22 +11,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.text.Html;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -34,61 +27,50 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;;
-import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.Route;
-
+import Modules.ConnectedThread;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
-        SensorEventListener,
         DirectionFinderListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener,
+        Serializable {
 
-    private GoogleMap mMap;
+    GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
-    Location mLastLocation;
-    Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
     BluetoothAdapter mBluetoothAdapter;
 
-    private Compass compass;
-    private SensorManager sensorManager;
-    private Sensor gsensor;
-    private Sensor msensor;
-    float azimuth = 0;
+    ImageButton btnSearch;
+    ImageButton btnBus;
+    ImageButton btnWalk;
+    EditText etOrigin;
+    EditText etDestination;
 
-    private Button btnFindPath;
-    private EditText etOrigin;
-    private EditText etDestination;
-    private List<Marker> originMarkers = new ArrayList<>();
-    private List<Marker> destinationMarkers = new ArrayList<>();
-    private List<Polyline> polylinePaths = new ArrayList<>();
-    private ProgressDialog progressDialog;
+    ProgressDialog progressDialog;
 
-    private int mStep = 0;
-    private Route mRoute;
+    Route mRoute;
+    int mode = 1;
+    Map<Integer, String> transportationModes = ImmutableMap.of(
+            1, "walking",
+            2, "transit",
+            3, "driving"
+    );
 
     static BluetoothDevice BluetoothDeviceForHC05;
 
@@ -134,17 +116,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-        compass = new Compass(this);
-        sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
-        gsensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        msensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        sensorManager.registerListener(this, gsensor,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, msensor,
-                SensorManager.SENSOR_DELAY_NORMAL);
-
-        compass.start();
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -154,16 +125,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ((EditText) findViewById(R.id.etOrigin)).setText("339 King Street North, Waterloo");
         ((EditText) findViewById(R.id.etDestination)).setText("University of Waterloo");
 
-        btnFindPath = (Button) findViewById(R.id.btnFindPath);
+        btnSearch = (ImageButton) findViewById(R.id.search);
         etOrigin = (EditText) findViewById(R.id.etOrigin);
         etDestination = (EditText) findViewById(R.id.etDestination);
 
-        btnFindPath.setOnClickListener(new View.OnClickListener() {
+        btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendRequest();
             }
         });
+
+        // set the bus route to half opacity, default to walking
+        btnBus = ((ImageButton) findViewById(R.id.bus));
+        btnBus.getBackground().setAlpha(128);
+        btnWalk = ((ImageButton) findViewById(R.id.walk));
+        btnWalk.getBackground().setAlpha(255);
+
+        btnBus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnWalk.getBackground().setAlpha(128);
+                btnBus.getBackground().setAlpha(255);
+                mode = 2;
+            }
+        });
+
+        btnWalk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnBus.getBackground().setAlpha(128);
+                btnWalk.getBackground().setAlpha(255);
+                mode = 1;
+            }
+        });
+    }
+
+    private void createNavigationIntent(List<Route> routes) {
+        Intent intent = new Intent(this, NavigationActivity.class);
+
+        Bundle bundle = new Bundle();
+
+        bundle.putSerializable("routes", (Serializable) routes);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -334,61 +343,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         connectedThread.start();
     }
 
-    private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-
-        private final OutputStream mmOutStream;
-
-        public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
-
-            OutputStream tmpOut = null;
-
-            try {
-
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-
-            }
-            mmOutStream = tmpOut;
-        }
-
-        public void run() {
-         //   byte[] buffer = new byte[1024];  // buffer store for the stream
-         //   int bytes; // bytes returned from read()
-
-            // Keep listening to the InputStream until an exception occurs
-//            Toast.makeText(this, "Hi Hans sent", Toast.LENGTH_SHORT).show();
-            while (true) {
-//                write("#Hi Hans~".toString().getBytes());
-//
-//                try {
-//                    Thread.sleep(500);
-//                } catch(InterruptedException ex) {
-//                    Thread.currentThread().interrupt();
-//                }
-            }
-        }
-
-        /* Call this from the main activity to send data to HC 05 */
-        public void write(byte[] bytes) {
-            try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { }
-        }
-
-        /* Call this from the main activity to shutdown the connection */
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) { }
-        }
-    }
-
     private void sendRequest() {
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
-        String mode = "walking"; // by default, set to walking for now
 
         if (origin.isEmpty()) {
             Toast.makeText(this, "Please enter origin address!", Toast.LENGTH_SHORT).show();
@@ -400,7 +357,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         try {
-            new DirectionFinder(this, origin, destination, mode).execute();
+            new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -410,73 +367,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onDirectionFinderStart() {
         progressDialog = ProgressDialog.show(this, "Please wait.",
                 "Finding direction..!", true);
-
-        if (originMarkers != null) {
-            for (Marker marker : originMarkers) {
-                marker.remove();
-            }
-        }
-
-        if (destinationMarkers != null) {
-            for (Marker marker : destinationMarkers) {
-                marker.remove();
-            }
-        }
-
-        if (polylinePaths != null) {
-            for (Polyline polyline:polylinePaths ) {
-                polyline.remove();
-            }
-        }
     }
 
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
         progressDialog.dismiss();
-        polylinePaths = new ArrayList<>();
-        originMarkers = new ArrayList<>();
-        destinationMarkers = new ArrayList<>();
 
         for (Route route : routes) {
             mRoute = route;
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
-            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
-            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
-
-            // Display the first direction
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
-            } else {
-                ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(route.steps.get(mStep).htmlInstruction));
-            }
-
-            // Add Markers for origin and destination
-            originMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
-                    .title(route.startAddress)
-                    .position(route.startLocation)));
-            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
-                    .title(route.endAddress)
-                    .position(route.endLocation)));
-
-            // Create the polyline
-            PolylineOptions polylineOptions = new PolylineOptions().
-                    geodesic(true).
-                    color(Color.BLUE).
-                    width(10);
-
-            // Iterate through the route points to create the polyline
-            for (int i = 0; i < route.points.size(); i++)
-                polylineOptions.add(route.points.get(i));
-
-            polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
 
-        // transmit the desired theta to Arduino
         if (mRoute != null) {
-            transmitVector();
+            createNavigationIntent(routes);
         }
     }
 
@@ -536,82 +439,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
     public void onLocationChanged(Location location) {
 
-        mLastLocation = location;
-        if (mCurrLocationMarker != null) {
-            mCurrLocationMarker.remove();
-        }
-
-        //Place current location marker
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-//        MarkerOptions markerOptions = new MarkerOptions();
-//        markerOptions.position(latLng);
-//        markerOptions.title("Current Position");
-//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-//        mCurrLocationMarker = mMap.addMarker(markerOptions);
-
-        //move map camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-
-        if (mRoute != null) {
-//            Toast.makeText(this, "Current LatLong: " + latLng.latitude + ", " + latLng.longitude +
-//                    " Theshold: " + mRoute.steps.get(mStep).upperThreshold.latitude + ", " + mRoute.steps.get(mStep).upperThreshold.longitude
-//                    , Toast.LENGTH_LONG).show();
-            if (latLng.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && latLng.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && latLng.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && latLng.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
-                onNextStep();
-            }
-        }
-
-        //stop location updates - spent two hours trying to figure out why onLocationCalled wasn't being called
-        // ALL BECAAUSE OF THIS EVIL SNIPPET!!!
-//        if (mGoogleApiClient != null) {
-//            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-//        }
-    }
-
-    public void onNextStep() {
-        // TODO: only call this if it is not the last step
-        mStep++;
-        // Display the first direction
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
-        } else {
-            ((TextView) findViewById(R.id.instruction)).setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
-        }
-    }
-
-    public double calculateVector() {
-        double vector = 0;
-
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.latitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.longitude;
-
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.latitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.longitude;
-
-        // TODO: rethink this with the >= and <= stuff
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        }
-
-        return vector;
     }
 
     @Override
@@ -684,54 +516,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // You can add here other case statements according to your requirement.
         }
     }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        ;
-        //azimuth = compass.getAzimuth();
-        //((TextView) findViewById(R.id.azimuth)).setText("Azimuth: " + azimuth);
-
-        //if (mRoute != null) {
-            //transmitVector();
-        //}
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-        // hehe do nothing. it's complaining about not having this
-    }
-
-    public float calculateTheta() {
-        float theta = 0;
-
-        float theta1 = azimuth;
-        float theta2 = (float) calculateVector(); // actually might want to save vector as a global variable so we don't calculate it every time
-
-        if (theta1 > theta2) {
-            theta = 360 - (theta1-theta2);
-        } else {
-            theta = theta2 - theta1;
-        }
-
-        return theta;
-    }
-
-    public void transmitVector() {
-        float desired_theta = 0;
-
-        //float theta = calculateTheta();
-        //((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + theta);
-
-        desired_theta = (float) calculateVector();
-        ((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + desired_theta);
-        String message = "#" + desired_theta + "~";
-
-        byte[] vectorBytes = message.getBytes();
-
-        if (connectedThread != null) { // && connectedThread.isAlive()
-//            Toast.makeText(this, "Transmitting", Toast.LENGTH_LONG).show();
-            connectedThread.write(vectorBytes);
-        }
-    }
-
 }

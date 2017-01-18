@@ -1,6 +1,8 @@
 package Modules;
 
-public class Duration {
+import java.io.Serializable;
+
+public class Duration implements Serializable {
     public String text;
     public int value;
 

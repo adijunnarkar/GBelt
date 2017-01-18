@@ -2,14 +2,15 @@ package Modules;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Step {
+public class Step implements Serializable {
     public Distance distance; // x km
     public Duration duration; // x mins
-    public LatLng endLocation; // lat, lng
+    public Coordinate endLocation; // lat, lng
     public String htmlInstruction;// Turn xxx onto xxx Street
-    public LatLng lowerThreshold; // lat, lng
-    public LatLng startLocation; // lat, lng
-    public LatLng upperThreshold; // lat, lng
+    public Coordinate lowerThreshold; // lat, lng
+    public Coordinate startLocation; // lat, lng
+    public Coordinate upperThreshold; // lat, lng
 }

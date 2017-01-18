@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,7 +20,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DirectionFinder {
+public class DirectionFinder implements Serializable {
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
     private static final String GOOGLE_API_KEY = "AIzaSyBi7VkQHCcjkKUgBKKcapNDKjSEz-XsZwI";
     private DirectionFinderListener listener;
@@ -116,9 +117,9 @@ public class DirectionFinder {
 
                 step.distance = new Distance(jsonStepDistance.getString("text"), jsonStepDistance.getInt("value"));
                 step.duration = new Duration(jsonStepDuration.getString("text"), jsonStepDuration.getInt("value"));
-                step.endLocation = new LatLng(jsonStepEndLocation.getDouble("lat"), jsonStepEndLocation.getDouble("lng"));
+                step.endLocation = new Coordinate(jsonStepEndLocation.getDouble("lat"), jsonStepEndLocation.getDouble("lng"));
                 step.htmlInstruction = jsonStepHtmlInstruction;
-                step.startLocation = new LatLng(jsonStepStartLocation.getDouble("lat"), jsonStepStartLocation.getDouble("lng"));
+                step.startLocation = new Coordinate(jsonStepStartLocation.getDouble("lat"), jsonStepStartLocation.getDouble("lng"));
 
                 calculateThresholdLatLng(step);
 
@@ -129,8 +130,8 @@ public class DirectionFinder {
             route.duration = new Duration(jsonDuration.getString("text"), jsonDuration.getInt("value"));
             route.endAddress = jsonLeg.getString("end_address");
             route.startAddress = jsonLeg.getString("start_address");
-            route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
-            route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
+            route.startLocation = new Coordinate(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
+            route.endLocation = new Coordinate(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));
             route.steps = steps;
 
@@ -141,7 +142,7 @@ public class DirectionFinder {
     }
 
     private void calculateThresholdLatLng(Step step) {
-        LatLng latLng = step.endLocation;
+        Coordinate latLng = step.endLocation;
 
         // current threshold is +- 4 m away from current location
         double dx = 0.004; // km
@@ -155,17 +156,17 @@ public class DirectionFinder {
         double upperThresholdLat  = latLng.latitude  + (dy / r_earth) * (180 / Math.PI);
         double upperThresholdLong = latLng.longitude + (dx / r_earth) * (180 / Math.PI) / Math.cos(latLng.latitude * Math.PI/180);
 
-        LatLng lowerThreshold = new LatLng(lowerThresholdLat, lowerThresholdLong);
-        LatLng upperThreshold = new LatLng(upperThresholdLat, upperThresholdLong);
+        Coordinate lowerThreshold = new Coordinate(lowerThresholdLat, lowerThresholdLong);
+        Coordinate upperThreshold = new Coordinate(upperThresholdLat, upperThresholdLong);
 
         step.lowerThreshold = lowerThreshold;
         step.upperThreshold = upperThreshold;
     }
 
-    private List<LatLng> decodePolyLine(final String poly) {
+    private List<Coordinate> decodePolyLine(final String poly) {
         int len = poly.length();
         int index = 0;
-        List<LatLng> decoded = new ArrayList<LatLng>();
+        List<Coordinate> decoded = new ArrayList<Coordinate>();
         int lat = 0;
         int lng = 0;
 
@@ -191,7 +192,7 @@ public class DirectionFinder {
             int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
             lng += dlng;
 
-            decoded.add(new LatLng(
+            decoded.add(new Coordinate(
                     lat / 100000d, lng / 100000d
             ));
         }
