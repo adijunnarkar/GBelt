@@ -593,13 +593,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double vector = 0;
 
         // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.latitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.longitude;
+        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
+        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
 
         // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.latitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.longitude;
+        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
 
+        ((TextView) findViewById(R.id.azimuth)).setText("x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
         // TODO: rethink this with the >= and <= stuff
         if (x2 >= x1 && y2 >= y1 ) {
             vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
