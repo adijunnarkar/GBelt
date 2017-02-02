@@ -20,13 +20,15 @@ int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
 int magnetometer_connect_counter = 0;
 
-float pitch, yaw, roll, Xh, Yh, theta, thetaDesired;
+float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
 
 //Char used for reading in Serial characters
 char inByte = 0;
 
 bool startReadingData = false;
 bool newDirectionReady = false; // indicates when a new direction from phone is available
+
+static bool receiving_bluetooth = false; // set to true when we first receive info from bluetooth
 
 String ledToLightUp = "";
 String direction = "";
@@ -212,6 +214,7 @@ void loop()
 
   if (BTSerial.available() > 0)
   {
+    receiving_bluetooth = true;
     inByte = BTSerial.read();
     //Serial.println(inByte);
     if (inByte == '#')
@@ -229,69 +232,72 @@ void loop()
     }
   }
 
-  if (newDirectionReady)
-  {
-    turnAllLEDsOff();
+    if (newDirectionReady)
+    {
+        turnAllLEDsOff();
 
-    thetaDesired = direction.toInt();
-    Serial.println("Direction: " + direction);
-    Serial.println("Theta Desired: " + String(thetaDesired));
+        thetaDesired = direction.toInt();
+        Serial.println("Direction: " + direction);
+        Serial.println("Theta Desired: " + String(thetaDesired));
 
-    newDirectionReady = false;
-    direction = "";
-  }
+        newDirectionReady = false;
+        direction = "";
+    }
 
-  if (yaw > thetaDesired) {
-    theta = 360 - (yaw - thetaDesired);
-  }
-  else {
-    theta = thetaDesired - yaw;
-  }
 
-  if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledNorth, HIGH);
-  }
-  else if (inRange(theta, 10, 80)) // Northeast
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledNorth, HIGH);
-    digitalWrite(ledEast, HIGH);
-  }
-  else if (inRange(theta, 80, 100)) // East
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledEast, HIGH);
-  }
-  else if (inRange(theta, 100, 170)) // Southeast
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledSouth, HIGH);
-    digitalWrite(ledEast, HIGH);
-  }
-  else if (inRange(theta, 170, 190)) // South
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledSouth, HIGH);
-  }
-  else if (inRange(theta, 190, 260)) // Southwest
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledSouth, HIGH);
-    digitalWrite(ledWest, HIGH);
-  }
-  else if (inRange(theta, 260, 280)) // West
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledWest, HIGH);
-  }
-  else if (inRange(theta, 280, 350)) // Northwest
-  {
-    turnAllLEDsOff();
-    digitalWrite(ledNorth, HIGH);
-    digitalWrite(ledWest, HIGH);
-  }
+    if (yaw > thetaDesired) {
+        theta = 360 - (yaw - thetaDesired);
+    }
+    else {
+        theta = thetaDesired - yaw;
+    }
+
+    if (receiving_bluetooth) {
+        if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledNorth, HIGH);
+        }
+        else if (inRange(theta, 10, 80)) // Northeast
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledNorth, HIGH);
+            digitalWrite(ledEast, HIGH);
+        }
+        else if (inRange(theta, 80, 100)) // East
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledEast, HIGH);
+        }
+        else if (inRange(theta, 100, 170)) // Southeast
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledSouth, HIGH);
+            digitalWrite(ledEast, HIGH);
+        }
+        else if (inRange(theta, 170, 190)) // South
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledSouth, HIGH);
+        }
+        else if (inRange(theta, 190, 260)) // Southwest
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledSouth, HIGH);
+            digitalWrite(ledWest, HIGH);
+        }
+        else if (inRange(theta, 260, 280)) // West
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledWest, HIGH);
+        }
+        else if (inRange(theta, 280, 350)) // Northwest
+        {
+            turnAllLEDsOff();
+            digitalWrite(ledNorth, HIGH);
+            digitalWrite(ledWest, HIGH);
+        }
+    }
 
   if (SerialDebug)
   {
