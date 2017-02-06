@@ -26,7 +26,7 @@ public class DirectionFinder implements Serializable {
     private DirectionFinderListener listener;
     private String origin;
     private String destination;
-    private String mode; // setting this is walking by default for now
+    private String mode;
 
     public DirectionFinder(DirectionFinderListener listener, String origin, String destination, String mode) {
         this.listener = listener;
@@ -44,8 +44,11 @@ public class DirectionFinder implements Serializable {
         String urlOrigin = URLEncoder.encode(origin, "utf-8");
         String urlDestination = URLEncoder.encode(destination, "utf-8");
         String urlMode = URLEncoder.encode(mode, "utf-8");
+        Long tsLong = System.currentTimeMillis()/1000;
+        String departure_time = tsLong.toString();
 
-        return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY + "&mode=" + urlMode;
+        return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination +
+                "&departure_time=" + departure_time + "&key=" + GOOGLE_API_KEY + "&mode=" + urlMode;
     }
 
     private class DownloadRawData extends AsyncTask<String, Void, String> {

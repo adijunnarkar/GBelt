@@ -1,22 +1,29 @@
 package com.example.adityajunnarkar.gbelt;
 
-import android.*;
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.media.AudioManager;
 import android.os.Build;
+import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
 import android.content.Intent;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.Html;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,10 +40,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import Modules.Route;
 import Modules.ConnectedThread;
@@ -45,7 +56,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         Serializable,
-        LocationListener {
+        LocationListener,
+        OnInitListener {
+
+    Map<Integer, String> transportationModes = ImmutableMap.of(
+            1, "walking",
+            2, "transit",
+            3, "driving"
+    );
 
     private GoogleMap mMap;
     private List<Route> routes;
@@ -54,6 +72,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
     ConnectedThread connectedThread;
+
+    public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
+    public static final int TTS_DATA_CODE = 5678;
+
+    TextToSpeech mTts;
+    HashMap<String, String> myHashAlarm;
+    String utteranceId;
 
     private List<Marker> originMarkers = new ArrayList<>();
     private List<Marker> destinationMarkers = new ArrayList<>();
@@ -65,12 +90,16 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     private int mStep = 0;
     private Route mRoute;
+    private String mode;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_navigation);
+
+        startTextToSpeechActivity();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -83,11 +112,18 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         this.routes = (List<Route>)bundle.getSerializable("routes");
         this.connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+        this.mode = (String) bundle.getSerializable("mode");
+
+        // Show walking or transit icon
+        if (this.mode.equals(transportationModes.get(1))) // walking
+            ((ImageView) findViewById(R.id.bus)).setVisibility(View.GONE);
+        else if (this.mode.equals(transportationModes.get(2))) // transit
+            ((ImageView) findViewById(R.id.walk)).setVisibility(View.GONE);
 
 //        transmitVector();
 
+        // Add listener for directionIndicator
         directionIndicator = (ImageView) findViewById(R.id.directionIndicator);
-
         directionIndicator.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -95,8 +131,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
 
+        // Add listener for instruction
         instruction = (TextView) findViewById(R.id.instruction);
-
         instruction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,15 +140,15 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
 
-
+        // Add listener for Back Button
         mBtGoBack = (Button) findViewById(R.id.bt_go_back);
-
         mBtGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
             }
         });
+
     }
 
     private void drawMap() {
@@ -164,6 +200,21 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         }
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == TTS_DATA_CODE) {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                // success, create the TTS instance
+                mTts = new TextToSpeech(this, this);
+            } else {
+                // missing data, install it
+                Intent installIntent = new Intent();
+                installIntent.setAction(
+                        TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installIntent);
+            }
+        }
+    }
+
     @Override
     public void onLocationChanged(Location location) {
 
@@ -181,7 +232,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 //        mCurrLocationMarker = mMap.addMarker(markerOptions);
 
         //move map camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
         if (mRoute != null) {
@@ -262,15 +313,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         startActivity(intent);
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    public void startTextToSpeechActivity() {
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, TTS_DATA_CODE);
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -323,5 +371,29 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    @SuppressWarnings("deprecation") // haha haha
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
+
+                @Override
+                public void onUtteranceCompleted(String s) {
+                    utteranceId = s;
+                }
+            });
+
+            mTts.setLanguage(Locale.ENGLISH);
+
+            myHashAlarm = new HashMap<String, String>();
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+
+            // TODO: hmmmm...this is a bad place to put this, make this nicer
+            String speech = instruction.getText().toString();
+            // Text to speech first direction
+            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+        }
     }
 }

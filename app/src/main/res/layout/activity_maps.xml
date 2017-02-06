@@ -6,8 +6,7 @@
     android:background="@color/startBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:screenOrientation="portrait">
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +31,7 @@
             android:layout_marginRight="5dp"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:hint="Enter origin address"
+            android:hint="Your Location"
             android:id="@+id/etOrigin" />
     </LinearLayout>
 
@@ -41,11 +40,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
+        android:layout_marginRight="10dp"
         android:orientation="horizontal"
         >
         <TextView
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
@@ -63,14 +65,45 @@
             android:id="@+id/etDestination" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="10dp"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="Do I hear you?"
+            android:id="@+id/voice_command" />
+
+        <TextView
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="No"
+            android:id="@+id/voice_command_response" />
+    </LinearLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         >
         <ImageButton
             android:layout_width="40dp"
@@ -93,30 +126,24 @@
         <ImageButton
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:id="@+id/search"
+            android:src="@drawable/search"
+            android:scaleType="fitCenter"
+            android:background="@drawable/button"
+            android:padding="5dp"
+            android:layout_alignParentRight="true"/>
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:id="@+id/microphone"
             android:src="@drawable/microphone"
             android:scaleType="fitCenter"
             android:padding="5dp"
             android:background="@drawable/button"
-            android:layout_alignParentRight="true" />
+            android:layout_toLeftOf="@id/search" />
     </RelativeLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        >
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/search"
-            android:src="@drawable/search"
-            android:scaleType="fitCenter"
-            android:background="@drawable/button"
-            android:padding="5dp"/>
-    </LinearLayout>
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
