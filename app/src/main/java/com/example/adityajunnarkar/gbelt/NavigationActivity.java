@@ -281,12 +281,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         double vector = 0;
 
         // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.latitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.longitude;
+        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
+        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
 
         // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.latitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.longitude;
+        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
 
         // TODO: rethink this with the >= and <= stuff
         if (x2 >= x1 && y2 >= y1 ) {

@@ -152,9 +152,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBluetoothIntent, ENABLE_BT_REQUEST_CODE);
             } else {
-                Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
-                                "\n" + "Scanning for remote Bluetooth devices...",
-                        Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
+                                //"\n" + "Scanning for remote Bluetooth devices...",
+                        //Toast.LENGTH_SHORT).show();
 
                 // To discover remote Bluetooth devices
                 discoverDevices();
@@ -347,27 +347,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             // Bluetooth successfully enabled!
             if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(getApplicationContext(), "Ha! Bluetooth is now enabled." +
-                                "\n" + "Scanning for remote Bluetooth devices...",
-                        Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Ha! Bluetooth is now enabled." +
+                                //"\n" + "Scanning for remote Bluetooth devices...",
+                        //Toast.LENGTH_SHORT).show();
 
                 // To discover remote Bluetooth devices
                 discoverDevices();
 
             } else { // RESULT_CANCELED as user refused or failed to enable Bluetooth
-                Toast.makeText(getApplicationContext(), "Bluetooth is not enabled.",
-                        Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Bluetooth is not enabled.",
+                        //Toast.LENGTH_SHORT).show();
 
             }
         } else if (requestCode == DISCOVERABLE_BT_REQUEST_CODE){
 
             if (resultCode == DISCOVERABLE_DURATION){
-                Toast.makeText(getApplicationContext(), "Your device is now discoverable by other devices for " +
+/*                Toast.makeText(getApplicationContext(), "Your device is now discoverable by other devices for " +
                                 DISCOVERABLE_DURATION + " seconds",
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();*/
             } else {
-                Toast.makeText(getApplicationContext(), "Fail to enable discoverability on your device.",
-                        Toast.LENGTH_SHORT).show();
+/*                Toast.makeText(getApplicationContext(), "Fail to enable discoverability on your device.",
+                        Toast.LENGTH_SHORT).show();*/
             }
         }
 
@@ -415,11 +415,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void discoverDevices(){
         // To scan for remote Bluetooth devices
         if (mBluetoothAdapter.startDiscovery()) {
-            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
-                    Toast.LENGTH_SHORT).show();
+/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
+                    Toast.LENGTH_SHORT).show();*/
         } else {
-            Toast.makeText(getApplicationContext(), "Discovery failed to start.",
-                    Toast.LENGTH_SHORT).show();
+/*            Toast.makeText(getApplicationContext(), "Discovery failed to start.",
+                    Toast.LENGTH_SHORT).show();*/
         }
 
         // Register the BroadcastReceiver for ACTION_FOUND
@@ -456,8 +456,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // Initiate a connection request in a separate thread
                             connectingThread = new ConnectingThread(BluetoothDeviceForHC05);
                             connectingThread.start();
-                            Toast.makeText(getApplicationContext(), "Connecting Thread Started",
-                                    Toast.LENGTH_LONG).show();
+ /*                           Toast.makeText(getApplicationContext(), "Connecting Thread Started",
+                                    Toast.LENGTH_LONG).show();*/
                         }
                     }
                 }
@@ -597,8 +597,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             bluetoothSocket = temp;
             if(temp == null){
-                Toast.makeText(getApplicationContext(), "Null "+ bluetoothDevice.getName(),
-                        Toast.LENGTH_SHORT).show();
+/*                Toast.makeText(getApplicationContext(), "Null "+ bluetoothDevice.getName(),
+                        Toast.LENGTH_SHORT).show();*/
             }
         }
 
@@ -805,7 +805,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } else {
 
                     // Permission denied, Disable the functionality that depends on this permission.
-                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
                 return;
             }
