@@ -5,6 +5,6 @@
     <color name="colorAccent">#FF4081</color>
     <color name="white">#FFFFFF</color>
     <color name="startBackground">#1255b7</color>
-    <color name="navigationBackground">#c20a1c</color>
+    <color name="navigationBackground">#00bf2d</color>
     <color name="textBoxBackground">#e6edf8</color>
 </resources>

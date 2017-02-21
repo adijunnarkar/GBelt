@@ -1,0 +1,102 @@
+[
+    {
+        "outputFile": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/incremental/mergeDebugAndroidTestResources/merged.dir/values/values.xml",
+        "map": [
+            {
+                "to": {
+                    "startLine": 2,
+                    "startColumn": 4,
+                    "startOffset": 55,
+                    "endColumn": 50,
+                    "endOffset": 101
+                },
+                "from": {
+                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 2,
+                        "startColumn": 4,
+                        "startOffset": 55,
+                        "endColumn": 50,
+                        "endOffset": 101
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 3,
+                    "startColumn": 4,
+                    "startOffset": 106,
+                    "endColumn": 64,
+                    "endOffset": 166
+                },
+                "from": {
+                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 3,
+                        "startColumn": 4,
+                        "startOffset": 106,
+                        "endColumn": 64,
+                        "endOffset": 166
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 4,
+                    "startColumn": 4,
+                    "startOffset": 171,
+                    "endColumn": 48,
+                    "endOffset": 215
+                },
+                "from": {
+                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 4,
+                        "startColumn": 4,
+                        "startOffset": 171,
+                        "endColumn": 48,
+                        "endOffset": 215
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 5,
+                    "startColumn": 4,
+                    "startOffset": 220,
+                    "endColumn": 56,
+                    "endOffset": 272
+                },
+                "from": {
+                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 5,
+                        "startColumn": 4,
+                        "startOffset": 220,
+                        "endColumn": 56,
+                        "endOffset": 272
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 6,
+                    "startColumn": 4,
+                    "startOffset": 277,
+                    "endColumn": 52,
+                    "endOffset": 325
+                },
+                "from": {
+                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 6,
+                        "startColumn": 4,
+                        "startOffset": 277,
+                        "endColumn": 52,
+                        "endOffset": 325
+                    }
+                }
+            }
+        ]
+    }
+]

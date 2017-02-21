@@ -13,7 +13,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.AudioManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
@@ -24,10 +23,8 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -40,10 +37,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.vision.text.Text;
 import com.google.common.collect.ImmutableMap;
 
-import java.io.File;
 import java.io.IOException;;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -59,11 +54,8 @@ import Modules.DirectionFinderListener;
 import Modules.Route;
 import Modules.ConnectedThread;
 
-import edu.cmu.pocketsphinx.Assets;
-import edu.cmu.pocketsphinx.Hypothesis;
-import edu.cmu.pocketsphinx.RecognitionListener;
-import edu.cmu.pocketsphinx.SpeechRecognizer;
-import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
+import com.hamondigital.unlock.UnlockBar;
+import com.hamondigital.unlock.UnlockBar.OnUnlockListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         DirectionFinderListener,
@@ -71,9 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
         Serializable,
-        OnClickListener,
-        OnInitListener,
-        RecognitionListener {
+        OnInitListener {
 
     GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
@@ -90,38 +80,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     Route mRoute;
     Location mLastLocation;
-    public ImageButton speakButton;
+    ImageButton speakButton;
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
     String utteranceId;
 
+    UnlockBar unlock;
+
+    // Voice Recognition Request Codes
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     public static final int TTS_DATA_CODE = 5678;
 
-    int mode = 1;
-
-    Map<Integer, String> transportationModes = ImmutableMap.of(
+    public static final Map<Integer, String> transportationModes = ImmutableMap.of(
             1, "walking",
             2, "transit",
             3, "driving"
     );
 
+    int mode = 1; // Default mode to walking
+
     static BluetoothDevice BluetoothDeviceForHC05;
 
     static ConnectedThread connectedThread;
     static ConnectingThread connectingThread;
-
-    // Sphinx - Continuous Speech Recognition
-    private SpeechRecognizer recognizer;
-    /* Keyword we are looking for to activate menu */
-    private static final String KWS_SEARCH = "wakeup";
-    private static final String MENU_SEARCH = "menu";
-    private static final String KEYPHRASE = "april";
-    private static final String SET_DESTINATION = "set destination";
-    private static final String SET_MODE = "set transportation mode";
-    private static final String START_NAV = "start navigation";
-
 
     //Bluetooth Request Codes
     public static final int ENABLE_BT_REQUEST_CODE = 100;
@@ -169,31 +151,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         utteranceId = "";
 
+        // Retrieve layout element to start voice recognition
         speakButton = (ImageButton) findViewById(R.id.microphone);
-        speakButton.setOnClickListener(this);
 
-        findVoiceInputBtns();
+        // Attach listener to start voice recognition
+        speakButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startVoiceRecognitionActivity();
+            }
+        });
 
         startTextToSpeechActivity();
 
-        // get permission to record first
-        if (ContextCompat.checkSelfPermission(MapsActivity.this,
-                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    1);
-        }
-
-        runRecognizerSetup(); // Sphinx - Continuous Speech Recognition
-
-        // because i am too lazy to type it out
+        // because i am too lazy to type it out, remove later
         ((EditText) findViewById(R.id.etOrigin)).setText("Your Location");
         ((EditText) findViewById(R.id.etDestination)).setText("University of Waterloo");
 
+        // Retrieve form elements to start navigation
         btnSearch = (ImageButton) findViewById(R.id.search);
         etOrigin = (EditText) findViewById(R.id.etOrigin);
         etDestination = (EditText) findViewById(R.id.etDestination);
 
+        // Attach listener to start navigation
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -201,12 +181,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        // set the bus route to half opacity, default to walking
+        // Retrieve transit mode elements
+        // Set the bus route to half opacity & default to walking
         btnBus = ((ImageButton) findViewById(R.id.bus));
         btnBus.getBackground().setAlpha(128);
         btnWalk = ((ImageButton) findViewById(R.id.walk));
         btnWalk.getBackground().setAlpha(255);
 
+        // Attach listener to change transit mode to bus
         btnBus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -216,6 +198,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        // Attach listener to change transit mode to walking
         btnWalk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -224,77 +207,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mode = 1;
             }
         });
-    }
 
-    /* <------------------------------- Start Sphinx functions -------------------------------> */
+        /* -------------------- Slide-to-unlock START -------------------- */
+        // Retrieve layout elements
+        unlock = (UnlockBar) findViewById(R.id.unlock);
 
-    // Run Sphinx Continuous Voice Recognition Setup
-    private void runRecognizerSetup() {
-        // Recognizer initialization is a time-consuming and it involves IO,
-        // so we execute it in async task
-        new AsyncTask<Void, Void, Exception>() {
+        // Attach listener
+        unlock.setOnUnlockListener(new OnUnlockListener() {
             @Override
-            protected Exception doInBackground(Void... params) {
-                try {
-                    Assets assets = new Assets(MapsActivity.this);
-                    File assetDir = assets.syncAssets();
-                    setupRecognizer(assetDir);
-                } catch (IOException e) {
-                    return e;
-                }
-                return null;
+            public void onUnlock()
+            {
+                unlock.reset();
+                startVoiceMode(); // switch to voice mode => starts voice mode intent
             }
-
-            @Override
-            protected void onPostExecute(Exception result) {
-                if (result != null) {
-                    ((TextView) findViewById(R.id.voice_command_response))
-                            .setText("Failed to init recognizer " + result);
-                } else {
-                    switchSearch(KWS_SEARCH);
-                }
-            }
-        }.execute();
-    }
-
-    // Set up Sphinx Continuous Voice Recognition
-    private void setupRecognizer(File assetsDir) throws IOException {
-        // The recognizer can be configured to perform multiple searches
-        // of different kind and switch between them
-
-        recognizer = SpeechRecognizerSetup.defaultSetup()
-                .setAcousticModel(new File(assetsDir, "en-us-ptm"))
-                .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
-
-                .setRawLogDir(assetsDir) // To disable logging of raw audio comment out this call (takes a lot of space on the device)
-
-                .setKeywordThreshold(1e-45f) // Threshold to tune for keyphrase to balance between false alarms and misses
-
-                .setBoolean("-allphone_ci", true) // Use context-independent phonetic search, context-dependent is too slow for mobile
-
-                .getRecognizer();
-        recognizer.addListener(this);
-
-        /** In your application you might not need to add all those searches.
-         * They are added here for demonstration. You can leave just one.
-         */
-
-        // Create keyword-activation search.
-        recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
-
-        // Create menu-activation search.
-        File menuGrammar = new File(assetsDir, "menu.gram");
-        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
-    }
-
-    /* <------------------------------- End Sphinx functions -------------------------------> */
-
-    public void findVoiceInputBtns() {
-        speakButton = (ImageButton) findViewById(R.id.microphone);
-    }
-
-    public void informationMenu() {
-        startActivity(new Intent("android.intent.action.INFOSCREEN"));
+        });
+        /* -------------------- Slide-to-unlock END -------------------- */
     }
 
     private void createNavigationIntent(List<Route> routes) {
@@ -313,13 +240,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(intent);
     }
 
+    public void startVoiceMode() {
+        Intent intent = new Intent(this, VoiceModeActivity.class);
+        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+
+        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("activity", (Serializable) "Maps");
+        intent.putExtras(bundle);
+
+        String origin = etOrigin.getText().toString();
+        bundle.putSerializable("origin", (Serializable) origin);
+        intent.putExtras(bundle);
+
+        String destination = etDestination.getText().toString();
+        bundle.putSerializable("destination", (Serializable) destination);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
+    }
+
     @SuppressWarnings("deprecation") // haha haha
     public void startVoiceRecognitionActivity() {
-
-        // first stop Sphinx's recognizer
-        recognizer.cancel();
-        recognizer.shutdown();
-
         String promptLocation = "Enter destination";
         myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, promptLocation);
         mTts.speak(promptLocation, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
@@ -378,7 +324,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // could have heard
             ArrayList matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             ((EditText) findViewById(R.id.etDestination)).setText(matches.get(0).toString());
-//            mList.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, matches));
             // matches is the result of voice input. It is a list of what the
             // user possibly said.
             // Using an if statement for the keyword you want to use allows the
@@ -392,9 +337,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // if (matches.contains("keyword here") { startActivity(new
             // Intent("name.of.manifest.ACTIVITY")
 
-            if (matches.contains("information")) {
-                informationMenu();
-            }
         }
 
         if (requestCode == TTS_DATA_CODE) {
@@ -480,17 +422,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.unregisterReceiver(broadcastReceiver);
     }
 
-    @Override
-    public void onClick(View view) {
-        startVoiceRecognitionActivity();
-    }
-
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             mTts.setOnUtteranceCompletedListener(new OnUtteranceCompletedListener() {
-
                 @Override
                 public void onUtteranceCompleted(String s) {
                     utteranceId = s;
@@ -504,74 +440,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
     }
-
-    @Override
-    public void onBeginningOfSpeech() {
-
-    }
-
-    /* <---------------------------- Start Sphinx override functions ---------------------------> */
-    @Override
-    public void onEndOfSpeech() {
-    }
-
-    private void switchSearch(String searchName) {
-        recognizer.stop();
-
-        recognizer.startListening(searchName);
-    }
-
-    @Override
-    public void onPartialResult(Hypothesis hypothesis) {
-        if (hypothesis == null)
-            return;
-
-        String text = hypothesis.getHypstr();
-
-        // wake up
-        if (text.equals(KEYPHRASE)) {
-            Toast.makeText(getApplicationContext(), "Entering menu search",
-                    Toast.LENGTH_SHORT).show();
-            switchSearch(MENU_SEARCH);
-        } else if (text.equals(SET_DESTINATION)) {
-            startVoiceRecognitionActivity(); // cancel and shutdown are in this function already
-        } else if (text.equals(SET_MODE)) {
-            ((TextView) findViewById(R.id.voice_command_response)).setText("need to set transportation mode");
-        } else if (text.equals(START_NAV)) {
-            recognizer.shutdown();
-            sendDirectionRequest();
-        }
-    }
-
-    @Override
-    public void onResult(Hypothesis hypothesis) {
-        if (hypothesis == null)
-            return;
-
-        String text = hypothesis.getHypstr();
-
-        if (text.equals(SET_DESTINATION)) {
-            startVoiceRecognitionActivity(); // cancel and shutdown are in this function already
-        } else if (text.equals(SET_MODE)) {
-            recognizer.stop();
-            ((TextView) findViewById(R.id.voice_command_response)).setText("need to set transportation mode");
-        } else if (text.equals(START_NAV)) {
-            recognizer.stop();
-            recognizer.shutdown();
-            sendDirectionRequest();
-        }
-    }
-
-    @Override
-    public void onError(Exception e) {
-    }
-
-    @Override
-    public void onTimeout() {
-    }
-
-
-    /* <---------------------------- End Sphinx override functions ---------------------------> */
 
     /* @Override
        protected void onDestroy() {
@@ -641,6 +509,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         connectedThread.start();
     }
 
+    public void updateMap() {
+        // redraw map with new coordinates
+        LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+    }
+
     private void sendDirectionRequest() {
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
@@ -705,7 +579,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -731,8 +604,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
-            LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+            updateMap();
         }
     }
 
@@ -743,6 +615,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
+        updateMap();
     }
 
     @Override

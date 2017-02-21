@@ -1,157 +1,145 @@
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.adityajunnarkar.gbelt.MapsActivity"
-    android:background="@color/startBackground"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="5dp"
-        android:orientation="horizontal"
-        >
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="From"
-            android:id="@+id/from" />
-        <EditText
-            android:background="@color/textBoxBackground"
-            android:layout_width="match_parent"
-            android:layout_height="35dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:hint="Your Location"
-            android:id="@+id/etOrigin" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginRight="10dp"
-        android:orientation="horizontal"
-        >
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="To"
-            android:id="@+id/to" />
-        <EditText
-            android:background="@color/textBoxBackground"
-            android:layout_width="match_parent"
-            android:layout_height="35dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:hint="Enter destination address"
-            android:id="@+id/etDestination" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginRight="10dp"
-        android:orientation="horizontal"
-        >
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="Do I hear you?"
-            android:id="@+id/voice_command" />
-
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="No"
-            android:id="@+id/voice_command_response" />
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        >
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/walk"
-            android:src="@drawable/walk"
-            android:scaleType="fitCenter"
-            android:background="@drawable/left_button"
-            android:padding="5dp"
-            android:layout_alignParentLeft="true"/>
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/bus"
-            android:src="@drawable/bus"
-            android:scaleType="fitCenter"
-            android:background="@drawable/right_button"
-            android:padding="5dp"
-            android:layout_toRightOf="@id/walk" />
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/search"
-            android:src="@drawable/search"
-            android:scaleType="fitCenter"
-            android:background="@drawable/button"
-            android:padding="5dp"
-            android:layout_alignParentRight="true"/>
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:id="@+id/microphone"
-            android:src="@drawable/microphone"
-            android:scaleType="fitCenter"
-            android:padding="5dp"
-            android:background="@drawable/button"
-            android:layout_toLeftOf="@id/search" />
-    </RelativeLayout>
+    android:layout_height="match_parent">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.example.adityajunnarkar.gbelt.MapsActivity" />
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.adityajunnarkar.gbelt.MapsActivity" />
 
-</LinearLayout>
+    <RelativeLayout
+        android:id="@+id/form"
+        android:background="@color/startBackground"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/fromForm"
+            android:layout_alignParentTop="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:orientation="horizontal"
+            >
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="From"
+                android:id="@+id/from" />
+            <EditText
+                android:background="@color/textBoxBackground"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:hint="Your Location"
+                android:id="@+id/etOrigin" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/toForm"
+            android:layout_below="@+id/fromForm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="10dp"
+            android:orientation="horizontal"
+            >
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="To"
+                android:id="@+id/to" />
+            <EditText
+                android:background="@color/textBoxBackground"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:hint="Enter destination address"
+                android:id="@+id/etDestination" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/optionsForm"
+            android:layout_below="@+id/toForm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            >
+            <ImageButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/walk"
+                android:src="@drawable/walk"
+                android:scaleType="fitCenter"
+                android:background="@drawable/left_button"
+                android:padding="5dp"
+                android:layout_alignParentLeft="true"/>
+            <ImageButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/bus"
+                android:src="@drawable/bus"
+                android:scaleType="fitCenter"
+                android:background="@drawable/right_button"
+                android:padding="5dp"
+                android:layout_toRightOf="@id/walk" />
+            <ImageButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/search"
+                android:src="@drawable/search"
+                android:scaleType="fitCenter"
+                android:background="@drawable/button"
+                android:padding="5dp"
+                android:layout_alignParentRight="true"/>
+            <ImageButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:id="@+id/microphone"
+                android:src="@drawable/microphone"
+                android:scaleType="fitCenter"
+                android:padding="5dp"
+                android:background="@drawable/button"
+                android:layout_toLeftOf="@id/search" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <com.hamondigital.unlock.UnlockBar
+        android:id="@+id/unlock"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</RelativeLayout>

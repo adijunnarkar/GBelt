@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/res/merged/release/layout/unlock_test.xml",
+        "source": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/layout/unlock_test.xml"
+    },
+    {
+        "merged": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/res/merged/release/layout/unlock_main.xml",
+        "source": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/layout/unlock_main.xml"
+    }
+]

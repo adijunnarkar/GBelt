@@ -41,6 +41,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.common.collect.ImmutableMap;
+import com.hamondigital.unlock.UnlockBar;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -84,13 +85,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
-    private Button mBtGoBack;
     private ImageView directionIndicator;
     private TextView instruction;
 
     private int mStep = 0;
     private Route mRoute;
     private String mode;
+
+    UnlockBar unlock;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -140,15 +142,34 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
 
-        // Add listener for Back Button
-        mBtGoBack = (Button) findViewById(R.id.bt_go_back);
-        mBtGoBack.setOnClickListener(new View.OnClickListener() {
+        // Retrieve layout elements
+        unlock = (UnlockBar) findViewById(R.id.unlock);
+
+        // Attach listener
+        unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
             @Override
-            public void onClick(View view) {
-                finish();
+            public void onUnlock()
+            {
+                unlock.reset();
+                startVoiceMode(); // switch to voice mode => starts voice mode intent
             }
         });
+    }
 
+    public void startVoiceMode() {
+        Intent intent = new Intent(this, VoiceModeActivity.class);
+        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+
+        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("activity", (Serializable) "Navigation");
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("routes", (Serializable) routes);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
     }
 
     private void drawMap() {
@@ -225,20 +246,17 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         //Place current location marker
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
 //        MarkerOptions markerOptions = new MarkerOptions();
 //        markerOptions.position(latLng);
 //        markerOptions.title("Current Position");
 //        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
 //        mCurrLocationMarker = mMap.addMarker(markerOptions);
 
-        //move map camera
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
         if (mRoute != null) {
-//            Toast.makeText(this, "Current LatLong: " + latLng.latitude + ", " + latLng.longitude +
-//                    " Theshold: " + mRoute.steps.get(mStep).upperThreshold.latitude + ", " + mRoute.steps.get(mStep).upperThreshold.longitude
-//                    , Toast.LENGTH_LONG).show();
             if (latLng.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
                     && latLng.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
                     && latLng.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
@@ -246,12 +264,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 onNextStep();
             }
         }
-
-        //stop location updates - spent two hours trying to figure out why onLocationCalled wasn't being called
-        // ALL BECAAUSE OF THIS EVIL SNIPPET!!!
-//        if (mGoogleApiClient != null) {
-//            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-//        }
     }
 
     public void onNextStep() {
@@ -260,19 +272,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void transmitVector() {
-        float desired_theta = 0;
-
-        //float theta = calculateTheta();
-        //((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + theta);
-
-        desired_theta = (float) calculateVector();
-//        ((TextView) findViewById(R.id.beltVector)).setText("Belt Theta: " + desired_theta);
-        String message = "#" + desired_theta + "~";
+        double desired_theta = calculateVector();
+        String message = "#" + (float) desired_theta + "~";
 
         byte[] vectorBytes = message.getBytes();
 
         if (connectedThread != null) { // && connectedThread.isAlive()
-//            Toast.makeText(this, "Transmitting", Toast.LENGTH_LONG).show();
             connectedThread.write(vectorBytes);
         }
     }
@@ -288,7 +293,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         double x2 = mRoute.steps.get(mStep).endLocation.longitude;
         double y2 = mRoute.steps.get(mStep).endLocation.latitude;
 
-        // TODO: rethink this with the >= and <= stuff
         if (x2 >= x1 && y2 >= y1 ) {
             vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
         } else if (x2 > x1 && y2 < y1) {
@@ -392,6 +396,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
             // TODO: hmmmm...this is a bad place to put this, make this nicer
             String speech = instruction.getText().toString();
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
             // Text to speech first direction
             mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }

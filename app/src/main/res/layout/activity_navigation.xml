@@ -1,143 +1,10 @@
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.adityajunnarkar.gbelt.NavigationActivity"
-    android:background="@color/navigationBackground"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:screenOrientation="portrait">
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:weightSum="1">
-            <!--TODO: get direction arrows up left right etc. and add logic to show which-->
-        <ImageView
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_gravity="center_vertical"
-            android:id="@+id/directionIndicator"
-            android:src="@drawable/up_arrow"/>
-
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:textColor="@color/white"
-            android:id="@+id/instruction"
-            android:textSize="22sp"
-            android:layout_width="200dp"
-            android:layout_weight="0.87" />
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="90dp" >
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/transportation">
-                <ImageView
-                    android:layout_height="25dp"
-                    android:layout_width="25dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_gravity="top"
-                    android:id="@+id/walk"
-                    android:src="@drawable/walk"/>
-                <ImageView
-                    android:layout_height="25dp"
-                    android:layout_width="25dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_gravity="top"
-                    android:id="@+id/bus"
-                    android:src="@drawable/bus"/>
-
-            </RelativeLayout>
-
-            <ImageButton
-                android:id="@+id/microphone"
-                android:background="@drawable/button"
-                android:src="@drawable/microphone"
-                android:layout_height="40dp"
-                android:layout_width="40dp"
-                android:padding="5dp"
-                android:scaleType="fitCenter"
-                android:layout_below="@id/transportation" />
-        </RelativeLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_marginLeft="20dp"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:src="@drawable/ic_distance"/>
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:text="0 km"
-            android:id="@+id/tvDistance" />
-
-        <ImageView
-            android:layout_marginLeft="20dp"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:padding="5dp"
-            android:src="@drawable/ic_clock"/>
-        <TextView
-            android:layout_marginLeft="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:textColor="@color/white"
-            android:text="0 min"
-            android:id="@+id/tvDuration"
-            android:gravity="center" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:orientation="vertical"
-        >
-        <!--<TextView-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Azimuth:"-->
-            <!--android:id="@+id/azimuth" />-->
-
-        <!--<TextView-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Belt Vector:"-->
-            <!--android:id="@+id/beltVector" />-->
-        <Button
-            android:id="@+id/bt_go_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Go Back"/>
-    </LinearLayout>
+    android:layout_height="match_parent">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -147,4 +14,124 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.example.adityajunnarkar.gbelt.NavigationActivity" />
-</LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/form"
+        android:background="@color/navigationBackground"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/instructionInfo"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:weightSum="1">
+                <!--TODO: get direction arrows up left right etc. and add logic to show which-->
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/directionIndicator"
+                android:src="@drawable/up_arrow"/>
+
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textColor="@color/white"
+                android:id="@+id/instruction"
+                android:textSize="22sp"
+                android:layout_width="200dp"
+                android:layout_weight="0.87" />
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="90dp" >
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/transportation">
+                    <ImageView
+                        android:layout_height="25dp"
+                        android:layout_width="25dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_gravity="top"
+                        android:id="@+id/walk"
+                        android:src="@drawable/walk"/>
+                    <ImageView
+                        android:layout_height="25dp"
+                        android:layout_width="25dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_gravity="top"
+                        android:id="@+id/bus"
+                        android:src="@drawable/bus"/>
+
+                </RelativeLayout>
+
+                <ImageButton
+                    android:id="@+id/microphone"
+                    android:background="@drawable/button"
+                    android:src="@drawable/microphone"
+                    android:layout_height="40dp"
+                    android:layout_width="40dp"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    android:layout_below="@id/transportation" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tripInfo"
+            android:layout_below="@+id/instructionInfo"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_marginLeft="20dp"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/ic_distance"/>
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:text="0 km"
+                android:id="@+id/tvDistance" />
+
+            <ImageView
+                android:layout_marginLeft="20dp"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_clock"/>
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textColor="@color/white"
+                android:text="0 min"
+                android:id="@+id/tvDuration"
+                android:gravity="center" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <com.hamondigital.unlock.UnlockBar
+        android:id="@+id/unlock"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</RelativeLayout>

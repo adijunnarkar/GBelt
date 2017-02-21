@@ -21,9 +21,6 @@ android {
     sourceSets {
         main {
             res.srcDirs = ['src/main/res', 'src/main/res/drawable/']
-            jni.srcDirs = []
-            jniLibs.srcDir 'src/main/jniLibs'
-
         }
     }
 }
@@ -37,8 +34,7 @@ dependencies {
     compile 'com.google.android.gms:play-services:9.0.2'
     compile 'com.google.guava:guava:16.0.1'
     testCompile 'junit:junit:4.12'
-}
+    compile project(path: ':slideToUnlock')
+    compile 'com.mikhaellopez:circularprogressbar:1.1.1'
 
-ant.importBuild 'assets.xml'
-preBuild.dependsOn(list, checksum)
-clean.dependsOn(clean_assets)
+}
