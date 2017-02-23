@@ -27,10 +27,10 @@
             android:layout_alignParentTop="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
-            android:orientation="horizontal"
-            >
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp" >
+
             <TextView
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
@@ -38,17 +38,33 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:text="From"
-                android:id="@+id/from" />
-            <EditText
-                android:background="@color/textBoxBackground"
+                android:id="@+id/from"
+                android:layout_weight = "0"/>
+
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:hint="Your Location"
-                android:id="@+id/etOrigin" />
+                android:layout_height="wrap_content"
+                android:layout_weight = "1">
+                <EditText
+                    android:background="@color/textBoxBackground"
+                    android:hint="Your Location"
+                    android:id="@+id/etOrigin"
+                    android:layout_width="fill_parent"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp" />
+                <ImageView
+                    android:id="@+id/location"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/location"/>
+            </RelativeLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -59,9 +75,9 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:layout_marginRight="10dp"
-            android:orientation="horizontal"
             >
             <TextView
+                android:id="@+id/to"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
                 android:paddingLeft="5dp"
@@ -70,17 +86,31 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:text="To"
-                android:id="@+id/to" />
-            <EditText
-                android:background="@color/textBoxBackground"
+                android:layout_weight = "0"/>
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:hint="Enter destination address"
-                android:id="@+id/etDestination" />
+                android:layout_height="wrap_content"
+                android:layout_weight = "1">
+                <EditText
+                    android:background="@color/textBoxBackground"
+                    android:hint="Enter destination address"
+                    android:id="@+id/etDestination"
+                    android:layout_width="fill_parent"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp" />
+                <ImageView
+                    android:id="@+id/microphone"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/microphone"/>
+            </RelativeLayout>
         </LinearLayout>
 
         <RelativeLayout
@@ -121,17 +151,6 @@
                 android:background="@drawable/button"
                 android:padding="5dp"
                 android:layout_alignParentRight="true"/>
-            <ImageButton
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:id="@+id/microphone"
-                android:src="@drawable/microphone"
-                android:scaleType="fitCenter"
-                android:padding="5dp"
-                android:background="@drawable/button"
-                android:layout_toLeftOf="@id/search" />
         </RelativeLayout>
 
     </RelativeLayout>

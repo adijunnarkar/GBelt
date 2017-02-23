@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -80,11 +81,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     Route mRoute;
     Location mLastLocation;
-    ImageButton speakButton;
+    ImageView speakButton;
+    ImageView locationButton;
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId;
+    String utteranceId = "";
 
     UnlockBar unlock;
 
@@ -135,8 +137,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 startActivityForResult(enableBluetoothIntent, ENABLE_BT_REQUEST_CODE);
             } else {
                 //Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
-                                //"\n" + "Scanning for remote Bluetooth devices...",
-                        //Toast.LENGTH_SHORT).show();
+                //"\n" + "Scanning for remote Bluetooth devices...",
+                //Toast.LENGTH_SHORT).show();
 
                 // To discover remote Bluetooth devices
                 discoverDevices();
@@ -149,39 +151,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        utteranceId = "";
-
-        // Retrieve layout element to start voice recognition
-        speakButton = (ImageButton) findViewById(R.id.microphone);
-
-        // Attach listener to start voice recognition
-        speakButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVoiceRecognitionActivity();
-            }
-        });
-
         startTextToSpeechActivity();
+
+        // Retrieve form elements for later use
+        etOrigin = (EditText) findViewById(R.id.etOrigin);
+        etDestination = (EditText) findViewById(R.id.etDestination);
+
+        setUpVoiceRecognitionListener();
+
+        setUpCurrentLocationListener();
+
+        setUpStartNavigationListener();
+
+        setUpTransitModeListeners();
+
+        setUpUnlockListener();
 
         // because i am too lazy to type it out, remove later
         ((EditText) findViewById(R.id.etOrigin)).setText("Your Location");
         ((EditText) findViewById(R.id.etDestination)).setText("University of Waterloo");
+    }
 
-        // Retrieve form elements to start navigation
-        btnSearch = (ImageButton) findViewById(R.id.search);
-        etOrigin = (EditText) findViewById(R.id.etOrigin);
-        etDestination = (EditText) findViewById(R.id.etDestination);
+    private void setUpUnlockListener() {
+        unlock = (UnlockBar) findViewById(R.id.unlock);
 
-        // Attach listener to start navigation
-        btnSearch.setOnClickListener(new View.OnClickListener() {
+        unlock.setOnUnlockListener(new OnUnlockListener() {
             @Override
-            public void onClick(View v) {
-                sendDirectionRequest();
+            public void onUnlock()
+            {
+                unlock.reset();
+                startVoiceMode(); // switch to voice mode => starts voice mode intent
             }
         });
+    }
 
-        // Retrieve transit mode elements
+    private void setUpTransitModeListeners() {
         // Set the bus route to half opacity & default to walking
         btnBus = ((ImageButton) findViewById(R.id.bus));
         btnBus.getBackground().setAlpha(128);
@@ -207,24 +211,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mode = 1;
             }
         });
+    }
 
-        /* -------------------- Slide-to-unlock START -------------------- */
-        // Retrieve layout elements
-        unlock = (UnlockBar) findViewById(R.id.unlock);
+    private void setUpStartNavigationListener() {
+        btnSearch = (ImageButton) findViewById(R.id.search);
 
-        // Attach listener
-        unlock.setOnUnlockListener(new OnUnlockListener() {
+        btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onUnlock()
-            {
-                unlock.reset();
-                startVoiceMode(); // switch to voice mode => starts voice mode intent
+            public void onClick(View v) {
+                sendDirectionRequest();
             }
         });
-        /* -------------------- Slide-to-unlock END -------------------- */
+    }
+
+    private void setUpCurrentLocationListener() {
+        locationButton = (ImageView) findViewById(R.id.location);
+
+        locationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etOrigin.setText("Your Location");
+            }
+        });
+    }
+
+    private void setUpVoiceRecognitionListener() {
+        speakButton = (ImageView) findViewById(R.id.microphone);
+
+        speakButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startVoiceRecognitionActivity();
+            }
+        });
     }
 
     private void createNavigationIntent(List<Route> routes) {
+        destroyTts();
+
         Intent intent = new Intent(this, NavigationActivity.class);
         Bundle bundle = new Bundle();
 
@@ -241,6 +265,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void startVoiceMode() {
+        destroyTts();
+
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
 
@@ -262,6 +288,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         startActivity(intent);
+    }
+
+    private void destroyTts() {
+        if(mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+        }
     }
 
     @SuppressWarnings("deprecation") // haha haha
@@ -294,15 +327,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Bluetooth successfully enabled!
             if (resultCode == Activity.RESULT_OK) {
                 //Toast.makeText(getApplicationContext(), "Ha! Bluetooth is now enabled." +
-                                //"\n" + "Scanning for remote Bluetooth devices...",
-                        //Toast.LENGTH_SHORT).show();
+                //"\n" + "Scanning for remote Bluetooth devices...",
+                //Toast.LENGTH_SHORT).show();
 
                 // To discover remote Bluetooth devices
                 discoverDevices();
 
             } else { // RESULT_CANCELED as user refused or failed to enable Bluetooth
                 //Toast.makeText(getApplicationContext(), "Bluetooth is not enabled.",
-                        //Toast.LENGTH_SHORT).show();
+                //Toast.LENGTH_SHORT).show();
 
             }
         } else if (requestCode == DISCOVERABLE_BT_REQUEST_CODE){
@@ -323,7 +356,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Fill the list view with the strings the recognizer thought it
             // could have heard
             ArrayList matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            ((EditText) findViewById(R.id.etDestination)).setText(matches.get(0).toString());
+            etDestination.setText(matches.get(0).toString());
             // matches is the result of voice input. It is a list of what the
             // user possibly said.
             // Using an if statement for the keyword you want to use allows the
@@ -342,7 +375,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (requestCode == TTS_DATA_CODE) {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                 // success, create the TTS instance
-                mTts = new TextToSpeech(this, this);
+                if (mTts == null) {
+                    mTts = new TextToSpeech(this, this);
+                }
             } else {
                 // missing data, install it
                 Intent installIntent = new Intent();
@@ -414,7 +449,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         this.registerReceiver(broadcastReceiver, filter);
 
-      }
+    }
 
     @Override
     protected void onPause() {
@@ -441,13 +476,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    /* @Override
-       protected void onDestroy() {
-          super.onDestroy();
-          this.unregisterReceiver(broadcastReceiver);
-
-       }
-   */
     private class ConnectingThread extends Thread {
         private final BluetoothSocket bluetoothSocket;
         private final BluetoothDevice bluetoothDevice;
