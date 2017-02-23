@@ -196,12 +196,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
 
             // Add Markers for origin and destination
-            originMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
-                    .title(route.startAddress)
-                    .position(startLocation)));
+//            originMarkers.add(mMap.addMarker(new MarkerOptions()
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
+//                    .title(route.startAddress)
+//                    .position(startLocation)));
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
                     .title(route.endAddress)
                     .position(endLocation)));
 

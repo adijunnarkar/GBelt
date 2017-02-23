@@ -282,12 +282,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             updateInstruction();
 
             // Add Markers for origin and destination
-            originMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
-                    .title(route.startAddress)
-                    .position(startLocation)));
+//            originMarkers.add(mMap.addMarker(new MarkerOptions()
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
+//                    .title(route.startAddress)
+//                    .position(startLocation)));
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
                     .title(route.endAddress)
                     .position(endLocation)));
 
@@ -323,8 +323,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void tts(String speech) {
-        myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
-        mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+        if (myHashAlarm != null) {
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
+            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+        }
     }
 
     public void transmitVector() {
@@ -400,6 +402,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now");
         startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+    }
+
+    public void onBackPressed() {
+        // Override the onBackPressed() function: do nothing on back key
+        // because we do not want to go back to Maps or Navigation Mode
+        return;
     }
 
     @Override
