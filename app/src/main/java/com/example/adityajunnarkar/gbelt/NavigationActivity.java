@@ -1,13 +1,11 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
-import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
@@ -16,14 +14,11 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.Button;
 import android.view.View;
 import android.content.Intent;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.Html;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -81,16 +76,18 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     HashMap<String, String> myHashAlarm;
     String utteranceId;
 
-    private List<Marker> originMarkers = new ArrayList<>();
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
     private ImageView directionIndicator;
     private TextView instruction;
 
-    private int mStep = 0;
+    private int mStep;
     private Route mRoute;
-    private String mode;
+    private int mode;
+
+    String origin;
+    String destination;
 
     UnlockBar unlock;
 
@@ -108,23 +105,30 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // grab data from MapsActivity
+        // grab data from MapsActivity and VoiceModeActivity
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
 
-        this.routes = (List<Route>)bundle.getSerializable("routes");
-        this.connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
-        this.mode = (String) bundle.getSerializable("mode");
+        routes = (List<Route>)bundle.getSerializable("routes");
+        connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+        mode = (int) bundle.getSerializable("mode");
+        origin = (String) bundle.getSerializable("origin");
+        destination = (String) bundle.getSerializable("destination");
+        mStep = (int) bundle.getSerializable("step");
 
         // Show walking or transit icon
-        if (this.mode.equals(transportationModes.get(1))) // walking
+        if (mode == 1) { // walking
             ((ImageView) findViewById(R.id.bus)).setVisibility(View.GONE);
-        else if (this.mode.equals(transportationModes.get(2))) // transit
+        } else if (mode == 2) { // transit
             ((ImageView) findViewById(R.id.walk)).setVisibility(View.GONE);
+        }
 
-//        transmitVector();
+        setUpDirectionsListener();
 
-        // Add listener for directionIndicator
+        setUpUnlockListener();
+    }
+
+    private void setUpDirectionsListener() {
         directionIndicator = (ImageView) findViewById(R.id.directionIndicator);
         directionIndicator.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,7 +137,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
 
-        // Add listener for instruction
         instruction = (TextView) findViewById(R.id.instruction);
         instruction.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,11 +144,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 createDirectionsActivity();
             }
         });
+    }
 
-        // Retrieve layout elements
+    private void setUpUnlockListener() {
         unlock = (UnlockBar) findViewById(R.id.unlock);
 
-        // Attach listener
         unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
             @Override
             public void onUnlock()
@@ -157,6 +160,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void startVoiceMode() {
+        destroyTts();
+
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
 
@@ -169,12 +174,46 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         bundle.putSerializable("routes", (Serializable) routes);
         intent.putExtras(bundle);
 
+        bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("step", (Serializable) mStep);
+        intent.putExtras(bundle);
+
         startActivity(intent);
+    }
+
+    public void onBackPressed() {
+        destroyTts();
+
+        // should only ever go back to Maps Activity even if it returned from voice mode
+        Intent intent = new Intent(this, MapsActivity.class);
+        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+
+        bundle.putSerializable("origin", (Serializable) origin);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("destination", (Serializable) destination);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
+    }
+
+    private void destroyTts() {
+        if(mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+        }
     }
 
     private void drawMap() {
         polylinePaths = new ArrayList<>();
-        originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
         for (Route route : routes) {
@@ -184,22 +223,22 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             // but the map only takes LatLng
             LatLng startLocation = new LatLng(route.startLocation.latitude, route.startLocation.longitude);
             LatLng endLocation = new LatLng(route.endLocation.latitude, route.endLocation.longitude);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
+
+            if (mStep == 0) { // first step
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
+            } else { // not first step
+                LatLng currLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
+            }
+
+
             ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
             ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
 
-            // Display the first direction
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                (instruction).setText(Html.fromHtml(route.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
-            } else {
-                (instruction).setText(Html.fromHtml(route.steps.get(mStep).htmlInstruction));
-            }
+            updateInstruction();
+            transmitVector();
 
             // Add Markers for origin and destination
-//            originMarkers.add(mMap.addMarker(new MarkerOptions()
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
-//                    .title(route.startAddress)
-//                    .position(startLocation)));
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
                     .title(route.endAddress)
@@ -218,6 +257,15 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+    }
+
+    private void updateInstruction() {
+        // Display the first direction
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
+        } else {
+            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
         }
     }
 
@@ -269,17 +317,21 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     public void onNextStep() {
         // TODO: only call this if it is not the last step
         mStep++;
+        updateInstruction();
+        tts(instruction.getText().toString());
+        transmitVector();
     }
 
     public void transmitVector() {
-        double desired_theta = calculateVector();
-        String message = "#" + (float) desired_theta + "~";
-
-        byte[] vectorBytes = message.getBytes();
-
-        if (connectedThread != null) { // && connectedThread.isAlive()
-            connectedThread.write(vectorBytes);
-        }
+        // uncomment when we actually test for reals
+//        double desired_theta = calculateVector();
+//        String message = "#" + (float) desired_theta + "~";
+//
+//        byte[] vectorBytes = message.getBytes();
+//
+//        if (connectedThread != null) { // && connectedThread.isAlive()
+//            connectedThread.write(vectorBytes);
+//        }
     }
 
     public double calculateVector() {
@@ -307,6 +359,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void createDirectionsActivity() {
+        destroyTts();
         Intent intent = new Intent(this, DirectionsActivity.class);
 
         Bundle bundle = new Bundle();
@@ -321,6 +374,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
         startActivityForResult(checkIntent, TTS_DATA_CODE);
+    }
+
+    public void tts(String speech) {
+        if (myHashAlarm != null) {
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
+            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+        }
     }
 
     @Override
@@ -395,10 +455,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
 
             // TODO: hmmmm...this is a bad place to put this, make this nicer
-            String speech = instruction.getText().toString();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
-            // Text to speech first direction
-            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            tts(instruction.getText().toString());
         }
     }
 }

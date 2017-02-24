@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-public class ConnectedThread extends Thread implements Serializable {
+public class ConnectedThread extends Thread implements Runnable,
+        Serializable {
     private final BluetoothSocket mmSocket;
 
     private final OutputStream mmOutStream;

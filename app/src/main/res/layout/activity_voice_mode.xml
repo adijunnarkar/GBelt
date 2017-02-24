@@ -70,49 +70,63 @@
                 android:text="Hold to activate voice command." />
 
         </RelativeLayout>
+    </RelativeLayout>
 
-        <RelativeLayout
-            android:layout_centerInParent="true"
-            android:layout_alignParentBottom="true"
+    <com.hamondigital.unlock.UnlockBar
+        android:id="@+id/unlock"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_centerInParent="true"
+        android:layout_above="@+id/unlock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp">
+        <TextView
+            android:id="@+id/activity"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp">
-            <TextView
-                android:id="@+id/activity"
-                android:gravity="center"
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white" />
+            android:textColor="@color/white" />
 
-            <TextView
-                android:id="@+id/mode"
-                android:gravity="center"
-                android:layout_below="@+id/activity"
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white" />
+        <TextView
+            android:id="@+id/mode"
+            android:gravity="center"
+            android:layout_below="@+id/activity"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white" />
 
-            <TextView
-                android:id="@+id/origin"
-                android:gravity="center"
-                android:layout_below="@+id/mode"
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white" />
+        <TextView
+            android:id="@+id/origin"
+            android:gravity="center"
+            android:layout_below="@+id/mode"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white" />
 
-            <TextView
-                android:id="@+id/destination"
-                android:gravity="center"
-                android:layout_below="@+id/origin"
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white" />
+        <TextView
+            android:id="@+id/destination"
+            android:gravity="center"
+            android:layout_below="@+id/origin"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white" />
 
-        </RelativeLayout>
+        <TextView
+            android:id="@+id/matches"
+            android:gravity="center"
+            android:layout_below="@+id/destination"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white" />
     </RelativeLayout>
 </RelativeLayout>

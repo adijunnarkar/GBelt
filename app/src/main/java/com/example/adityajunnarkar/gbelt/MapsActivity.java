@@ -157,6 +157,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         etOrigin = (EditText) findViewById(R.id.etOrigin);
         etDestination = (EditText) findViewById(R.id.etDestination);
 
+        retrieveData();
+
         setUpVoiceRecognitionListener();
 
         setUpCurrentLocationListener();
@@ -170,6 +172,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // because i am too lazy to type it out, remove later
         ((EditText) findViewById(R.id.etOrigin)).setText("Your Location");
         ((EditText) findViewById(R.id.etDestination)).setText("University of Waterloo");
+    }
+
+    public void retrieveData() {
+        // grab data
+        Intent intent = this.getIntent();
+        Bundle bundle = intent.getExtras();
+
+        if (bundle != null) {
+            if (bundle.containsKey("origin")) {
+                etOrigin.setText((String) bundle.getSerializable("origin"));
+            }
+
+            if (bundle.containsKey("destination")) {
+                etDestination.setText((String) bundle.getSerializable("destination"));
+            }
+
+            if (bundle.containsKey("mode")) {
+                mode = (int) bundle.getSerializable("mode");
+            }
+
+            if (bundle.containsKey("connectedThread")) {
+                connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+            }
+        }
     }
 
     private void setUpUnlockListener() {
@@ -258,7 +284,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bundle.putSerializable("connectedThread", (Serializable) connectedThread);
         intent.putExtras(bundle);
 
-        bundle.putSerializable("mode", (Serializable) transportationModes.get(mode));
+        bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("step", (Serializable) 0);
+        intent.putExtras(bundle);
+
+        String origin = etOrigin.getText().toString();
+        bundle.putSerializable("origin", (Serializable) origin);
+        intent.putExtras(bundle);
+
+        String destination = etDestination.getText().toString();
+        bundle.putSerializable("destination", (Serializable) destination);
         intent.putExtras(bundle);
 
         startActivity(intent);

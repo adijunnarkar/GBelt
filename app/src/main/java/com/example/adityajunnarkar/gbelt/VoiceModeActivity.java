@@ -9,7 +9,9 @@ import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +21,7 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -37,9 +40,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.vision.text.Text;
 import com.google.common.collect.ImmutableMap;
+import com.hamondigital.unlock.UnlockBar;
 import com.mikhaellopez.circularprogressbar.CircularProgressBar;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,9 +63,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        TextToSpeech.OnInitListener {
+        TextToSpeech.OnInitListener,
+        RecognitionListener,
+        Serializable {
 
-    public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     public static final int TTS_DATA_CODE = 5678;
 
     public static final Map<Integer, String> transportationModes = ImmutableMap.of(
@@ -81,6 +88,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     RelativeLayout activity;
     boolean mBooleanIsPressed;
     CircularProgressBar circularProgressBar;
+    UnlockBar unlock;
 
     ConnectedThread connectedThread;
 
@@ -96,8 +104,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     Route mRoute;
     int mStep = 0;
 
+    int attemptNumber = 1;
+    int maxAttempts = 2;
+
     // Drawing map
-    private List<Marker> originMarkers = new ArrayList<>();
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
@@ -110,6 +120,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     int animationDuration = 300; // 100ms = 0.1s
     int resetAnimationDuration = 2000; // reset slowly
 
+    private SpeechRecognizer speech = null;
+    private Intent recognizerIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,24 +133,26 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
 
-        this.activityMode = (String) bundle.getSerializable("activity");
+        activityMode = (String) bundle.getSerializable("activity");
 
-        if (this.activityMode.equals("Maps")) {
+        if (activityMode.equals("Maps")) {
             // grab data from MapsActivity
-            this.connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
-            this.activityMode = (String) bundle.getSerializable("activity");
-            this.origin = (String) bundle.getSerializable("origin");
-            this.destination = (String) bundle.getSerializable("destination");
-            this.mode = (int) bundle.getSerializable("mode");
+            connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+            activityMode = (String) bundle.getSerializable("activity");
+            origin = (String) bundle.getSerializable("origin");
+            destination = (String) bundle.getSerializable("destination");
+            mode = (int) bundle.getSerializable("mode");
 
             ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
             ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
             ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
-        } else if (this.activityMode.equals("Navigation")) {
+        } else if (activityMode.equals("Navigation")) {
             // grab data from NavigationActivity
-            this.connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
-            this.mRoutes = (List<Route>)bundle.getSerializable("routes");
+            connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+            mRoutes = (List<Route>)bundle.getSerializable("routes");
+            mode = (int) bundle.getSerializable("mode");
+            mStep = (int) bundle.getSerializable("step");
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -148,13 +163,21 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         startTextToSpeechActivity();
 
-        // Find layout elements
+        // Find layout elements for future use
         instruction = ((TextView) findViewById(R.id.instruction));
 
         // Find circular progress bar and set to 0
         circularProgressBar = (CircularProgressBar)findViewById(R.id.progressBar);
         circularProgressBar.setProgressWithAnimation(0, animationDuration);
 
+        adjustUnlockBar();
+
+        setUpTouchAndHoldTimer();
+
+        setUpUnlockListener();
+    }
+
+    private void setUpTouchAndHoldTimer() {
         // Add listener for entire activity screen
         activity = (RelativeLayout) findViewById(R.id.mainContent);
 
@@ -206,50 +229,101 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         });
     }
 
+    private void adjustUnlockBar() {
+        // Right now we use the slideToUnlock library for the slider
+        // But that has been configured for anything to voice mode but not vice versa
+        // So we need to swap the images but there we duplicate the images in app and the
+        // SlideToUnlock library
+        // TODO: this might be ugly, but set slide to unlock to only use the unlock_thumb and everytime we use it in our app, we have to set the image resource
+        TextView textLabel = (TextView) findViewById(R.id.text_label);
+        textLabel.setText("Start Touch-Screen Mode");
+        textLabel.setTextSize(15);
+        ((ImageView) findViewById(R.id.locked)).setImageResource(R.drawable.unlock_right);
+        ((ImageView) findViewById(R.id.unlocked)).setImageResource(R.drawable.unlock_left);
+    }
+
+    private void setUpUnlockListener() {
+        unlock = (UnlockBar) findViewById(R.id.unlock);
+
+        unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
+            @Override
+            public void onUnlock()
+            {
+                unlock.reset();
+
+                // return to maps or navigation activity
+                if (activityMode.equals("Maps")) {
+                    startMaps();
+                } else if (activityMode.equals("Navigation")) {
+                    startNavigation();
+                }
+            }
+        });
+    }
+
+    public void startMaps() {
+        destroyTts();
+
+        Intent intent = new Intent(this, MapsActivity.class);
+        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+
+        bundle.putSerializable("origin", (Serializable) origin);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("destination", (Serializable) destination);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
+    }
+
+    public void startNavigation() {
+        destroyTts();
+
+        Intent intent = new Intent(this, NavigationActivity.class);
+        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+
+        bundle.putSerializable("routes", (Serializable) mRoutes);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("origin", (Serializable) origin);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("destination", (Serializable) destination);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("step", (Serializable) mStep);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
+    }
+
     public void startTextToSpeechActivity() {
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
         startActivityForResult(checkIntent, TTS_DATA_CODE);
     }
 
+    private void destroyTts() {
+        if(mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+        }
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == VOICE_RECOGNITION_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // Fill the list view with the strings the recognizer thought it
-                // could have heard
-                ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
-                String match = matches.get(0); // best match from the matches
-
-                if (activityMode.equals("Maps")) {
-                    if (match.contains("destination")) {
-                        // expecting 'Set destination to ____'
-                        String[] phrase = match.split(" to ");
-                        destination = phrase[1];
-                        ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
-                    } else if (match.contains("walking")) {
-                        // expecting 'Set to walking'
-                        mode = 1;
-                        ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
-                    } else if (match.contains("public transit")) {
-                        // expecting 'Set to public transit'
-                        mode = 2;
-                        ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
-                    } else if (match.contains("navigation")) {
-                        // expecting 'Start navigation'
-                        sendDirectionRequest();
-                    }
-                } else if (activityMode.equals("Navigation")){
-                    if (match.contains("repeat")) {
-                        // expecting 'repeat direction/instruction'
-                        tts(instruction.getText().toString());
-                    }
-                }
-
-            }
-        }
 
         if (requestCode == TTS_DATA_CODE) {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
@@ -267,7 +341,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     private void drawMap() {
         polylinePaths = new ArrayList<>();
-        originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
         for (Route route : mRoutes) {
@@ -280,12 +353,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
 
             updateInstruction();
+            tts(instruction.getText().toString());
+            transmitVector();
 
-            // Add Markers for origin and destination
-//            originMarkers.add(mMap.addMarker(new MarkerOptions()
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
-//                    .title(route.startAddress)
-//                    .position(startLocation)));
+            // Add Marker for destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
                     .title(route.endAddress)
@@ -313,13 +384,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         } else {
             instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
         }
-
-        tts(instruction.getText().toString());
     }
 
     private void onNextStep() {
+        // TODO: only call this if it is not the last step
         mStep++;
         updateInstruction();
+        tts(instruction.getText().toString());
+        transmitVector();
     }
 
     public void tts(String speech) {
@@ -330,14 +402,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void transmitVector() {
-        double desired_theta = calculateVector();
-        String message = "#" + (float) desired_theta + "~";
-
-        byte[] vectorBytes = message.getBytes();
-
-        if (connectedThread != null) { // && connectedThread.isAlive()
-            connectedThread.write(vectorBytes);
-        }
+        // uncomment when we actually test for reals
+//        double desired_theta = calculateVector();
+//        String message = "#" + (float) desired_theta + "~";
+//
+//        byte[] vectorBytes = message.getBytes();
+//
+//        if (connectedThread != null) { // && connectedThread.isAlive()
+//            connectedThread.write(vectorBytes);
+//        }
     }
 
     public double calculateVector() {
@@ -397,11 +470,17 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     public void startVoiceRecognitionActivity() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now");
-        startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+        attemptNumber = 1; // reset attempt number
+
+        speech = SpeechRecognizer.createSpeechRecognizer(this);
+        speech.setRecognitionListener(this);
+        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,"en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,this.getPackageName());
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 4000);
+        speech.startListening(recognizerIntent);
     }
 
     public void onBackPressed() {
@@ -522,6 +601,117 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             tts("Voice Mode Activated");
         }
+
+    }
+
+    @Override
+    public void onReadyForSpeech(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onBeginningOfSpeech() {
+
+    }
+
+    @Override
+    public void onRmsChanged(float v) {
+
+    }
+
+    @Override
+    public void onBufferReceived(byte[] bytes) {
+
+    }
+
+    @Override
+    public void onEndOfSpeech() {
+
+    }
+
+    @Override
+    public void onError(int error) {
+        if (error == android.speech.SpeechRecognizer.ERROR_SPEECH_TIMEOUT
+                || error == android.speech.SpeechRecognizer.ERROR_NO_MATCH) {
+            ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
+            // Restart speech recognizer
+
+            if (attemptNumber <= maxAttempts) {
+                tts("Sorry, I didn't catch that, please repeat");
+
+                attemptNumber++;
+
+                // wait 3.5 seconds before trying again
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        speech.startListening(recognizerIntent);
+                    }
+                }, 3700);
+            } else {
+                // gives up, you need to reinitialize the recognizer
+                tts("Sorry, I didn't catch that, try again later");
+
+                speech.destroy();
+                speech = null;
+            }
+
+
+        }
+    }
+
+    @Override
+    public void onResults(Bundle data) {
+        ArrayList<String> matches = data.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION);
+
+        String match = matches.get(0); // best match from the matches
+
+        ((TextView) findViewById(R.id.matches)).setText("matches: " + match); // for debugging
+
+        if (activityMode.equals("Maps")) {
+            if (match.contains("destination")) {
+                // expecting 'Set destination to ____'
+                String[] phrase = match.split(" to ");
+                destination = phrase[1];
+                tts("destination set to " + destination);
+                ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+            } else if (match.contains("walking")) {
+                // expecting 'Set to walking'
+                mode = 1;
+                tts("mode set to walking");
+                ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
+            } else if (match.contains("public transit")) {
+                // expecting 'Set to public transit'
+                mode = 2;
+                tts("mode set to navigation");
+                ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
+            } else if (match.contains("navigation")) {
+                // expecting 'Start navigation'
+                sendDirectionRequest();
+            } else if (match.contains("touch screen")) {
+                // expecting 'Activate Touch-Screen Mode'
+                finish(); // return to previous intent
+            } else {
+                tts("No commmand found");
+            }
+        } else if (activityMode.equals("Navigation")){
+            if (match.contains("repeat")) {
+                // expecting 'repeat direction/instruction'
+                tts(instruction.getText().toString());
+            }
+        }
+
+        speech.destroy();
+        speech = null;
+    }
+
+    @Override
+    public void onPartialResults(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onEvent(int i, Bundle bundle) {
 
     }
 }
