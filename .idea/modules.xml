@@ -5,6 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/GBelt.iml" filepath="$PROJECT_DIR$/GBelt.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/circularprogressbarlibrary/circularprogressbarlibrary.iml" filepath="$PROJECT_DIR$/circularprogressbarlibrary/circularprogressbarlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/circularprogressbarlibrary/circularprogressbarlibrary.iml" filepath="$PROJECT_DIR$/circularprogressbarlibrary/circularprogressbarlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/slideToUnlock/slideToUnlock.iml" filepath="$PROJECT_DIR$/slideToUnlock/slideToUnlock.iml" />
       <module fileurl="file://$PROJECT_DIR$/slideToUnlock/slideToUnlock.iml" filepath="$PROJECT_DIR$/slideToUnlock/slideToUnlock.iml" />
     </modules>
   </component>

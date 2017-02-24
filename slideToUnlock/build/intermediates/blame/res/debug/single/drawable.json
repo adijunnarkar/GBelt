@@ -1,18 +1,18 @@
 [
     {
-        "merged": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/res/merged/debug/drawable/unlock_thumb.png",
-        "source": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/drawable/unlock_thumb.png"
+        "merged": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\build\\intermediates\\res\\merged\\debug\\drawable\\unlock_left.png",
+        "source": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\drawable\\unlock_left.png"
     },
     {
-        "merged": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/res/merged/debug/drawable/ic_launcher.png",
-        "source": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/drawable/ic_launcher.png"
+        "merged": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\build\\intermediates\\res\\merged\\debug\\drawable\\unlock_right.png",
+        "source": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\drawable\\unlock_right.png"
     },
     {
-        "merged": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/res/merged/debug/drawable/unlock_right.png",
-        "source": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/drawable/unlock_right.png"
+        "merged": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\build\\intermediates\\res\\merged\\debug\\drawable\\ic_launcher.png",
+        "source": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\drawable\\ic_launcher.png"
     },
     {
-        "merged": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/res/merged/debug/drawable/unlock_left.png",
-        "source": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/drawable/unlock_left.png"
+        "merged": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\build\\intermediates\\res\\merged\\debug\\drawable\\unlock_thumb.png",
+        "source": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\drawable\\unlock_thumb.png"
     }
 ]

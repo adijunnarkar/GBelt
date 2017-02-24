@@ -93,7 +93,7 @@ public class UnlockBar extends RelativeLayout
 		}
 		else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_OUTSIDE)
 		{
-			if (sliderPosition >= (getMeasuredWidth() - thumbWidth))
+			if (sliderPosition >= (getMeasuredWidth() - thumbWidth- 120))
 			{
 				if (listener != null) listener.onUnlock();
 			}

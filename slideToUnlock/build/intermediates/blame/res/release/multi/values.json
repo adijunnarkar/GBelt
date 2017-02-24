@@ -1,6 +1,6 @@
 [
     {
-        "outputFile": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/build/intermediates/incremental/mergeReleaseResources/merged.dir/values/values.xml",
+        "outputFile": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\build\\intermediates\\incremental\\mergeReleaseResources\\merged.dir\\values\\values.xml",
         "map": [
             {
                 "to": {
@@ -11,13 +11,13 @@
                     "endOffset": 101
                 },
                 "from": {
-                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/values/strings.xml",
+                    "file": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 2,
                         "startColumn": 4,
-                        "startOffset": 17,
+                        "startOffset": 19,
                         "endColumn": 50,
-                        "endOffset": 63
+                        "endOffset": 65
                     }
                 }
             },
@@ -30,13 +30,13 @@
                     "endOffset": 166
                 },
                 "from": {
-                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/values/strings.xml",
+                    "file": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 4,
                         "startColumn": 4,
-                        "startOffset": 73,
+                        "startOffset": 77,
                         "endColumn": 64,
-                        "endOffset": 133
+                        "endOffset": 137
                     }
                 }
             },
@@ -49,13 +49,13 @@
                     "endOffset": 215
                 },
                 "from": {
-                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/values/strings.xml",
+                    "file": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 5,
                         "startColumn": 4,
-                        "startOffset": 138,
+                        "startOffset": 143,
                         "endColumn": 48,
-                        "endOffset": 182
+                        "endOffset": 187
                     }
                 }
             },
@@ -68,13 +68,13 @@
                     "endOffset": 272
                 },
                 "from": {
-                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/values/strings.xml",
+                    "file": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 7,
                         "startColumn": 4,
-                        "startOffset": 240,
+                        "startOffset": 247,
                         "endColumn": 56,
-                        "endOffset": 292
+                        "endOffset": 299
                     }
                 }
             },
@@ -87,13 +87,13 @@
                     "endOffset": 325
                 },
                 "from": {
-                    "file": "/Users/tiffanycheung/AndroidStudioProjects/GBelt/slideToUnlock/src/main/res/values/strings.xml",
+                    "file": "C:\\Users\\adityajunnarkar\\AndroidStudioProjects\\GBelt\\slideToUnlock\\src\\main\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 6,
                         "startColumn": 4,
-                        "startOffset": 187,
+                        "startOffset": 193,
                         "endColumn": 52,
-                        "endOffset": 235
+                        "endOffset": 241
                     }
                 }
             }

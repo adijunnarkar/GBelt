@@ -14,9 +14,11 @@ public final class R {
 		public static final int unlock_thumb = 0x7f020003;
 	}
 	public static final class id {
-		public static final int img_thumb = 0x7f050001;
-		public static final int text_label = 0x7f050000;
-		public static final int unlock = 0x7f050002;
+		public static final int img_thumb = 0x7f050003;
+		public static final int locked = 0x7f050000;
+		public static final int text_label = 0x7f050002;
+		public static final int unlock = 0x7f050004;
+		public static final int unlocked = 0x7f050001;
 	}
 	public static final class layout {
 		public static final int unlock_main = 0x7f030000;

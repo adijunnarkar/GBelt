@@ -8,6 +8,7 @@
     android:padding="10dp">
 
     <ImageView
+        android:id="@+id/locked"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
         android:layout_alignParentLeft="true"
@@ -15,6 +16,7 @@
         android:contentDescription="@string/unlock_locked" />
     
     <ImageView
+        android:id="@+id/unlocked"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
         android:layout_alignParentRight="true"
