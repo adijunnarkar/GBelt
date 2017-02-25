@@ -121,6 +121,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
+            checkRecordAudioPermission();
         }
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -671,6 +672,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public static final int MY_PERMISSIONS_REQUEST_AUDIO = 100;
+    public boolean checkRecordAudioPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Asking user if explanation is needed
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.RECORD_AUDIO)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSIONS_REQUEST_AUDIO);
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSIONS_REQUEST_AUDIO);
+            }
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -696,6 +729,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     // Permission denied, Disable the functionality that depends on this permission.
                     //Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            case MY_PERMISSIONS_REQUEST_AUDIO: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted. Do the
+                    // contacts-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.RECORD_AUDIO)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        // Permission granted, not sure if we want to do anything.
+                    }
+
+                } else {
+
+                    // Permission denied, Disable the functionality that depends on this permission.
+                    // Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
                 return;
             }

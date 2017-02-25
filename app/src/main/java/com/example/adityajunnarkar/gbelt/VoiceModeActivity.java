@@ -628,6 +628,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public void onError(int error) {
+        ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
         if (error == android.speech.SpeechRecognizer.ERROR_SPEECH_TIMEOUT
                 || error == android.speech.SpeechRecognizer.ERROR_NO_MATCH) {
             ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
