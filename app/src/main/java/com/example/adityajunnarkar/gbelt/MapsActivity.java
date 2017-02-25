@@ -5,15 +5,17 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.IBinder;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
@@ -40,7 +42,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.collect.ImmutableMap;
 
-import java.io.IOException;;
+;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -48,12 +50,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.Route;
-import Modules.ConnectedThread;
 
 import com.hamondigital.unlock.UnlockBar;
 import com.hamondigital.unlock.UnlockBar.OnUnlockListener;
@@ -104,9 +104,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     static BluetoothDevice BluetoothDeviceForHC05;
 
-    static ConnectedThread connectedThread;
-    static ConnectingThread connectingThread;
-
     //Bluetooth Request Codes
     public static final int ENABLE_BT_REQUEST_CODE = 100;
     public static final int DISCOVERABLE_BT_REQUEST_CODE = 101;
@@ -114,8 +111,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //Set Duration discovery time to 120 seconds
     public static final int DISCOVERABLE_DURATION = 120;
 
-    // HC 05 SPP UUID
-    private final static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    BluetoothService localBTService;
+    static boolean mBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,9 +189,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mode = (int) bundle.getSerializable("mode");
             }
 
-            if (bundle.containsKey("connectedThread")) {
+           /* if (bundle.containsKey("connectedThread")) {
                 connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
-            }
+            }*/
         }
     }
 
@@ -281,9 +278,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bundle.putSerializable("routes", (Serializable) routes);
         intent.putExtras(bundle);
 
-        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        intent.putExtras(bundle);
-
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
@@ -306,9 +300,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
-
-        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        intent.putExtras(bundle);
 
         bundle.putSerializable("activity", (Serializable) "Maps");
         intent.putExtras(bundle);
@@ -426,6 +417,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    /** Defines callbacks for service binding, passed to bindService() */
+ /*   private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
+            localBTService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+            localBTService = null;
+        }
+    };
+*/
     protected void discoverDevices(){
         // To scan for remote Bluetooth devices
         if (mBluetoothAdapter.startDiscovery()) {
@@ -459,20 +469,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
-//                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
+                        Toast.LENGTH_SHORT).show();
 
 
                 if (bluetoothDevice.getName() != null) {
                     if (bluetoothDevice.getName().equals("HC-05")) {
                         BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
-                        if (BluetoothDeviceForHC05 != null && connectingThread == null) {
-                            // Initiate a connection request in a separate thread
-                            connectingThread = new ConnectingThread(BluetoothDeviceForHC05);
-                            connectingThread.start();
- /*                           Toast.makeText(getApplicationContext(), "Connecting Thread Started",
-                                    Toast.LENGTH_LONG).show();*/
-                        }
+
+                        Intent intentBT = new Intent(MapsActivity.this, BluetoothService.class);
+                        Bundle b = new Bundle();
+                        b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                        intentBT.putExtras(b);
+                        startService(intentBT);
+                        // Bind to LocalService
+                        //bindService(intentBT, mConnection, Context.BIND_AUTO_CREATE);
+
                     }
                 }
             }
@@ -513,66 +525,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private class ConnectingThread extends Thread {
-        private final BluetoothSocket bluetoothSocket;
-        private final BluetoothDevice bluetoothDevice;
-
-        public ConnectingThread(BluetoothDevice device) {
-
-            BluetoothSocket temp = null;
-            bluetoothDevice = device;
-
-            // Get a BluetoothSocket to connect with the given BluetoothDevice
-            try {
-                temp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            bluetoothSocket = temp;
-            if(temp == null){
-/*                Toast.makeText(getApplicationContext(), "Null "+ bluetoothDevice.getName(),
-                        Toast.LENGTH_SHORT).show();*/
-            }
-        }
-
-        public void run() {
-            // Cancel any discovery as it will slow down the connection
-            mBluetoothAdapter.cancelDiscovery();
-
-            try {
-                // This will block until it succeeds in connecting to the device
-                // through the bluetoothSocket or throws an exception
-                bluetoothSocket.connect();
-
-            } catch (IOException connectException) {
-                connectException.printStackTrace();
-                try {
-                    bluetoothSocket.close();
-                } catch (IOException closeException) {
-                    closeException.printStackTrace();
-                }
-            }
-
-            // Code to manage the connection in a separate thread
-            if(bluetoothSocket.isConnected()) {
-                manageBluetoothConnection(bluetoothSocket);
-            }
-        }
-
-        // Cancel an open connection and terminate the thread
-        public void cancel() {
-            try {
-                bluetoothSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    void manageBluetoothConnection(BluetoothSocket bluetoothSocket){
-        connectedThread = new ConnectedThread(bluetoothSocket);
-        connectedThread.start();
-    }
 
     public void updateMap() {
         // redraw map with new coordinates

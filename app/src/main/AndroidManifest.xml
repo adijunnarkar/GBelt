@@ -34,7 +34,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-
+        <service android:name=".BluetoothService"></service>
         <activity
             android:name=".SplashActivity"
             android:theme="@style/SplashTheme"

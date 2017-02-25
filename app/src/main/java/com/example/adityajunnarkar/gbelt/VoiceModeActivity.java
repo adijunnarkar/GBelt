@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import Modules.ConnectedThread;
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.Route;
@@ -89,8 +88,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     boolean mBooleanIsPressed;
     CircularProgressBar circularProgressBar;
     UnlockBar unlock;
-
-    ConnectedThread connectedThread;
 
     String activityMode; // Maps or Navigation
 
@@ -136,8 +133,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         activityMode = (String) bundle.getSerializable("activity");
 
         if (activityMode.equals("Maps")) {
+
             // grab data from MapsActivity
-            connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
             activityMode = (String) bundle.getSerializable("activity");
             origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
@@ -149,7 +146,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
         } else if (activityMode.equals("Navigation")) {
             // grab data from NavigationActivity
-            connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+            //connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
             mStep = (int) bundle.getSerializable("step");
@@ -276,8 +273,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
-        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        intent.putExtras(bundle);
+        //bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        //intent.putExtras(bundle);
 
         startActivity(intent);
     }
@@ -291,8 +288,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("routes", (Serializable) mRoutes);
         intent.putExtras(bundle);
 
-        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        intent.putExtras(bundle);
+        //bundle.putSerializable("connectedThread", (Serializable) connectedThread);
+        //intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);

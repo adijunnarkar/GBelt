@@ -46,7 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import Modules.Route;
-import Modules.ConnectedThread;
+
 
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -67,7 +67,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     Location mLastLocation;
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
-    ConnectedThread connectedThread;
 
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     public static final int TTS_DATA_CODE = 5678;
@@ -110,7 +109,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Bundle bundle = intent.getExtras();
 
         routes = (List<Route>)bundle.getSerializable("routes");
-        connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
         mode = (int) bundle.getSerializable("mode");
         origin = (String) bundle.getSerializable("origin");
         destination = (String) bundle.getSerializable("destination");
@@ -165,9 +163,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
 
-        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        intent.putExtras(bundle);
-
         bundle.putSerializable("activity", (Serializable) "Navigation");
         intent.putExtras(bundle);
 
@@ -197,9 +192,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
-        intent.putExtras(bundle);
-
-        bundle.putSerializable("connectedThread", (Serializable) connectedThread);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -323,15 +315,16 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void transmitVector() {
-        // uncomment when we actually test for reals
-//        double desired_theta = calculateVector();
-//        String message = "#" + (float) desired_theta + "~";
-//
-//        byte[] vectorBytes = message.getBytes();
-//
-//        if (connectedThread != null) { // && connectedThread.isAlive()
-//            connectedThread.write(vectorBytes);
-//        }
+        // uncomment when we actually test for reals - uncommented this haha
+        double desired_theta = calculateVector();
+        String message = "#" + (float) desired_theta + "~";
+
+        byte[] vectorBytes = message.getBytes();
+
+        Intent intentBT = new Intent(NavigationActivity.this, BluetoothService.class);
+        intentBT.putExtra("vector", vectorBytes);
+        startService(intentBT);
+
     }
 
     public double calculateVector() {

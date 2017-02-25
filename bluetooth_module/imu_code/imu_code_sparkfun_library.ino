@@ -137,6 +137,18 @@ void loop()
 {
   // If intPin goes high, all data registers have new data
   // On interrupt, check if data ready interrupt
+ /* analogWrite(ledNorth, 128);
+  delay(2000);
+  analogWrite(ledNorth, 0);
+  analogWrite(ledSouth, 128);
+  delay(2000);
+  analogWrite(ledSouth, 0);
+  analogWrite(ledWest, 128);
+  delay(2000);
+  analogWrite(ledWest, 0);
+  analogWrite(ledEast, 128);
+  delay(2000);
+  analogWrite(ledEast, 0);*/
   if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
   {
     sample_counter++;
@@ -232,72 +244,72 @@ void loop()
     }
   }
 
-    if (newDirectionReady)
+  if (newDirectionReady)
+  {
+    turnAllLEDsOff();
+
+    thetaDesired = direction.toInt();
+    Serial.println("Direction: " + direction);
+    Serial.println("Theta Desired: " + String(thetaDesired));
+
+    newDirectionReady = false;
+    direction = "";
+  }
+  
+  if (yaw > thetaDesired) 
+  {
+    theta = 360 - (yaw - thetaDesired);
+  }
+  else {
+    theta = thetaDesired - yaw;
+  }
+
+  if (receiving_bluetooth) {
+    if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
     {
         turnAllLEDsOff();
-
-        thetaDesired = direction.toInt();
-        Serial.println("Direction: " + direction);
-        Serial.println("Theta Desired: " + String(thetaDesired));
-
-        newDirectionReady = false;
-        direction = "";
+        analogWrite(ledNorth, 128);
     }
-
-
-    if (yaw > thetaDesired) {
-        theta = 360 - (yaw - thetaDesired);
+    else if (inRange(theta, 10, 80)) // Northeast
+    {
+      turnAllLEDsOff();
+      analogWrite(ledNorth, 128);
+      analogWrite(ledEast, 128);
     }
-    else {
-        theta = thetaDesired - yaw;
+    else if (inRange(theta, 80, 100)) // East
+    {
+      turnAllLEDsOff();
+      analogWrite(ledEast, 128);
     }
-
-    if (receiving_bluetooth) {
-        if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledNorth, HIGH);
-        }
-        else if (inRange(theta, 10, 80)) // Northeast
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledNorth, HIGH);
-            digitalWrite(ledEast, HIGH);
-        }
-        else if (inRange(theta, 80, 100)) // East
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledEast, HIGH);
-        }
-        else if (inRange(theta, 100, 170)) // Southeast
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledSouth, HIGH);
-            digitalWrite(ledEast, HIGH);
-        }
-        else if (inRange(theta, 170, 190)) // South
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledSouth, HIGH);
-        }
-        else if (inRange(theta, 190, 260)) // Southwest
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledSouth, HIGH);
-            digitalWrite(ledWest, HIGH);
-        }
-        else if (inRange(theta, 260, 280)) // West
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledWest, HIGH);
-        }
-        else if (inRange(theta, 280, 350)) // Northwest
-        {
-            turnAllLEDsOff();
-            digitalWrite(ledNorth, HIGH);
-            digitalWrite(ledWest, HIGH);
-        }
+    else if (inRange(theta, 100, 170)) // Southeast
+    {
+      turnAllLEDsOff();
+      analogWrite(ledSouth, 128);
+      analogWrite(ledEast, 128);
     }
+    else if (inRange(theta, 170, 190)) // South
+    {
+      turnAllLEDsOff();
+      analogWrite(ledSouth, 128);
+    }
+    else if (inRange(theta, 190, 260)) // Southwest
+    {
+      turnAllLEDsOff();
+      analogWrite(ledSouth, 128);
+      analogWrite(ledWest, 128);
+    }
+    else if (inRange(theta, 260, 280)) // West
+    {
+      turnAllLEDsOff();
+      analogWrite(ledWest, 128);
+    }
+    else if (inRange(theta, 280, 350)) // Northwest
+    {
+      turnAllLEDsOff();
+      analogWrite(ledNorth, 128);
+      analogWrite(ledWest, 128);
+    }
+  }
 
   if (SerialDebug)
   {
@@ -340,7 +352,7 @@ void loop()
 
     Serial.print("\n\n");
   }
-  delay(100);
+  delay(500);
 }
 
 void turnAllLEDsOff()
@@ -390,13 +402,13 @@ void calibrateMagnetometerBias(float * dest1)
     Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
     Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
   */
-  // mag_max[0] = 516; mag_min[0] = -112;
-  // mag_max[1] = 421; mag_min[1] = -98;
-  //  mag_max[2] = -8; mag_min[2] = -575;
+   mag_max[0] = 516; mag_min[0] = -112;
+   mag_max[1] = 421; mag_min[1] = -98;
+    mag_max[2] = -8; mag_min[2] = -575;
 
-  mag_max[0] = 493; mag_min[0] = -36;
-  mag_max[1] = 496;  mag_min[1] = -51;
-  mag_max[2] = 172;  mag_min[2] = -362;
+  //mag_max[0] = 493; mag_min[0] = -36;
+  //mag_max[1] = 496;  mag_min[1] = -51;
+  //mag_max[2] = 172;  mag_min[2] = -362;
 
   // Get hard iron correction
   mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
@@ -414,7 +426,6 @@ void calibrateMagnetometerBias(float * dest1)
   mag_scale[2]  = (mag_max[2] - mag_min[2]) / 2; // get average z axis max chord length in counts
 
   float avg_rad = (mag_scale[0] + mag_scale[1] + mag_scale[2]) / 3.0;
-
 
   //
   Serial.println("Mag Calibration done!");
