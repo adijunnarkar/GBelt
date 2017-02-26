@@ -81,16 +81,6 @@
                         android:id="@+id/bus"
                         android:src="@drawable/bus"/>
                 </RelativeLayout>
-
-                <ImageButton
-                    android:id="@+id/microphone"
-                    android:background="@drawable/button"
-                    android:src="@drawable/microphone"
-                    android:layout_height="40dp"
-                    android:layout_width="40dp"
-                    android:padding="5dp"
-                    android:scaleType="fitCenter"
-                    android:layout_below="@id/transportation" />
             </RelativeLayout>
 
         </LinearLayout>
