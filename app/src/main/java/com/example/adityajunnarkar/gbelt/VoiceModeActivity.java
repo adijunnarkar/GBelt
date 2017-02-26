@@ -126,12 +126,33 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         getSupportActionBar().hide();
         setContentView(R.layout.activity_voice_mode);
 
-        // grab data from MapsActivity
+        retrieveData();
+
+        setUpMap();
+
+        startTextToSpeechActivity();
+
+        // Find layout elements for future use
+        instruction = ((TextView) findViewById(R.id.instruction));
+        circularProgressBar = (CircularProgressBar)findViewById(R.id.progressBar);
+
+        resetProgressBar();
+
+        adjustUnlockBar();
+
+        setUpTouchAndHoldTimer();
+
+        setUpUnlockListener();
+    }
+
+    private void retrieveData() {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
 
         activityMode = (String) bundle.getSerializable("activity");
 
+        // Voice Mode is activated either from the Maps or Navigation activities
+        // Each activity passes different bundles
         if (activityMode.equals("Maps")) {
 
             // grab data from MapsActivity
@@ -146,32 +167,22 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
         } else if (activityMode.equals("Navigation")) {
             // grab data from NavigationActivity
-            //connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
             mStep = (int) bundle.getSerializable("step");
         }
+    }
 
+    private void setUpMap() {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getView().setAlpha((float) 0.3);
         mapFragment.getMapAsync(this);
+    }
 
-        startTextToSpeechActivity();
-
-        // Find layout elements for future use
-        instruction = ((TextView) findViewById(R.id.instruction));
-
-        // Find circular progress bar and set to 0
-        circularProgressBar = (CircularProgressBar)findViewById(R.id.progressBar);
+    private void resetProgressBar() {
         circularProgressBar.setProgressWithAnimation(0, animationDuration);
-
-        adjustUnlockBar();
-
-        setUpTouchAndHoldTimer();
-
-        setUpUnlockListener();
     }
 
     private void setUpTouchAndHoldTimer() {
@@ -188,13 +199,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     {
                         timerCount += timerTimeout;
                         float percentage = (float) (100.0 * timerCount/timerDuration);
-                        circularProgressBar.setProgressWithAnimation(percentage, animationDuration); // Default duration = 1500ms
-                        handler.postDelayed(runnable, timerTimeout); // keep calling handler every timerTimeout
+                        circularProgressBar.setProgressWithAnimation(percentage, animationDuration);
+                        // keep calling handler every timerTimeout
+                        handler.postDelayed(runnable, timerTimeout);
 
                         if (percentage == 100) { // timer has completed
                             mBooleanIsPressed = false;
                             timerCount = 0; // reset timer back to 0
-                            circularProgressBar.setProgressWithAnimation(0, animationDuration);
+                            resetProgressBar();
                             handler.removeCallbacks(runnable);
                             startVoiceRecognitionActivity();
                         }
@@ -216,7 +228,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     if(mBooleanIsPressed) {
                         mBooleanIsPressed = false;
                         timerCount = 0; // reset timer back to 0
-                        circularProgressBar.setProgressWithAnimation(0, resetAnimationDuration); // reset progress bar
+                        resetProgressBar();
                         handler.removeCallbacks(runnable);
                     }
                     return false;
@@ -235,8 +247,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         TextView textLabel = (TextView) findViewById(R.id.text_label);
         textLabel.setText("Start Touch-Screen Mode");
         textLabel.setTextSize(15);
-        ((ImageView) findViewById(R.id.locked)).setImageResource(R.drawable.unlock_right);
-        ((ImageView) findViewById(R.id.unlocked)).setImageResource(R.drawable.unlock_left);
+
+        ImageView locked = (ImageView) findViewById(R.id.locked);
+        ImageView unlocked = (ImageView) findViewById(R.id.unlocked);
+
+        locked.setImageResource(R.drawable.unlock_right);
+        unlocked.setImageResource(R.drawable.unlock_left);
     }
 
     private void setUpUnlockListener() {
@@ -345,9 +361,18 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             // Note: route has a Coordinate instead of LatLng because LatLng is not serializable
             // but the map only takes LatLng
-            LatLng startLocation = new LatLng(route.startLocation.latitude, route.startLocation.longitude);
-            LatLng endLocation = new LatLng(route.endLocation.latitude, route.endLocation.longitude);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
+            LatLng startLocation = new LatLng(route.startLocation.latitude,
+                    route.startLocation.longitude);
+            LatLng endLocation = new LatLng(route.endLocation.latitude,
+                    route.endLocation.longitude);
+
+            if (mStep == 0) { // first step
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
+            } else { // not first step
+                LatLng currLocation = new LatLng(mLastLocation.getLatitude(),
+                        mLastLocation.getLongitude());
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 16));
+            }
 
             updateInstruction();
             tts(instruction.getText().toString());
@@ -367,7 +392,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             // Iterate through the route points to create the polyline
             for (int i = 0; i < route.points.size(); i++) {
-                LatLng point = new LatLng(route.points.get(i).latitude, route.points.get(i).longitude);
+                LatLng point = new LatLng(route.points.get(i).latitude,
+                        route.points.get(i).longitude);
                 polylineOptions.add(point);
             }
 
@@ -377,7 +403,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     public void updateInstruction() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
+            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction,
+                    Html.FROM_HTML_MODE_LEGACY));
         } else {
             instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
         }
@@ -474,7 +501,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,"en");
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,this.getPackageName());
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 4000);
         speech.startListening(recognizerIntent);
@@ -495,7 +523,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if (ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                    mLocationRequest, this);
         }
 
         // find last known location, and move map to location
@@ -594,7 +623,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                    String.valueOf(AudioManager.STREAM_ALARM));
 
             tts("Voice Mode Activated");
         }
@@ -631,9 +661,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
         if (error == android.speech.SpeechRecognizer.ERROR_SPEECH_TIMEOUT
                 || error == android.speech.SpeechRecognizer.ERROR_NO_MATCH) {
-            ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
-            // Restart speech recognizer
 
+            ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
+
+            // Restart speech recognizer
             if (attemptNumber <= maxAttempts) {
                 tts("Sorry, I didn't catch that, please repeat");
 
@@ -653,8 +684,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 speech.destroy();
                 speech = null;
             }
-
-
         }
     }
 
@@ -681,7 +710,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else if (match.contains("public transit")) {
                 // expecting 'Set to public transit'
                 mode = 2;
-                tts("mode set to navigation");
+                tts("mode set to public transit");
                 ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             } else if (match.contains("navigation")) {
                 // expecting 'Start navigation'
@@ -692,6 +721,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else {
                 tts("No commmand found");
             }
+
         } else if (activityMode.equals("Navigation")){
             if (match.contains("repeat")) {
                 // expecting 'repeat direction/instruction'

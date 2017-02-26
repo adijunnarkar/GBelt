@@ -55,12 +55,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         LocationListener,
         OnInitListener {
 
-    Map<Integer, String> transportationModes = ImmutableMap.of(
-            1, "walking",
-            2, "transit",
-            3, "driving"
-    );
-
     private GoogleMap mMap;
     private List<Route> routes;
     GoogleApiClient mGoogleApiClient;
@@ -68,8 +62,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
 
-    public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
-    public static final int TTS_DATA_CODE = 5678;
+    public static final int TTS_DATA_CODE = 1234;
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
@@ -97,22 +90,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         getSupportActionBar().hide();
         setContentView(R.layout.activity_navigation);
 
+        retrieveData();
+
         startTextToSpeechActivity();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        // grab data from MapsActivity and VoiceModeActivity
-        Intent intent = this.getIntent();
-        Bundle bundle = intent.getExtras();
-
-        routes = (List<Route>)bundle.getSerializable("routes");
-        mode = (int) bundle.getSerializable("mode");
-        origin = (String) bundle.getSerializable("origin");
-        destination = (String) bundle.getSerializable("destination");
-        mStep = (int) bundle.getSerializable("step");
 
         // Show walking or transit icon
         if (mode == 1) { // walking
@@ -124,6 +109,18 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         setUpDirectionsListener();
 
         setUpUnlockListener();
+    }
+
+    private void retrieveData() {
+        // grab data from MapsActivity and VoiceModeActivity
+        Intent intent = this.getIntent();
+        Bundle bundle = intent.getExtras();
+
+        routes = (List<Route>)bundle.getSerializable("routes");
+        mode = (int) bundle.getSerializable("mode");
+        origin = (String) bundle.getSerializable("origin");
+        destination = (String) bundle.getSerializable("destination");
+        mStep = (int) bundle.getSerializable("step");
     }
 
     private void setUpDirectionsListener() {
@@ -220,12 +217,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
             } else { // not first step
                 LatLng currLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 16));
             }
 
+            TextView tvDuration = (TextView) findViewById(R.id.tvDuration);
+            TextView tvDistance = (TextView) findViewById(R.id.tvDistance);
 
-            ((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
-            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+            tvDuration.setText(route.duration.text);
+            tvDistance.setText(route.distance.text);
 
             updateInstruction();
             transmitVector();
@@ -253,7 +252,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void updateInstruction() {
-        // Display the first direction
+        // Display the current direction
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
         } else {
@@ -286,15 +285,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         //Place current location marker
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-//        MarkerOptions markerOptions = new MarkerOptions();
-//        markerOptions.position(latLng);
-//        markerOptions.title("Current Position");
-//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-//        mCurrLocationMarker = mMap.addMarker(markerOptions);
-
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
         if (mRoute != null) {
             if (latLng.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
