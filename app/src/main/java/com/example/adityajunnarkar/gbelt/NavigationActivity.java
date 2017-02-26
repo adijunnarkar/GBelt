@@ -213,7 +213,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             LatLng startLocation = new LatLng(route.startLocation.latitude, route.startLocation.longitude);
             LatLng endLocation = new LatLng(route.endLocation.latitude, route.endLocation.longitude);
 
-            if (mStep == 0) { // first step
+            if (mStep == 0 || mLastLocation == null) { // first step
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
             } else { // not first step
                 LatLng currLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());

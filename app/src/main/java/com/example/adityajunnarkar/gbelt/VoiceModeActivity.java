@@ -1,8 +1,14 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -15,6 +21,7 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +31,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -73,6 +81,20 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             2, "transit",
             3, "driving"
     );
+
+    BluetoothAdapter mBluetoothAdapter;
+
+    static BluetoothDevice BluetoothDeviceForHC05;
+
+    //Bluetooth Request Codes
+    public static final int ENABLE_BT_REQUEST_CODE = 100;
+    public static final int DISCOVERABLE_BT_REQUEST_CODE = 101;
+
+    //Set Duration discovery time to 120 seconds
+    public static final int DISCOVERABLE_DURATION = 120;
+
+    BluetoothService localBTService;
+    static boolean mBound = false;
 
     GoogleMap mMap; // map is not drawn, but we still need it for location and the api
     LocationRequest mLocationRequest;
@@ -127,6 +149,33 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         setContentView(R.layout.activity_voice_mode);
 
         retrieveData();
+
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            checkLocationPermission();
+        }
+
+        checkRecordAudioPermission();
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            // Device does not support Bluetooth
+        } else {
+            // Any valid Bluetooth operations
+            if (!mBluetoothAdapter.isEnabled()) {
+                // A dialog will appear requesting user permission to enable Bluetooth
+                Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetoothIntent, ENABLE_BT_REQUEST_CODE);
+            } else {
+                //Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
+                //"\n" + "Scanning for remote Bluetooth devices...",
+                //Toast.LENGTH_SHORT).show();
+
+                // To discover remote Bluetooth devices
+                discoverDevices();
+
+            }
+        }
 
         setUpMap();
 
@@ -332,6 +381,34 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == ENABLE_BT_REQUEST_CODE) {
+
+            // Bluetooth successfully enabled!
+            if (resultCode == Activity.RESULT_OK) {
+                //Toast.makeText(getApplicationContext(), "Ha! Bluetooth is now enabled." +
+                //"\n" + "Scanning for remote Bluetooth devices...",
+                //Toast.LENGTH_SHORT).show();
+
+                // To discover remote Bluetooth devices
+                discoverDevices();
+
+            } else { // RESULT_CANCELED as user refused or failed to enable Bluetooth
+                //Toast.makeText(getApplicationContext(), "Bluetooth is not enabled.",
+                //Toast.LENGTH_SHORT).show();
+
+            }
+        } else if (requestCode == DISCOVERABLE_BT_REQUEST_CODE){
+
+            if (resultCode == DISCOVERABLE_DURATION){
+/*                Toast.makeText(getApplicationContext(), "Your device is now discoverable by other devices for " +
+                                DISCOVERABLE_DURATION + " seconds",
+                        Toast.LENGTH_SHORT).show();*/
+            } else {
+/*                Toast.makeText(getApplicationContext(), "Fail to enable discoverability on your device.",
+                        Toast.LENGTH_SHORT).show();*/
+            }
+        }
+
         if (requestCode == TTS_DATA_CODE) {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                 // success, create the TTS instance
@@ -360,12 +437,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             LatLng endLocation = new LatLng(route.endLocation.latitude,
                     route.endLocation.longitude);
 
-            if (mStep == 0) { // first step
+            if (mStep == 0 || mLastLocation == null) { // first step
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
             } else { // not first step
-                LatLng currLocation = new LatLng(mLastLocation.getLatitude(),
-                        mLastLocation.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 16));
+                updateMap();
             }
 
             updateInstruction();
@@ -393,6 +468,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
+    }
+
+    public void updateMap() {
+        // redraw map with new coordinates
+        LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
     public void updateInstruction() {
@@ -508,6 +589,71 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         return;
     }
 
+
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    public boolean checkLocationPermission(){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Asking user if explanation is needed
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public static final int MY_PERMISSIONS_REQUEST_AUDIO = 100;
+    public boolean checkRecordAudioPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Asking user if explanation is needed
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.RECORD_AUDIO)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSIONS_REQUEST_AUDIO);
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSIONS_REQUEST_AUDIO);
+            }
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         mLocationRequest = new LocationRequest();
@@ -526,8 +672,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 mGoogleApiClient);
 
         if (mLastLocation != null) {
-            LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+            updateMap();
         }
     }
 
@@ -735,5 +880,132 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public void onEvent(int i, Bundle bundle) {
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted. Do the
+                    // contacts-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        if (mGoogleApiClient == null) {
+                            buildGoogleApiClient();
+                        }
+                        mMap.setMyLocationEnabled(true);
+                    }
+
+                } else {
+
+                    // Permission denied, Disable the functionality that depends on this permission.
+                    //Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            case MY_PERMISSIONS_REQUEST_AUDIO: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted. Do the
+                    // contacts-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.RECORD_AUDIO)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        // Permission granted, not sure if we want to do anything.
+                    }
+
+                } else {
+
+                    // Permission denied, Disable the functionality that depends on this permission.
+                    // Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other permissions this app might request.
+            // You can add here other case statements according to your requirement.
+        }
+    }
+
+    protected void discoverDevices(){
+        // To scan for remote Bluetooth devices
+        if (mBluetoothAdapter.startDiscovery()) {
+/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
+                    Toast.LENGTH_SHORT).show();*/
+        } else {
+/*            Toast.makeText(getApplicationContext(), "Discovery failed to start.",
+                    Toast.LENGTH_SHORT).show();*/
+        }
+
+        // Register the BroadcastReceiver for ACTION_FOUND
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        this.registerReceiver(broadcastReceiver, filter);
+    }
+
+    protected void makeDiscoverable(){
+        // Make local device discoverable
+        Intent discoverableIntent = new
+                Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, DISCOVERABLE_DURATION);
+        startActivityForResult(discoverableIntent, DISCOVERABLE_BT_REQUEST_CODE);
+    }
+
+    // Create a BroadcastReceiver for ACTION_FOUND
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            // Whenever a remote Bluetooth device is found
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+
+                // Get the BluetoothDevice object from the Intent
+                BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
+                        Toast.LENGTH_SHORT).show();
+
+
+                if (bluetoothDevice.getName() != null) {
+                    if (bluetoothDevice.getName().equals("HC-05")) {
+                        BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
+
+                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                        Bundle b = new Bundle();
+                        b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                        intentBT.putExtras(b);
+                        startService(intentBT);
+
+                        tts("Bluetooth established");
+                        // Bind to LocalService
+                        //bindService(intentBT, mConnection, Context.BIND_AUTO_CREATE);
+
+                    }
+                }
+            }
+        }
+    };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Register the BroadcastReceiver for ACTION_FOUND
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        this.registerReceiver(broadcastReceiver, filter);
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.unregisterReceiver(broadcastReceiver);
     }
 }
