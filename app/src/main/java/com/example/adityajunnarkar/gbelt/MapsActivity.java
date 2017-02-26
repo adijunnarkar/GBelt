@@ -157,8 +157,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         retrieveData();
 
-        setUpVoiceRecognitionListener();
-
         setUpCurrentLocationListener();
 
         setUpStartNavigationListener();
@@ -189,10 +187,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (bundle.containsKey("mode")) {
                 mode = (int) bundle.getSerializable("mode");
             }
-
-           /* if (bundle.containsKey("connectedThread")) {
-                connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
-            }*/
         }
     }
 
@@ -259,16 +253,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void setUpVoiceRecognitionListener() {
-        speakButton = (ImageView) findViewById(R.id.microphone);
-
-        speakButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVoiceRecognitionActivity();
-            }
-        });
-    }
 
     private void createNavigationIntent(List<Route> routes) {
         destroyTts();

@@ -146,7 +146,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
         } else if (activityMode.equals("Navigation")) {
             // grab data from NavigationActivity
-            //connectedThread = (ConnectedThread) bundle.getSerializable("connectedThread");
+          
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
             mStep = (int) bundle.getSerializable("step");
@@ -273,9 +273,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
-        //bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        //intent.putExtras(bundle);
-
         startActivity(intent);
     }
 
@@ -287,9 +284,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         bundle.putSerializable("routes", (Serializable) mRoutes);
         intent.putExtras(bundle);
-
-        //bundle.putSerializable("connectedThread", (Serializable) connectedThread);
-        //intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
@@ -399,15 +393,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void transmitVector() {
-        // uncomment when we actually test for reals
-//        double desired_theta = calculateVector();
-//        String message = "#" + (float) desired_theta + "~";
-//
-//        byte[] vectorBytes = message.getBytes();
-//
-//        if (connectedThread != null) { // && connectedThread.isAlive()
-//            connectedThread.write(vectorBytes);
-//        }
+        // uncomment when we actually test for reals - uncommented haha
+        double desired_theta = calculateVector();
+        String message = "#" + (float) desired_theta + "~";
+
+        byte[] vectorBytes = message.getBytes();
+
+        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+        intentBT.putExtra("vector", vectorBytes);
+        startService(intentBT);
     }
 
     public double calculateVector() {
