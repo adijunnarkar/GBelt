@@ -1,6 +1,7 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -39,27 +40,37 @@ import com.google.common.collect.ImmutableMap;
 import com.hamondigital.unlock.UnlockBar;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import Modules.DirectionFinder;
+import Modules.DirectionFinderListener;
 import Modules.Route;
 
 
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,
+        DirectionFinderListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         Serializable,
         LocationListener,
         OnInitListener {
 
+    public static final Map<Integer, String> transportationModes = ImmutableMap.of(
+            1, "walking",
+            2, "transit",
+            3, "driving"
+    );
+
+    ProgressDialog progressDialog;
     private GoogleMap mMap;
-    private List<Route> routes;
+    private List<Route> mRoutes;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
 
     public static final int TTS_DATA_CODE = 1234;
@@ -116,7 +127,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
 
-        routes = (List<Route>)bundle.getSerializable("routes");
+        mRoutes = (List<Route>)bundle.getSerializable("routes");
         mode = (int) bundle.getSerializable("mode");
         origin = (String) bundle.getSerializable("origin");
         destination = (String) bundle.getSerializable("destination");
@@ -163,13 +174,25 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         bundle.putSerializable("activity", (Serializable) "Navigation");
         intent.putExtras(bundle);
 
-        bundle.putSerializable("routes", (Serializable) routes);
+        bundle.putSerializable("routes", (Serializable) mRoutes);
         intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
         bundle.putSerializable("step", (Serializable) mStep);
+        intent.putExtras(bundle);
+
+        startActivity(intent);
+    }
+
+    public void createDirectionsActivity() {
+        destroyTts();
+
+        Intent intent = new Intent(this, DirectionsActivity.class);
+        Bundle bundle = new Bundle();
+
+        bundle.putSerializable("route", (Serializable) mRoute);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -198,6 +221,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         if(mTts != null) {
             mTts.stop();
             mTts.shutdown();
+            mTts = null;
         }
     }
 
@@ -205,7 +229,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         polylinePaths = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
-        for (Route route : routes) {
+        for (Route route : mRoutes) {
             mRoute = route;
 
             // Note: route has a Coordinate instead of LatLng because LatLng is not serializable
@@ -277,23 +301,31 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onLocationChanged(Location location) {
-
         mLastLocation = location;
-        if (mCurrLocationMarker != null) {
-            mCurrLocationMarker.remove();
-        }
 
-        //Place current location marker
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (mRoute != null) {
-            if (latLng.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && latLng.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && latLng.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && latLng.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
+            // Check if the user is still on the route
+            if (mRoute.isLocationInPath(point)) {
+                recalculateRoute();
+                return;
+            }
+
+            // Check if the user should move on to the next step
+            if (point.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
+                    && point.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
+                    && point.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
+                    && point.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
                 onNextStep();
             }
         }
+    }
+
+    private void recalculateRoute() {
+        // Recalculate route with current location
+        origin = "Your Location";
+        sendDirectionRequest();
     }
 
     public void onNextStep() {
@@ -306,7 +338,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented this haha
-        double desired_theta = calculateVector();
+        double desired_theta = mRoute.calculateVector(mStep);
         String message = "#" + (float) desired_theta + "~";
 
         byte[] vectorBytes = message.getBytes();
@@ -314,43 +346,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Intent intentBT = new Intent(NavigationActivity.this, BluetoothService.class);
         intentBT.putExtra("vector", vectorBytes);
         startService(intentBT);
-
-    }
-
-    public double calculateVector() {
-        double vector = 0;
-
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
-
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
-
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        }
-
-        return vector;
-    }
-
-    public void createDirectionsActivity() {
-        destroyTts();
-        Intent intent = new Intent(this, DirectionsActivity.class);
-
-        Bundle bundle = new Bundle();
-
-        bundle.putSerializable("route", (Serializable) mRoute);
-        intent.putExtras(bundle);
-
-        startActivity(intent);
     }
 
     public void startTextToSpeechActivity() {
@@ -359,10 +354,23 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         startActivityForResult(checkIntent, TTS_DATA_CODE);
     }
 
-    public void tts(String speech) {
+    public void tts(String text) {
         if (myHashAlarm != null) {
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
-            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
+            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+        }
+    }
+
+    @SuppressWarnings("deprecation") // haha haha
+    private void sendDirectionRequest() {
+        if (origin.equals("Your Location")) {
+            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+        }
+
+        try {
+            new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
     }
 
@@ -440,5 +448,20 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             // TODO: hmmmm...this is a bad place to put this, make this nicer
             tts(instruction.getText().toString());
         }
+    }
+
+    @Override
+    public void onDirectionFinderStart() {
+        progressDialog = ProgressDialog.show(this, "Please wait.",
+                "Recalculating...", true);
+    }
+
+    @Override
+    public void onDirectionFinderSuccess(List<Route> route) {
+        progressDialog.dismiss();
+
+        mRoutes = route;
+
+        drawMap();
     }
 }

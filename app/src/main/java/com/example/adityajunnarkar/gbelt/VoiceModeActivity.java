@@ -150,7 +150,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         retrieveData();
 
-
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
@@ -203,7 +202,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Voice Mode is activated either from the Maps or Navigation activities
         // Each activity passes different bundles
         if (activityMode.equals("Maps")) {
-
             // grab data from MapsActivity
             activityMode = (String) bundle.getSerializable("activity");
             origin = (String) bundle.getSerializable("origin");
@@ -325,9 +323,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     public void startMaps() {
         destroyTts();
+        destroySpeechRecognizer();
 
         Intent intent = new Intent(this, MapsActivity.class);
-        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+        Bundle bundle = new Bundle();
 
         bundle.putSerializable("origin", (Serializable) origin);
         intent.putExtras(bundle);
@@ -343,9 +342,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     public void startNavigation() {
         destroyTts();
+        destroySpeechRecognizer();
 
         Intent intent = new Intent(this, NavigationActivity.class);
-        Bundle bundle = new Bundle(); // pass bundle to voice mode activity
+        Bundle bundle = new Bundle();
 
         bundle.putSerializable("routes", (Serializable) mRoutes);
         intent.putExtras(bundle);
@@ -375,6 +375,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if(mTts != null) {
             mTts.stop();
             mTts.shutdown();
+        }
+    }
+
+    private void destroySpeechRecognizer() {
+        if (speech != null) {
+            speech.stopListening();
+            speech.cancel();
+            speech.destroy();
+            speech = null;
         }
     }
 
@@ -493,16 +502,16 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         transmitVector();
     }
 
-    public void tts(String speech) {
+    public void tts(String text) {
         if (myHashAlarm != null) {
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
-            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
+            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
     }
 
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented haha
-        double desired_theta = calculateVector();
+        double desired_theta = mRoute.calculateVector(mStep);
         String message = "#" + (float) desired_theta + "~";
 
         byte[] vectorBytes = message.getBytes();
@@ -510,30 +519,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
         intentBT.putExtra("vector", vectorBytes);
         startService(intentBT);
-    }
-
-    public double calculateVector() {
-        double vector = 0;
-
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
-
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
-
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        }
-
-        return vector;
     }
 
     @SuppressWarnings("deprecation") // haha haha
@@ -714,16 +699,29 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onLocationChanged(Location location) {
         mLastLocation = location;
 
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (mRoute != null) {
-            if (latLng.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && latLng.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && latLng.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && latLng.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
+            // Check if the user is still on the route
+            if (mRoute.isLocationInPath(point)) {
+                recalculateRoute();
+                return;
+            }
+
+            // Check if the user should move on to the next step
+            if (point.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
+                    && point.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
+                    && point.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
+                    && point.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
                 onNextStep();
             }
         }
+    }
+
+    private void recalculateRoute() {
+        // Recalculate route with current location
+        origin = "Your Location";
+        sendDirectionRequest();
     }
 
     @Override
@@ -820,8 +818,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 // gives up, you need to reinitialize the recognizer
                 tts("Sorry, I didn't catch that, try again later");
 
-                speech.destroy();
-                speech = null;
+                destroySpeechRecognizer();
             }
         }
     }

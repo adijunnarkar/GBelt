@@ -96,7 +96,6 @@ public class DirectionFinder implements Serializable {
         JSONArray jsonRoutes = jsonData.getJSONArray("routes");
         for (int i = 0; i < jsonRoutes.length(); i++) {
             JSONObject jsonRoute = jsonRoutes.getJSONObject(i);
-            Route route = new Route();
             List<Step> steps = new ArrayList<Step>();
 
             JSONObject overview_polylineJson = jsonRoute.getJSONObject("overview_polyline");
@@ -110,7 +109,6 @@ public class DirectionFinder implements Serializable {
 
             for (int j = 0; j < jsonSteps.length(); j++) {
                 JSONObject jsonStep = jsonSteps.getJSONObject(j);
-                Step step = new Step();
 
                 JSONObject jsonStepDistance = jsonStep.getJSONObject("distance");
                 JSONObject jsonStepDuration = jsonStep.getJSONObject("duration");
@@ -118,52 +116,36 @@ public class DirectionFinder implements Serializable {
                 String jsonStepHtmlInstruction = jsonStep.getString("html_instructions");
                 JSONObject jsonStepStartLocation = jsonStep.getJSONObject("start_location");
 
-                step.distance = new Distance(jsonStepDistance.getString("text"), jsonStepDistance.getInt("value"));
-                step.duration = new Duration(jsonStepDuration.getString("text"), jsonStepDuration.getInt("value"));
-                step.endLocation = new Coordinate(jsonStepEndLocation.getDouble("lat"), jsonStepEndLocation.getDouble("lng"));
-                step.htmlInstruction = jsonStepHtmlInstruction;
-                step.startLocation = new Coordinate(jsonStepStartLocation.getDouble("lat"), jsonStepStartLocation.getDouble("lng"));
+                Distance distance = new Distance(jsonStepDistance.getString("text"),
+                        jsonStepDistance.getInt("value"));
+                Duration duration = new Duration(jsonStepDuration.getString("text"),
+                        jsonStepDuration.getInt("value"));
+                Coordinate startLocation = new Coordinate(jsonStepStartLocation.getDouble("lat"),
+                        jsonStepStartLocation.getDouble("lng"));
+                Coordinate endLocation = new Coordinate(jsonStepEndLocation.getDouble("lat"),
+                        jsonStepEndLocation.getDouble("lng"));
 
-                calculateThresholdLatLng(step);
+                Step step = new Step(distance, duration, jsonStepHtmlInstruction, startLocation,
+                        endLocation);
 
                 steps.add(step);
             }
 
-            route.distance = new Distance(jsonDistance.getString("text"), jsonDistance.getInt("value"));
-            route.duration = new Duration(jsonDuration.getString("text"), jsonDuration.getInt("value"));
-            route.endAddress = jsonLeg.getString("end_address");
-            route.startAddress = jsonLeg.getString("start_address");
-            route.startLocation = new Coordinate(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
-            route.endLocation = new Coordinate(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
-            route.points = decodePolyLine(overview_polylineJson.getString("points"));
-            route.steps = steps;
+            Distance distance = new Distance(jsonDistance.getString("text"), jsonDistance.getInt("value"));
+            Duration duration = new Duration(jsonDuration.getString("text"), jsonDuration.getInt("value"));
+            String startAddress = jsonLeg.getString("start_address");
+            String endAddress = jsonLeg.getString("end_address");
+            Coordinate startLocation = new Coordinate(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
+            Coordinate endLocation = new Coordinate(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
+            List<Coordinate> points = decodePolyLine(overview_polylineJson.getString("points"));
+
+            Route route = new Route(distance, duration, startAddress, endAddress, startLocation,
+                    endLocation, points, steps);
 
             routes.add(route);
         }
 
         listener.onDirectionFinderSuccess(routes);
-    }
-
-    private void calculateThresholdLatLng(Step step) {
-        Coordinate latLng = step.endLocation;
-
-        // current threshold is +- 4 m away from current location
-        double dx = 0.004; // km
-        double dy = 0.004; // km
-
-        double r_earth = 6371; // km
-
-        double lowerThresholdLat  = latLng.latitude  - (dy / r_earth) * (180 / Math.PI);
-        double lowerThresholdLong = latLng.longitude - (dx / r_earth) * (180 / Math.PI) / Math.cos(latLng.latitude * Math.PI/180);
-
-        double upperThresholdLat  = latLng.latitude  + (dy / r_earth) * (180 / Math.PI);
-        double upperThresholdLong = latLng.longitude + (dx / r_earth) * (180 / Math.PI) / Math.cos(latLng.latitude * Math.PI/180);
-
-        Coordinate lowerThreshold = new Coordinate(lowerThresholdLat, lowerThresholdLong);
-        Coordinate upperThreshold = new Coordinate(upperThresholdLat, upperThresholdLong);
-
-        step.lowerThreshold = lowerThreshold;
-        step.upperThreshold = upperThreshold;
     }
 
     private List<Coordinate> decodePolyLine(final String poly) {

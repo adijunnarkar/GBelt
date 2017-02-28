@@ -258,6 +258,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(mTts != null) {
             mTts.stop();
             mTts.shutdown();
+            mTts = null;
         }
     }
 
