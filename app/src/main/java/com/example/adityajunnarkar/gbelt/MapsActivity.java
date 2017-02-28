@@ -262,10 +262,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public void tts(String speech) {
+    public void tts(String text) {
         if (myHashAlarm != null) {
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, speech);
-            mTts.speak(speech, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
+            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
     }
 
