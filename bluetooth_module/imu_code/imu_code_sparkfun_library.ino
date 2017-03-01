@@ -5,15 +5,15 @@
 #include "math.h"
 #include <SoftwareSerial.h>
 
-#define SerialDebug false  // Set to true to get Serial output for debugging
+#define SerialDebug true  // Set to true to get Serial output for debugging
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
 int intPin = 7;  // These can be changed, 2 and 3 are the Arduinos ext int pins
-int ledNorth = 5; // mega is 3
+int ledNorth = 11; // mega is 3
 int ledSouth = 6; // mega is 4
-int ledWest = 11; // mega is 2
+int ledWest = 5; // mega is 2
 int ledEast = 10; //mega is 5
 
 int sample_counter = 0;
@@ -137,7 +137,7 @@ void loop()
 {
   // If intPin goes high, all data registers have new data
   // On interrupt, check if data ready interrupt
- /* analogWrite(ledNorth, 128);
+  /*analogWrite(ledNorth, 128);
   delay(2000);
   analogWrite(ledNorth, 0);
   analogWrite(ledSouth, 128);
@@ -212,7 +212,7 @@ void loop()
     yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
     yaw = (360 - (int)yaw) % 360;
   */
-  pitch = atan2(-myIMU.ax, sqrt(myIMU.ay * myIMU.ay + myIMU.az * myIMU.az)) * RAD_TO_DEG;
+  pitch = atan2(-myIMU.ax, sqrt(myIMU.ay * myIMU.ay + myIMU.az * myIMU.az)) * RAD_TO_DEG + 15; // bias of 15 degrees added
   roll = atan2(myIMU.ay, myIMU.az) * RAD_TO_DEG;
 
   Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
@@ -222,7 +222,7 @@ void loop()
   Xh = myIMU.mx * cos(pitch * DEG_TO_RAD) + myIMU.my * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
   Yh = myIMU.my * cos(roll * DEG_TO_RAD) - myIMU.mz * sin(roll * DEG_TO_RAD);
   yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
-  yaw = (360 + (int)yaw) % 360;
+  yaw = ((360 + (int)yaw) % 360) + 15; // bias of 15 degrees added
 
   if (BTSerial.available() > 0)
   {
