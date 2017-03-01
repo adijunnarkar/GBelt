@@ -212,6 +212,7 @@ void loop()
     yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
     yaw = (360 - (int)yaw) % 360;
   */
+  /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
   pitch = atan2(-myIMU.ax, sqrt(myIMU.ay * myIMU.ay + myIMU.az * myIMU.az)) * RAD_TO_DEG + 15; // bias of 15 degrees added
   roll = atan2(myIMU.ay, myIMU.az) * RAD_TO_DEG;
 
