@@ -90,6 +90,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     int mode = 1; // Default mode to walking
 
+    // Global variables across entire application used for debugging:
+    boolean DEBUG;
+    boolean TTSDEBUG;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +111,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         etDestination = (EditText) findViewById(R.id.etDestination);
 
         retrieveData();
+        retrieveStates();
 
         setUpCurrentLocationListener();
 
@@ -119,6 +124,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // because i am too lazy to type it out, remove later
         etOrigin.setText("Your Location");
         etDestination.setText("University of Waterloo");
+    }
+
+    private void retrieveStates() {
+        DEBUG = ((MyApplication) this.getApplication()).getDebug();
+        TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
     }
 
     public void retrieveData() {
@@ -263,7 +273,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null) {
+        if (myHashAlarm != null && !TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }

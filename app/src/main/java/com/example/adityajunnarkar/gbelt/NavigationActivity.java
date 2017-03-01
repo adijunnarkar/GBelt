@@ -94,6 +94,10 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     UnlockBar unlock;
 
+    // Global variables across entire application used for debugging:
+    boolean DEBUG;
+    boolean TTSDEBUG;
+
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +106,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         setContentView(R.layout.activity_navigation);
 
         retrieveData();
+        retrieveStates();
 
         startTextToSpeechActivity();
 
@@ -120,6 +125,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         setUpDirectionsListener();
 
         setUpUnlockListener();
+    }
+
+    private void retrieveStates() {
+        DEBUG = ((MyApplication) this.getApplication()).getDebug();
+        TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
     }
 
     private void retrieveData() {
@@ -355,7 +365,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null) {
+        if (myHashAlarm != null && !TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }

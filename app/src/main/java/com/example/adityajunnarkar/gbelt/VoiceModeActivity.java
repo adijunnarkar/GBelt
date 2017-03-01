@@ -142,6 +142,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
 
+    // Global variables across entire application used for debugging:
+    boolean DEBUG;
+    boolean TTSDEBUG;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,6 +153,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         setContentView(R.layout.activity_voice_mode);
 
         retrieveData();
+        retrieveStates();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -193,6 +198,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         setUpUnlockListener();
     }
 
+    private void retrieveStates() {
+        DEBUG = ((MyApplication) this.getApplication()).getDebug();
+        TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
+    }
+
     private void retrieveData() {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
@@ -208,10 +218,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
 
-            ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
-            ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
-            ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
-            ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+            if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
+            if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
+            if (DEBUG) ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+            if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
         } else if (activityMode.equals("Navigation")) {
             // grab data from NavigationActivity
             mRoutes = (List<Route>)bundle.getSerializable("routes");
@@ -503,7 +513,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null) {
+        if (myHashAlarm != null && !TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -741,7 +751,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             activityMode = "Navigation";
-            ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
+            if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
         }
     }
 
@@ -795,11 +805,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public void onError(int error) {
-        ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
         if (error == android.speech.SpeechRecognizer.ERROR_SPEECH_TIMEOUT
                 || error == android.speech.SpeechRecognizer.ERROR_NO_MATCH) {
 
-            ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
+            if (DEBUG) ((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging((TextView) findViewById(R.id.matches)).setText("error: " + error); // for debugging
 
             // Restart speech recognizer
             if (attemptNumber <= maxAttempts) {
@@ -829,7 +839,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         String match = matches.get(0); // best match from the matches
 
-        ((TextView) findViewById(R.id.matches)).setText("matches: " + match); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.matches)).setText("matches: " + match); // for debugging
 
         if (activityMode.equals("Maps")) {
             if (match.contains("destination")) {
@@ -837,17 +847,17 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 String[] phrase = match.split(" to ");
                 destination = phrase[1];
                 tts("destination set to " + destination);
-                ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
             } else if (match.contains("walking")) {
                 // expecting 'Set to walking'
                 mode = 1;
                 tts("mode set to walking");
-                ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
+                if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             } else if (match.contains("public transit")) {
                 // expecting 'Set to public transit'
                 mode = 2;
                 tts("mode set to public transit");
-                ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
+                if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             } else if (match.contains("navigation")) {
                 // expecting 'Start navigation'
                 sendDirectionRequest();
