@@ -713,7 +713,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             // Check if the user is still on the route
-            if (mRoute.isLocationInPath(point)) {
+            if (!mRoute.isLocationInPath(point)) {
                 recalculateRoute();
                 return;
             }

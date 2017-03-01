@@ -317,7 +317,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         if (mRoute != null) {
             // Check if the user is still on the route
-            if (mRoute.isLocationInPath(point)) {
+            if (!mRoute.isLocationInPath(point)) {
                 recalculateRoute();
                 return;
             }
@@ -462,6 +462,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onDirectionFinderStart() {
+        tts("Recalculating");
         progressDialog = ProgressDialog.show(this, "Please wait.",
                 "Recalculating...", true);
     }
