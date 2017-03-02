@@ -345,55 +345,55 @@ void loop()
 
     Serial.println("Theta: " + String(theta));
 
-    if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
+    if (inRange(theta, 345, 360) || inRange(theta, 0, 15)) // North
     {
         turnAllMotorsOff();
-        Serial.print("North Motors Active");
+        Serial.println("North Motors Active");
         analogWrite(ledNorth, pwm_intensity);
     }
-    else if (inRange(theta, 10, 80)) // Northeast
+    else if (inRange(theta, 15, 75)) // Northeast
     {
       turnAllMotorsOff();
-      Serial.print("North and East Motors Active");
+      Serial.println("North and East Motors Active");
       analogWrite(ledNorth, pwm_intensity);
       analogWrite(ledEast, pwm_intensity);
     }
-    else if (inRange(theta, 80, 100)) // East
+    else if (inRange(theta, 75, 105)) // East
     {
       turnAllMotorsOff();
-      Serial.print("East Motors Active");
+      Serial.println("East Motors Active");
       analogWrite(ledEast, pwm_intensity);
     }
-    else if (inRange(theta, 100, 170)) // Southeast
+    else if (inRange(theta, 105, 165)) // Southeast
     {
       turnAllMotorsOff();
-      Serial.print("South and East Motors Active");
+      Serial.println("South and East Motors Active");
       analogWrite(ledSouth, pwm_intensity);
       analogWrite(ledEast, pwm_intensity);
     }
-    else if (inRange(theta, 170, 190)) // South
+    else if (inRange(theta, 165, 195)) // South
     {
       turnAllMotorsOff();
-      Serial.print("South Motors Active");
+      Serial.println("South Motors Active");
       analogWrite(ledSouth, pwm_intensity);
     }
-    else if (inRange(theta, 190, 260)) // Southwest
+    else if (inRange(theta, 195, 255)) // Southwest
     {
       turnAllMotorsOff();
-      Serial.print("South and West Motors Active");
+      Serial.println("South and West Motors Active");
       analogWrite(ledSouth, pwm_intensity);
       analogWrite(ledWest, pwm_intensity);
     }
-    else if (inRange(theta, 260, 280)) // West
+    else if (inRange(theta, 255, 285)) // West
     {
       turnAllMotorsOff();
-      Serial.print("West Motors Active");
+      Serial.println("West Motors Active");
       analogWrite(ledWest, pwm_intensity);
     }
-    else if (inRange(theta, 280, 350)) // Northwest
+    else if (inRange(theta, 285, 345)) // Northwest
     {
       turnAllMotorsOff();
-      Serial.print("North and West Motors Active");
+      Serial.println("North and West Motors Active");
       analogWrite(ledNorth, pwm_intensity);
       analogWrite(ledWest, pwm_intensity);
     }
