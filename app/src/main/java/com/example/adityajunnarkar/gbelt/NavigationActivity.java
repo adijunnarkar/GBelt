@@ -85,6 +85,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private ImageView directionIndicator;
     private TextView instruction;
 
+    private boolean tripStarted = false;
     private int mStep;
     private Route mRoute;
     private int mode;
@@ -105,8 +106,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         getSupportActionBar().hide();
         setContentView(R.layout.activity_navigation);
 
-        retrieveData();
         retrieveStates();
+        retrieveData();
 
         startTextToSpeechActivity();
 
@@ -177,6 +178,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     public void startVoiceMode() {
         destroyTts();
+        transmitStop();
 
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
@@ -188,6 +190,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("destination", (Serializable) destination);
         intent.putExtras(bundle);
 
         bundle.putSerializable("step", (Serializable) mStep);
@@ -210,6 +215,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     public void onBackPressed() {
         destroyTts();
+        transmitStop();
+
+        mRoute= null;
 
         // should only ever go back to Maps Activity even if it returned from voice mode
         Intent intent = new Intent(this, MapsActivity.class);
@@ -317,7 +325,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         if (mRoute != null) {
             // Check if the user is still on the route
-            if (!mRoute.isLocationInPath(point)) {
+            if (!mRoute.isLocationInPath(point) && !DEBUG) {
                 recalculateRoute();
                 return;
             }
@@ -339,7 +347,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void onNextStep() {
-        // TODO: only call this if it is not the last step
+        // TODO: only onNextStepcall this if it is not the last step
+        // TODO: transmitStop() when the trip is finished
         mStep++;
         updateInstruction();
         tts(instruction.getText().toString());
@@ -350,7 +359,15 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         // uncomment when we actually test for reals - uncommented this haha
         double desired_theta = mRoute.calculateVector(mStep);
         String message = "#" + (float) desired_theta + "~";
+        transmission(message);
+    }
 
+    public void transmitStop() {
+        String message = "#" + "Stop" + "~";
+        transmission(message);
+    }
+
+    public void transmission(String message) {
         byte[] vectorBytes = message.getBytes();
 
         Intent intentBT = new Intent(NavigationActivity.this, BluetoothService.class);
@@ -373,7 +390,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        if (origin.equals("Your Location")) {
+        if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
 

@@ -29,6 +29,7 @@ import android.text.Html;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -110,6 +111,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     boolean mBooleanIsPressed;
     CircularProgressBar circularProgressBar;
     UnlockBar unlock;
+    ProgressBar spinner;
+    RelativeLayout loadingBg;
+
+    boolean loading = true;
 
     String activityMode; // Maps or Navigation
 
@@ -120,7 +125,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     // Navigation mode
     List<Route> mRoutes;
-    Route mRoute;
+    Route mRoute = null;
     int mStep = 0;
 
     int attemptNumber = 1;
@@ -152,8 +157,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         getSupportActionBar().hide();
         setContentView(R.layout.activity_voice_mode);
 
-        retrieveData();
         retrieveStates();
+        retrieveData();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -193,9 +198,30 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         adjustUnlockBar();
 
+        setUpLoadingSpinner();
+
         setUpTouchAndHoldTimer();
 
         setUpUnlockListener();
+
+    }
+
+    private void setUpLoadingSpinner() {
+        loadingBg = (RelativeLayout)findViewById(R.id.loadingBg);
+        spinner = (ProgressBar)findViewById(R.id.loadingProgressBar);
+        disableLoading();
+    }
+
+    private void enableLoading() {
+        loading = true;
+        loadingBg.setVisibility(View.VISIBLE);
+        spinner.setVisibility(View.VISIBLE);
+    }
+
+    private void disableLoading() {
+        loading = false;
+        loadingBg.setVisibility(View.GONE);
+        spinner.setVisibility(View.GONE);
     }
 
     private void retrieveStates() {
@@ -218,6 +244,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
 
+            if (DEBUG) destination = "Wilfred Laurier";
+
             if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
             if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             if (DEBUG) ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
@@ -226,6 +254,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             // grab data from NavigationActivity
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
+            destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
         }
     }
@@ -334,6 +363,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void startMaps() {
         destroyTts();
         destroySpeechRecognizer();
+        transmitStop();
 
         Intent intent = new Intent(this, MapsActivity.class);
         Bundle bundle = new Bundle();
@@ -347,12 +377,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
+        mRoute = null;
+
         startActivity(intent);
     }
 
     public void startNavigation() {
         destroyTts();
         destroySpeechRecognizer();
+        transmitStop();
 
         Intent intent = new Intent(this, NavigationActivity.class);
         Bundle bundle = new Bundle();
@@ -487,6 +520,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
+
+        disableLoading();
     }
 
     public void updateMap() {
@@ -520,10 +555,18 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void transmitVector() {
-        // uncomment when we actually test for reals - uncommented haha
+        // uncomment when we actually test for reals - uncommented this haha
         double desired_theta = mRoute.calculateVector(mStep);
         String message = "#" + (float) desired_theta + "~";
+        transmission(message);
+    }
 
+    public void transmitStop() {
+        String message = "#" + "Stop" + "~";
+        transmission(message);
+    }
+
+    public void transmission(String message) {
         byte[] vectorBytes = message.getBytes();
 
         Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
@@ -533,15 +576,17 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        if (origin.equals("Your Location")) {
+        enableLoading();
+        if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
 
-        if (origin.isEmpty()) {
+        if (origin == null || origin.equals("")) {
             mTts.speak("Starting location has not been set", TextToSpeech.QUEUE_FLUSH, null);
             return;
         }
-        if (destination.isEmpty()) {
+
+        if (destination == null || destination.equals("")) {
             mTts.speak("Destination has not been set", TextToSpeech.QUEUE_FLUSH, null);
             return;
         }
@@ -713,7 +758,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             // Check if the user is still on the route
-            if (!mRoute.isLocationInPath(point)) {
+            if (!mRoute.isLocationInPath(point) && !DEBUG) {
                 recalculateRoute();
                 return;
             }
@@ -992,6 +1037,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                         startService(intentBT);
 
                         tts("Bluetooth established");
+                        Toast.makeText(getApplicationContext(), "Bluetooth established", Toast.LENGTH_LONG).show();
+
                         // Bind to LocalService
                         //bindService(intentBT, mConnection, Context.BIND_AUTO_CREATE);
 

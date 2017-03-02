@@ -110,8 +110,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         etOrigin = (EditText) findViewById(R.id.etOrigin);
         etDestination = (EditText) findViewById(R.id.etDestination);
 
-        retrieveData();
         retrieveStates();
+        retrieveData();
 
         setUpCurrentLocationListener();
 
@@ -120,10 +120,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setUpTransitModeListeners();
 
         setUpUnlockListener();
-
-        // because i am too lazy to type it out, remove later
-        etOrigin.setText("Your Location");
-        etDestination.setText("University of Waterloo");
     }
 
     private void retrieveStates() {
@@ -392,15 +388,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
 
-        if (origin.equals("Your Location")) {
+        if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
 
-        if (origin.isEmpty()) {
+        if (origin == null || origin.equals("")) {
             Toast.makeText(this, "Please enter origin address!", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (destination.isEmpty()) {
+
+        if (destination == null || destination.equals("")) {
             Toast.makeText(this, "Please enter destination address!", Toast.LENGTH_SHORT).show();
             return;
         }
