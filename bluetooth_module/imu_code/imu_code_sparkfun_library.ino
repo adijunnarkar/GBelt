@@ -5,8 +5,8 @@
 #include "math.h"
 #include <SoftwareSerial.h>
 
-#define SerialDebug true  // Set to true to get Serial output for debugging
-
+#define SerialDebug false  // Set to true to get Serial output for debugging
+#define avgCount 5 // set the number of samples to take to calculate an average
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
@@ -19,15 +19,18 @@ int ledEast = 10; //mega is 5
 int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
 int magnetometer_connect_counter = 0;
+int pwm_intensity = 128;
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
+
+float accelData[avgCount][3], magData[avgCount][3], gyroData[avgCount][3], accelDataSum[3] = {0}, gyroDataSum[3] = {0}, magDataSum[3] = {0}, accelAverage[3], gyroAverage[3], magAverage[3];
 
 //Char used for reading in Serial characters
 char inByte = 0;
 
 bool startReadingData = false;
 bool newDirectionReady = false; // indicates when a new direction from phone is available
-
+bool averageCalculated = false; // indicates when the average for 5 direction values have been calculated
 static bool receiving_bluetooth = false; // set to true when we first receive info from bluetooth
 
 String ledToLightUp = "";
@@ -115,6 +118,7 @@ void setup()
   myIMU.initAK8963(myIMU.magCalibration);
   calibrateMagnetometerBias(myIMU.magbias);
   Serial.println("AK8963 initialized for active data mode....");
+  turnAllMotorsOff();
 
   if (SerialDebug)
   {
@@ -151,8 +155,6 @@ void loop()
   analogWrite(ledEast, 0);*/
   if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
   {
-    sample_counter++;
-
     myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
     myIMU.getAres();
     //getActualAccelerometerValues();
@@ -160,12 +162,22 @@ void loop()
     myIMU.ay = (float)myIMU.accelCount[1] * myIMU.aRes - myIMU.accelBias[1];
     myIMU.az = (float)myIMU.accelCount[2] * myIMU.aRes - myIMU.accelBias[2];
 
+    // save accelData for averaging
+    accelData[sample_counter][0] = myIMU.ax;
+    accelData[sample_counter][1] = myIMU.ay;
+    accelData[sample_counter][2] = myIMU.az;
+
     myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
     myIMU.getGres();
     //getActualGyroscopeValues();
     myIMU.gx = (float)myIMU.gyroCount[0] * myIMU.gRes;
     myIMU.gy = (float)myIMU.gyroCount[1] * myIMU.gRes;
     myIMU.gz = (float)myIMU.gyroCount[2] * myIMU.gRes;
+
+    // save gyroData for averaging
+    gyroData[sample_counter][0] = myIMU.gx;
+    gyroData[sample_counter][1] = myIMU.gy;
+    gyroData[sample_counter][2] = myIMU.gz;
 
     myIMU.readMagData(myIMU.magCount);  // Read the x/y/z adc values
     myIMU.getMres();
@@ -183,6 +195,53 @@ void loop()
                myIMU.magbias[1];
     myIMU.mz = (float)myIMU.magCount[2] * myIMU.mRes * myIMU.magCalibration[2] -
                myIMU.magbias[2];
+
+    // save magData for averaging
+    magData[sample_counter][0] = myIMU.mx;
+    magData[sample_counter][1] = myIMU.my;
+    magData[sample_counter][2] = myIMU.mz;
+
+    // average data if appropriate number of samples have been taken
+    if (sample_counter == (avgCount - 1))
+    {
+      for (int i=0; i < avgCount; i++)
+      {
+        accelDataSum[0] += accelData[i][0];
+        accelDataSum[1] += accelData[i][1];
+        accelDataSum[2] += accelData[i][2];
+
+        magDataSum[0] += magData[i][0];
+        magDataSum[1] += magData[i][1];
+        magDataSum[2] += magData[i][2];
+
+        gyroDataSum[0] += gyroData[i][0];
+        gyroDataSum[1] += gyroData[i][1];
+        gyroDataSum[2] += gyroData[i][2];
+      }
+      accelAverage[0] = accelDataSum[0] / float(avgCount);
+      accelAverage[1] = accelDataSum[1] / float(avgCount);
+      accelAverage[2] = accelDataSum[2] / float(avgCount);
+
+      magAverage[0] = magDataSum[0] / float(avgCount);
+      magAverage[1] = magDataSum[1] / float(avgCount);
+      magAverage[2] = magDataSum[2] / float(avgCount);
+
+      gyroAverage[0] = gyroDataSum[0] / float(avgCount);
+      gyroAverage[1] = gyroDataSum[1] / float(avgCount);
+      gyroAverage[2] = gyroDataSum[2] / float(avgCount);
+       
+      averageCalculated = true;
+
+      // reset sum arrays to zero
+      memset(accelDataSum, 0, sizeof(accelDataSum));
+      memset(magDataSum, 0, sizeof(magDataSum));
+      memset(gyroDataSum, 0, sizeof(gyroDataSum));
+      
+      //Serial.println("[" + String(accelAverage[0]) + ", " + String(accelAverage[1]) + ", " + String(accelAverage[2]) + "]");
+      //Serial.println("[" + String(magAverage[0]) + ", " + String(magAverage[1]) + ", " + String(magAverage[2]) + "]");
+      //Serial.println("[" + String(gyroAverage[0]) + ", " + String(gyroAverage[1]) + ", " + String(gyroAverage[2]) + "]");
+    }
+    sample_counter = (sample_counter + 1) % avgCount;
   } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
 
   // Must be called before updating quaternions!
@@ -202,7 +261,7 @@ void loop()
     myIMU.yaw   -= 9.65; // Declination at Waterloo, Ontario
     myIMU.roll  *= RAD_TO_DEG;
   */
-  pitch = atan2(myIMU.ay, sqrt(myIMU.ax * myIMU.ax + myIMU.az * myIMU.az)) * RAD_TO_DEG;
+  //pitch = atan2(myIMU.ay, sqrt(myIMU.ax * myIMU.ax + myIMU.az * myIMU.az)) * RAD_TO_DEG;
 
   /*pitch = atan2(myIMU.ay, sqrt(myIMU.ax*myIMU.ax + myIMU.az*myIMU.az)) * RAD_TO_DEG;
     roll = atan2(-myIMU.ax, myIMU.az) * RAD_TO_DEG;
@@ -213,25 +272,29 @@ void loop()
     yaw = (360 - (int)yaw) % 360;
   */
   /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
-  pitch = atan2(-myIMU.ax, sqrt(myIMU.ay * myIMU.ay + myIMU.az * myIMU.az)) * RAD_TO_DEG + 15; // bias of 15 degrees added
-  roll = atan2(myIMU.ay, myIMU.az) * RAD_TO_DEG;
-
-  Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
-  Yh = -myIMU.mx * cos(roll * DEG_TO_RAD) + myIMU.mz * sin(roll * DEG_TO_RAD);
-  yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
-  yaw = (360 - (int)yaw) % 360;
-  Xh = myIMU.mx * cos(pitch * DEG_TO_RAD) + myIMU.my * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
-  Yh = myIMU.my * cos(roll * DEG_TO_RAD) - myIMU.mz * sin(roll * DEG_TO_RAD);
-  yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
-  yaw = ((360 + (int)yaw) % 360) + 15; // bias of 15 degrees added
+  if (averageCalculated)
+  {
+      pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG + 15; // bias of 15 degrees added
+      roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
+    
+      /*Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
+      Yh = -myIMU.mx * cos(roll * DEG_TO_RAD) + myIMU.mz * sin(roll * DEG_TO_RAD);
+      yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
+      yaw = (360 - (int)yaw) % 360;*/
+      Xh = magAverage[0] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + magAverage[2] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
+      Yh = magAverage[1] * cos(roll * DEG_TO_RAD) - magAverage[2] * sin(roll * DEG_TO_RAD);
+      yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
+      yaw = ((360 + (int)yaw) % 360) + 15; // bias of 15 degrees added
+      //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
+  }
 
   if (BTSerial.available() > 0)
   {
-    receiving_bluetooth = true;
     inByte = BTSerial.read();
     //Serial.println(inByte);
     if (inByte == '#')
     {
+      receiving_bluetooth = true;
       startReadingData = true;
     }
     if (inByte == '~')
@@ -247,69 +310,90 @@ void loop()
 
   if (newDirectionReady)
   {
-    turnAllLEDsOff();
-
-    thetaDesired = direction.toInt();
-    Serial.println("Direction: " + direction);
-    Serial.println("Theta Desired: " + String(thetaDesired));
-
+    //turnAllLEDsOff();
+    if (direction == "Stop")
+    {
+      turnAllMotorsOff();
+      //Serial.println("STOP");
+      receiving_bluetooth = false;
+      while(Serial.available()){  //is there anything to read?
+        char getData = Serial.read();  //if yes, read it
+      }   // don't do anything with it.
+    }
+    else
+    {
+        thetaDesired = direction.toInt();
+        Serial.println("Theta Received: " + String(thetaDesired));
+    }
     newDirectionReady = false;
     direction = "";
   }
-  
-  if (yaw > thetaDesired) 
-  {
-    theta = 360 - (yaw - thetaDesired);
-  }
-  else {
-    theta = thetaDesired - yaw;
-  }
 
-  if (receiving_bluetooth) {
+ 
+  if (receiving_bluetooth && averageCalculated) {
+    // calculate theta to decide which motors to activate only if IMU reading average has been calculated
+    if (yaw > thetaDesired) 
+    {
+        theta = 360 - (yaw - thetaDesired);
+    }
+    else {
+        theta = thetaDesired - yaw;
+    }
+
+    Serial.println("Theta: " + String(theta));
     if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
     {
-        turnAllLEDsOff();
-        analogWrite(ledNorth, 128);
+        turnAllMotorsOff();
+        Serial.print("North Motors Active");
+        analogWrite(ledNorth, pwm_intensity);
     }
     else if (inRange(theta, 10, 80)) // Northeast
     {
-      turnAllLEDsOff();
-      analogWrite(ledNorth, 128);
-      analogWrite(ledEast, 128);
+      turnAllMotorsOff();
+      Serial.print("North and East Motors Active");
+      analogWrite(ledNorth, pwm_intensity);
+      analogWrite(ledEast, pwm_intensity);
     }
     else if (inRange(theta, 80, 100)) // East
     {
-      turnAllLEDsOff();
-      analogWrite(ledEast, 128);
+      turnAllMotorsOff();
+      Serial.print("East Motors Active");
+      analogWrite(ledEast, pwm_intensity);
     }
     else if (inRange(theta, 100, 170)) // Southeast
     {
-      turnAllLEDsOff();
-      analogWrite(ledSouth, 128);
-      analogWrite(ledEast, 128);
+      turnAllMotorsOff();
+      Serial.print("South and East Motors Active");
+      analogWrite(ledSouth, pwm_intensity);
+      analogWrite(ledEast, pwm_intensity);
     }
     else if (inRange(theta, 170, 190)) // South
     {
-      turnAllLEDsOff();
-      analogWrite(ledSouth, 128);
+      turnAllMotorsOff();
+      Serial.print("South Motors Active");
+      analogWrite(ledSouth, pwm_intensity);
     }
     else if (inRange(theta, 190, 260)) // Southwest
     {
-      turnAllLEDsOff();
-      analogWrite(ledSouth, 128);
-      analogWrite(ledWest, 128);
+      turnAllMotorsOff();
+      Serial.print("South and West Motors Active");
+      analogWrite(ledSouth, pwm_intensity);
+      analogWrite(ledWest, pwm_intensity);
     }
     else if (inRange(theta, 260, 280)) // West
     {
-      turnAllLEDsOff();
-      analogWrite(ledWest, 128);
+      turnAllMotorsOff();
+      Serial.print("West Motors Active");
+      analogWrite(ledWest, pwm_intensity);
     }
     else if (inRange(theta, 280, 350)) // Northwest
     {
-      turnAllLEDsOff();
-      analogWrite(ledNorth, 128);
-      analogWrite(ledWest, 128);
+      turnAllMotorsOff();
+      Serial.print("North and West Motors Active");
+      analogWrite(ledNorth, pwm_intensity);
+      analogWrite(ledWest, pwm_intensity);
     }
+    averageCalculated = false;
   }
 
   if (SerialDebug)
@@ -353,7 +437,15 @@ void loop()
 
     Serial.print("\n\n");
   }
-  delay(500);
+  delay(50);
+}
+
+void turnAllMotorsOff()
+{
+    analogWrite(ledNorth, 0);
+    analogWrite(ledSouth, 0);
+    analogWrite(ledEast, 0);
+    analogWrite(ledWest, 0);
 }
 
 void turnAllLEDsOff()
@@ -363,6 +455,7 @@ void turnAllLEDsOff()
   digitalWrite(ledWest, LOW);
   digitalWrite(ledEast, LOW);
 }
+
 bool inRange(int val, int min, int max)
 {
   return ((min <= val) && (val <= max));
