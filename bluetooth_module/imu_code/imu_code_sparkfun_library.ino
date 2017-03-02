@@ -23,7 +23,9 @@ int pwm_intensity = 128;
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
 
-float accelData[avgCount][3], magData[avgCount][3], gyroData[avgCount][3], accelDataSum[3] = {0}, gyroDataSum[3] = {0}, magDataSum[3] = {0}, accelAverage[3], gyroAverage[3], magAverage[3];
+float accelData[avgCount][3], magData[avgCount][3], gyroData[avgCount][3]; // raw IMU data values read stored here
+float accelDataSum[3] = {0}, gyroDataSum[3] = {0}, magDataSum[3] = {0}; // sum of samples stored here
+float accelAverage[3], gyroAverage[3], magAverage[3]; // averaged values stored here
 
 //Char used for reading in Serial characters
 char inByte = 0;
@@ -31,6 +33,7 @@ char inByte = 0;
 bool startReadingData = false;
 bool newDirectionReady = false; // indicates when a new direction from phone is available
 bool averageCalculated = false; // indicates when the average for 5 direction values have been calculated
+
 static bool receiving_bluetooth = false; // set to true when we first receive info from bluetooth
 
 String ledToLightUp = "";
@@ -272,21 +275,21 @@ void loop()
     yaw = (360 - (int)yaw) % 360;
   */
   /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
-  if (averageCalculated)
-  {
-      pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG + 15; // bias of 15 degrees added
-      roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
-    
-      /*Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
-      Yh = -myIMU.mx * cos(roll * DEG_TO_RAD) + myIMU.mz * sin(roll * DEG_TO_RAD);
-      yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
-      yaw = (360 - (int)yaw) % 360;*/
-      Xh = magAverage[0] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + magAverage[2] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
-      Yh = magAverage[1] * cos(roll * DEG_TO_RAD) - magAverage[2] * sin(roll * DEG_TO_RAD);
-      yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
-      yaw = ((360 + (int)yaw) % 360) + 15; // bias of 15 degrees added
-      //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
-  }
+    if (averageCalculated)
+    {
+        pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG + 15; // bias of 15 degrees added
+        roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
+
+        /*Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
+        Yh = -myIMU.mx * cos(roll * DEG_TO_RAD) + myIMU.mz * sin(roll * DEG_TO_RAD);
+        yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
+        yaw = (360 - (int)yaw) % 360;*/
+        Xh = magAverage[0] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + magAverage[2] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
+        Yh = magAverage[1] * cos(roll * DEG_TO_RAD) - magAverage[2] * sin(roll * DEG_TO_RAD);
+        yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
+        yaw = ((360 + (int)yaw) % 360) + 15; // bias of 15 degrees added
+        //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
+    }
 
   if (BTSerial.available() > 0)
   {
@@ -329,7 +332,7 @@ void loop()
     direction = "";
   }
 
- 
+
   if (receiving_bluetooth && averageCalculated) {
     // calculate theta to decide which motors to activate only if IMU reading average has been calculated
     if (yaw > thetaDesired) 
@@ -341,6 +344,7 @@ void loop()
     }
 
     Serial.println("Theta: " + String(theta));
+
     if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
     {
         turnAllMotorsOff();
@@ -393,6 +397,7 @@ void loop()
       analogWrite(ledNorth, pwm_intensity);
       analogWrite(ledWest, pwm_intensity);
     }
+    delay(2000);
     averageCalculated = false;
   }
 
