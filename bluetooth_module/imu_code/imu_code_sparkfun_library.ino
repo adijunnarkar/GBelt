@@ -277,7 +277,7 @@ void loop()
   /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
     if (averageCalculated)
     {
-        pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG + 15; // bias of 15 degrees added
+        pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG; // bias of 15 degrees added
         roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
 
         /*Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
@@ -287,8 +287,8 @@ void loop()
         Xh = magAverage[0] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + magAverage[2] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
         Yh = magAverage[1] * cos(roll * DEG_TO_RAD) - magAverage[2] * sin(roll * DEG_TO_RAD);
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
-        yaw = ((360 + (int)yaw) % 360) + 15; // bias of 15 degrees added
-        //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
+        yaw = ((360 + (int)yaw) % 360); // bias of 15 degrees added
+        Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
     }
 
   if (BTSerial.available() > 0)
