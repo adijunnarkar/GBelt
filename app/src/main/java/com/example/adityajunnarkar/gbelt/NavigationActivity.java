@@ -89,6 +89,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
+    private RelativeLayout returnContent;
     private ImageView directionIndicator;
     private TextView instruction;
 
@@ -133,6 +134,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         setUpLoadingSpinner();
 
         setUpDirectionsListener();
+
+        setUpReturnListener();
 
         setUpUnlockListener();
     }
@@ -179,6 +182,17 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             @Override
             public void onClick(View view) {
                 createDirectionsActivity();
+            }
+        });
+    }
+
+
+    private void setUpReturnListener() {
+        returnContent = (RelativeLayout) findViewById(R.id.returnContent);
+        returnContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
             }
         });
     }
@@ -237,6 +251,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         startActivity(intent);
+        loader.disableLoading();
     }
 
     public void onBackPressed() {

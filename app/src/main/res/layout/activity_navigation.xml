@@ -33,6 +33,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="0">
+
                     <!--TODO: get direction arrows up left right etc. and add logic to show which-->
                     <ImageView
                         android:layout_marginLeft="5dp"
@@ -67,7 +68,9 @@
                             android:layout_gravity="top"
                             android:id="@+id/bus"
                             android:src="@drawable/bus"/>
+
                     </RelativeLayout>
+
                 </RelativeLayout>
 
                 <TextView
@@ -80,42 +83,84 @@
                     android:layout_marginRight="5dp"
                     android:textColor="@color/white"
                     android:textSize="22sp" />
+
             </LinearLayout>
 
-            <LinearLayout
+            <RelativeLayout
                 android:id="@+id/tripInfo"
                 android:layout_below="@+id/instructionInfo"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <ImageView
+                    android:id="@+id/distanceIcon"
+                    android:layout_alignParentLeft="true"
                     android:layout_marginLeft="20dp"
                     android:layout_width="35dp"
                     android:layout_height="35dp"
                     android:src="@drawable/ic_distance"/>
+
                 <TextView
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:id="@+id/tvDistance"
                     android:gravity="center"
+                    android:layout_toRightOf="@+id/distanceIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
                     android:textColor="@color/white"
-                    android:text="0 km"
-                    android:id="@+id/tvDistance" />
+                    android:text="0 km" />
 
                 <ImageView
+                    android:id="@+id/clockIcon"
+                    android:layout_toRightOf="@+id/tvDistance"
                     android:layout_marginLeft="20dp"
                     android:layout_width="35dp"
                     android:layout_height="35dp"
                     android:padding="5dp"
                     android:src="@drawable/ic_clock"/>
+
                 <TextView
+                    android:id="@+id/tvDuration"
+                    android:layout_toRightOf="@+id/clockIcon"
+                    android:gravity="center"
                     android:layout_marginLeft="5dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="35dp"
                     android:textColor="@color/white"
-                    android:text="0 min"
-                    android:id="@+id/tvDuration"
-                    android:gravity="center" />
-            </LinearLayout>
+                    android:text="0 min" />
+
+
+                <RelativeLayout
+                    android:id="@+id/returnContent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true">
+
+                    <ImageView
+                        android:id="@+id/returnIcon"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_gravity="right"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_return"/>
+
+                    <TextView
+                        android:id="@+id/returnText"
+                        android:gravity="center"
+                        android:layout_toRightOf="@+id/returnIcon"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="35dp"
+                        android:text="Back"
+                        android:textColor="@color/black"
+                        android:textSize="16dp"
+                        android:textStyle="bold" />
+
+                </RelativeLayout>
+
+            </RelativeLayout>
+
         </RelativeLayout>
 
         <fragment xmlns:android="http://schemas.android.com/apk/res/android"
@@ -133,6 +178,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0" />
+
     </LinearLayout>
 
     <include layout="@layout/loading_screen"/>
