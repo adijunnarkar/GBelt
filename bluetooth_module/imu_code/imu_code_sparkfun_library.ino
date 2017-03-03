@@ -279,7 +279,7 @@ void loop()
     {
         pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG;
         roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
-        pitch = 0; roll=0; // TO-DO: remove
+        //pitch = 0; roll=0; // TO-DO: remove
         /*Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
         Yh = -myIMU.mx * cos(roll * DEG_TO_RAD) + myIMU.mz * sin(roll * DEG_TO_RAD);
         yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
@@ -288,7 +288,7 @@ void loop()
         Yh = magAverage[1] * cos(roll * DEG_TO_RAD) - magAverage[2] * sin(roll * DEG_TO_RAD);
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
         yaw = ((360 + (int)yaw) % 360);
-        //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
+        Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
     }
 
   if (BTSerial.available() > 0)
@@ -331,8 +331,9 @@ void loop()
     newDirectionReady = false;
     direction = "";
   }
-  
+  thetaDesired = 0;
   thetaDesired = 360 - thetaDesired;
+  receiving_bluetooth = true;
   if (receiving_bluetooth && averageCalculated) {
     // calculate theta to decide which motors to activate only if IMU reading average has been calculated
     if (yaw > thetaDesired) 
