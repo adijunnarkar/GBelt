@@ -113,6 +113,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         retrieveStates();
         retrieveData();
 
+        setUpVoiceRecognitionListener();
+
         setUpCurrentLocationListener();
 
         setUpStartNavigationListener();
@@ -185,6 +187,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 btnWalk.getBackground().setAlpha(255);
                 mode = 1;
             }
+        });
+    }
+
+    private void setUpVoiceRecognitionListener() {
+        speakButton = (ImageView) findViewById(R.id.microphone);
+        speakButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //startVoiceRecognitionActivity();
+                    }
         });
     }
 
