@@ -28,7 +28,9 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -64,6 +66,7 @@ import java.util.Map;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
+import Modules.LoadingScreen;
 import Modules.Route;
 
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -111,10 +114,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     boolean mBooleanIsPressed;
     CircularProgressBar circularProgressBar;
     UnlockBar unlock;
-    ProgressBar spinner;
-    RelativeLayout loadingBg;
-
-    boolean loading = true;
+    LoadingScreen loader;
 
     String activityMode; // Maps or Navigation
 
@@ -181,7 +181,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 //Toast.LENGTH_SHORT).show();
 
                 // To discover remote Bluetooth devices
-                discoverDevices();
+                if (BluetoothDeviceForHC05 == null) discoverDevices();
 
             }
         }
@@ -207,21 +207,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     private void setUpLoadingSpinner() {
-        loadingBg = (RelativeLayout)findViewById(R.id.loadingBg);
-        spinner = (ProgressBar)findViewById(R.id.loadingProgressBar);
-        disableLoading();
-    }
+        LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
+        RelativeLayout loadingContent = (RelativeLayout) findViewById(R.id.loadingContent);
+        TextView loadingText = (TextView) findViewById(R.id.loadingText);
+        ProgressBar spinner = (ProgressBar) findViewById(R.id.loadingProgressBar);
+        LinearLayout loadingBg = (LinearLayout) findViewById(R.id.loadingBg);
 
-    private void enableLoading() {
-        loading = true;
-        loadingBg.setVisibility(View.VISIBLE);
-        spinner.setVisibility(View.VISIBLE);
-    }
-
-    private void disableLoading() {
-        loading = false;
-        loadingBg.setVisibility(View.GONE);
-        spinner.setVisibility(View.GONE);
+        loader = new LoadingScreen(activityContent, loadingContent, loadingText, spinner, loadingBg);
+        loader.disableLoading();
     }
 
     private void retrieveStates() {
@@ -361,9 +354,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void startMaps() {
+        transmitStop();
+        loader.updateLoadingText("Starting Touch Screen Mode...");
+        loader.enableLoading();
         destroyTts();
         destroySpeechRecognizer();
-        transmitStop();
 
         Intent intent = new Intent(this, MapsActivity.class);
         Bundle bundle = new Bundle();
@@ -380,12 +375,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         mRoute = null;
 
         startActivity(intent);
+        finish();
     }
 
     public void startNavigation() {
+        transmitStop();
+        loader.updateLoadingText("Starting Touch-Screen Mode...");
+        loader.enableLoading();
         destroyTts();
         destroySpeechRecognizer();
-        transmitStop();
 
         Intent intent = new Intent(this, NavigationActivity.class);
         Bundle bundle = new Bundle();
@@ -406,6 +404,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     public void startTextToSpeechActivity() {
@@ -521,7 +520,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
 
-        disableLoading();
+        loader.disableLoading();
     }
 
     public void updateMap() {
@@ -548,7 +547,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && !TTSDEBUG) {
+        if (myHashAlarm != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -576,7 +575,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        enableLoading();
+        loader.enableLoading();
         if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
@@ -1015,36 +1014,36 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     // Create a BroadcastReceiver for ACTION_FOUND
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+        String action = intent.getAction();
 
-            // Whenever a remote Bluetooth device is found
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+        // Whenever a remote Bluetooth device is found
+        if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
-                        Toast.LENGTH_SHORT).show();
+            // Get the BluetoothDevice object from the Intent
+            BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
+                    Toast.LENGTH_SHORT).show();
 
 
-                if (bluetoothDevice.getName() != null) {
-                    if (bluetoothDevice.getName().equals("HC-05")) {
-                        BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
+            if (bluetoothDevice.getName() != null) {
+                if (bluetoothDevice.getName().equals("HC-05")) {
+                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
 
-                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
-                        Bundle b = new Bundle();
-                        b.putParcelable("HC-05", BluetoothDeviceForHC05);
-                        intentBT.putExtras(b);
-                        startService(intentBT);
+                    Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                    Bundle b = new Bundle();
+                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                    intentBT.putExtras(b);
+                    startService(intentBT);
 
-                        tts("Bluetooth established");
-                        Toast.makeText(getApplicationContext(), "Bluetooth established", Toast.LENGTH_LONG).show();
+                    tts("Bluetooth established");
+                    Toast.makeText(getApplicationContext(), "Bluetooth established", Toast.LENGTH_LONG).show();
 
-                        // Bind to LocalService
-                        //bindService(intentBT, mConnection, Context.BIND_AUTO_CREATE);
+                    // Bind to LocalService
+                    //bindService(intentBT, mConnection, Context.BIND_AUTO_CREATE);
 
-                    }
                 }
             }
+        }
         }
     };
 

@@ -15,9 +15,14 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -42,6 +47,7 @@ import java.util.Map;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
+import Modules.LoadingScreen;
 import Modules.Route;
 
 import com.hamondigital.unlock.UnlockBar;
@@ -77,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String utteranceId = "";
 
     UnlockBar unlock;
+    LoadingScreen loader;
 
     // Voice Recognition Request Codes
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
@@ -113,6 +120,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         retrieveStates();
         retrieveData();
 
+        setUpLoadingSpinner();
+
         setUpCurrentLocationListener();
 
         setUpStartNavigationListener();
@@ -120,6 +129,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setUpTransitModeListeners();
 
         setUpUnlockListener();
+    }
+
+    private void setUpLoadingSpinner() {
+        LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
+        RelativeLayout loadingContent = (RelativeLayout) findViewById(R.id.loadingContent);
+        TextView loadingText = (TextView) findViewById(R.id.loadingText);
+        ProgressBar spinner = (ProgressBar) findViewById(R.id.loadingProgressBar);
+        LinearLayout loadingBg = (LinearLayout) findViewById(R.id.loadingBg);
+
+        loader = new LoadingScreen(activityContent, loadingContent, loadingText, spinner, loadingBg);
+        loader.disableLoading();
     }
 
     private void retrieveStates() {
@@ -235,9 +255,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     public void startVoiceMode() {
+        loader.updateLoadingText("Starting Voice Mode...");
+        loader.enableLoading();
         destroyTts();
 
         Intent intent = new Intent(this, VoiceModeActivity.class);
@@ -258,6 +281,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     private void destroyTts() {
@@ -269,7 +293,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && !TTSDEBUG) {
+        if (myHashAlarm != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -385,6 +409,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void sendDirectionRequest() {
+        loader.enableLoading();
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
 
@@ -411,14 +436,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onDirectionFinderStart() {
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Finding direction...", true);
+        loader.updateLoadingText("Finding direction...");
+//        progressDialog = ProgressDialog.show(this, "Please wait.",
+//                "Finding direction...", true);
     }
 
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
-        progressDialog.dismiss();
+//        progressDialog.dismiss();
 
         for (Route route : routes) {
             mRoute = route;
