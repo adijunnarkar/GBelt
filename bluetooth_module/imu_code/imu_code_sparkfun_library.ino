@@ -160,11 +160,11 @@ void loop()
   {
     myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
     myIMU.getAres();
-    //getActualAccelerometerValues();
+
     myIMU.ax = (float)myIMU.accelCount[0] * myIMU.aRes - myIMU.accelBias[0];
     myIMU.ay = (float)myIMU.accelCount[1] * myIMU.aRes - myIMU.accelBias[1];
     myIMU.az = (float)myIMU.accelCount[2] * myIMU.aRes - myIMU.accelBias[2];
-
+    
     // save accelData for averaging
     accelData[sample_counter][0] = myIMU.ax;
     accelData[sample_counter][1] = myIMU.ay;
@@ -172,7 +172,6 @@ void loop()
 
     myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
     myIMU.getGres();
-    //getActualGyroscopeValues();
     myIMU.gx = (float)myIMU.gyroCount[0] * myIMU.gRes;
     myIMU.gy = (float)myIMU.gyroCount[1] * myIMU.gRes;
     myIMU.gz = (float)myIMU.gyroCount[2] * myIMU.gRes;
@@ -191,7 +190,6 @@ void loop()
     // myIMU.magbias[1] = +120.;
     // User environmental x-axis correction in milliGauss
     // myIMU.magbias[2] = +125.;
-    //getActualMagnetometerValues();
     myIMU.mx = (float)myIMU.magCount[0] * myIMU.mRes * myIMU.magCalibration[0] -
                myIMU.magbias[0];
     myIMU.my = (float)myIMU.magCount[1] * myIMU.mRes * myIMU.magCalibration[1] -
@@ -279,7 +277,11 @@ void loop()
     {
         pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG;
         roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
-        //pitch = 0; roll=0; // TO-DO: remove
+        if (!(inRange(abs(int(roll)), 165, 180))) // if roll gives us problematic data, then hardcode pitch, roll
+        {
+          pitch = 0;
+          roll = 180;
+        }
         /*Xh = -myIMU.my * cos(pitch * DEG_TO_RAD) - myIMU.mx * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - myIMU.mz * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
         Yh = -myIMU.mx * cos(roll * DEG_TO_RAD) + myIMU.mz * sin(roll * DEG_TO_RAD);
         yaw = atan2(Yh, Xh) * RAD_TO_DEG - 9.65;
@@ -289,131 +291,133 @@ void loop()
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
         yaw = ((360 + (int)yaw) % 360);
         Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
-    }
-
-  if (BTSerial.available() > 0)
-  {
-    inByte = BTSerial.read();
-    //Serial.println(inByte);
-    if (inByte == '#')
-    {
-      receiving_bluetooth = true;
-      startReadingData = true;
-    }
-    if (inByte == '~')
-    {
-      startReadingData = false;
-      newDirectionReady = true;
-    }
-    if ((startReadingData) && (inByte != '#') && (inByte != '~'))
-    {
-      direction += inByte;
-    }
-  }
-
-  if (newDirectionReady)
-  {
-    //turnAllLEDsOff();
-    if (direction == "Stop")
-    {
-      turnAllMotorsOff();
-      //Serial.println("STOP");
-      receiving_bluetooth = false;
-      while(Serial.available()){  //is there anything to read?
-        char getData = Serial.read();  //if yes, read it
-      }   // don't do anything with it.
-    }
-    else
-    {
-        thetaDesired = direction.toInt();
-        Serial.println("Theta Received: " + String(thetaDesired));
-    }
-    newDirectionReady = false;
-    direction = "";
-  }
-  thetaDesired = 0;
-  thetaDesired = 360 - thetaDesired;
-  receiving_bluetooth = true;
-  if (receiving_bluetooth && averageCalculated) {
-    // calculate theta to decide which motors to activate only if IMU reading average has been calculated
-    if (yaw > thetaDesired) 
-    {
-        theta = 360 - (yaw - thetaDesired);
-    }
-    else {
-        theta = thetaDesired - yaw;
-    }
     
-    Serial.println("Yaw: " + String(yaw));
-    Serial.println("Theta_Received: " + String(thetaDesired));
-    Serial.println("Theta: " + String(theta));
 
-    if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
-    {
-        turnAllMotorsOff();
-        Serial.println("North Motors Active");
-        analogWrite(ledNorth, pwm_intensity);
+        if (BTSerial.available() > 0)
+        {
+          inByte = BTSerial.read();
+          //Serial.println(inByte);
+          if (inByte == '#')
+          {
+            receiving_bluetooth = true;
+            startReadingData = true;
+          }
+          if (inByte == '~')
+          {
+            startReadingData = false;
+            newDirectionReady = true;
+          }
+          if ((startReadingData) && (inByte != '#') && (inByte != '~'))
+          {
+            direction += inByte;
+          }
+        }
+      
+        if (newDirectionReady)
+        {
+          //turnAllLEDsOff();
+          if (direction == "Stop")
+          {
+            turnAllMotorsOff();
+            //Serial.println("STOP");
+            receiving_bluetooth = false;
+            while(Serial.available()){  //is there anything to read?
+              char getData = Serial.read();  //if yes, read it
+            }   // don't do anything with it.
+          }
+          else
+          {
+              thetaDesired = direction.toInt();
+              Serial.println("Theta Received: " + String(thetaDesired));
+          }
+          newDirectionReady = false;
+          direction = "";
+        }
+        
+        thetaDesired = 180;
+        thetaDesired = 360 - thetaDesired;
+        receiving_bluetooth = true;
+        
+        if (receiving_bluetooth) {
+          // calculate theta to decide which motors to activate only if IMU reading average has been calculated
+          if (yaw > thetaDesired) 
+          {
+              theta = 360 - (yaw - thetaDesired);
+          }
+          else {
+              theta = thetaDesired - yaw;
+          }
+          
+          Serial.println("Yaw: " + String(yaw));
+          Serial.println("Theta_Received: " + String(thetaDesired));
+          Serial.println("Theta: " + String(theta));
+      
+          if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
+          {
+              turnAllMotorsOff();
+              Serial.println("North Motors Active");
+              analogWrite(ledNorth, pwm_intensity);
+          }
+          else if (inRange(theta, 10, 80)) // Northeast
+          {
+            turnAllMotorsOff();
+            Serial.println("North and East Motors Active");
+            analogWrite(ledNorth, pwm_intensity);
+            analogWrite(ledEast, pwm_intensity);
+          }
+          else if (inRange(theta, 80, 100)) // East
+          {
+            turnAllMotorsOff();
+            Serial.println("East Motors Active");
+            analogWrite(ledEast, pwm_intensity);
+          }
+          else if (inRange(theta, 100, 170)) // Southeast
+          {
+            turnAllMotorsOff();
+            Serial.println("South and East Motors Active");
+            analogWrite(ledSouth, pwm_intensity);
+            analogWrite(ledEast, pwm_intensity);
+          }
+          else if (inRange(theta, 170, 190)) // South
+          {
+            turnAllMotorsOff();
+            Serial.println("South Motors Active");
+            analogWrite(ledSouth, pwm_intensity);
+          }
+          else if (inRange(theta, 190, 260)) // Southwest
+          {
+            turnAllMotorsOff();
+            Serial.println("South and West Motors Active");
+            analogWrite(ledSouth, pwm_intensity);
+            analogWrite(ledWest, pwm_intensity);
+          }
+          else if (inRange(theta, 260, 280)) // West
+          {
+            turnAllMotorsOff();
+            Serial.println("West Motors Active");
+            analogWrite(ledWest, pwm_intensity);
+          }
+          else if (inRange(theta, 280, 350)) // Northwest
+          {
+            turnAllMotorsOff();
+            Serial.println("North and West Motors Active");
+            analogWrite(ledNorth, pwm_intensity);
+            analogWrite(ledWest, pwm_intensity);
+          }
+          //delay(2000);
+          averageCalculated = false;
+        }
     }
-    else if (inRange(theta, 10, 80)) // Northeast
-    {
-      turnAllMotorsOff();
-      Serial.println("North and East Motors Active");
-      analogWrite(ledNorth, pwm_intensity);
-      analogWrite(ledEast, pwm_intensity);
-    }
-    else if (inRange(theta, 80, 100)) // East
-    {
-      turnAllMotorsOff();
-      Serial.println("East Motors Active");
-      analogWrite(ledEast, pwm_intensity);
-    }
-    else if (inRange(theta, 100, 170)) // Southeast
-    {
-      turnAllMotorsOff();
-      Serial.println("South and East Motors Active");
-      analogWrite(ledSouth, pwm_intensity);
-      analogWrite(ledEast, pwm_intensity);
-    }
-    else if (inRange(theta, 170, 190)) // South
-    {
-      turnAllMotorsOff();
-      Serial.println("South Motors Active");
-      analogWrite(ledSouth, pwm_intensity);
-    }
-    else if (inRange(theta, 190, 260)) // Southwest
-    {
-      turnAllMotorsOff();
-      Serial.println("South and West Motors Active");
-      analogWrite(ledSouth, pwm_intensity);
-      analogWrite(ledWest, pwm_intensity);
-    }
-    else if (inRange(theta, 260, 280)) // West
-    {
-      turnAllMotorsOff();
-      Serial.println("West Motors Active");
-      analogWrite(ledWest, pwm_intensity);
-    }
-    else if (inRange(theta, 280, 350)) // Northwest
-    {
-      turnAllMotorsOff();
-      Serial.println("North and West Motors Active");
-      analogWrite(ledNorth, pwm_intensity);
-      analogWrite(ledWest, pwm_intensity);
-    }
-    //delay(2000);
-    averageCalculated = false;
-  }
-
   if (SerialDebug)
   {
     Serial.print("Sample Count: "); Serial.println(sample_counter);
 
     // Print acceleration values in milligs!
-    Serial.print("X-accel: "); Serial.print(1000 * myIMU.ax);
+    Serial.print("X-accel: "); Serial.print(1000 * accelAverage[0]);
     Serial.print(" mg ");
-    Serial.print("Y-accel: "); Serial.print(1000 * myIMU.ay);
+    Serial.print("Y-accel: "); Serial.print(1000 * accelAverage[1]);
     Serial.print(" mg ");
-    Serial.print("Z-accel: "); Serial.print(1000 * myIMU.az);
+    Serial.print("Z-accel: "); Serial.print(1000 * accelAverage[2]);
     Serial.println(" mg ");
 
     // Print gyro values in degree/sec
@@ -445,7 +449,7 @@ void loop()
 
     Serial.print("\n\n");
   }
-  delay(5);
+  delay(50);
 }
 
 void turnAllMotorsOff()
