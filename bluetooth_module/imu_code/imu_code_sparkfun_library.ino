@@ -6,7 +6,7 @@
 #include <SoftwareSerial.h>
 
 #define SerialDebug false  // Set to true to get Serial output for debugging
-#define avgCount 10 // set the number of samples to take to calculate an average
+#define avgCount 5 // set the number of samples to take to calculate an average
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
@@ -275,9 +275,9 @@ void loop()
   /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
     if (averageCalculated)
     {
-        pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG;
+        //pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG;
         roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
-        if (!(inRange(abs(int(roll)), 165, 180))) // if roll gives us problematic data, then hardcode pitch, roll
+        if (!(inRange(int(roll), -15, 15))) // if roll gives us problematic data, then hardcode pitch, roll
         {
           pitch = 0;
           roll = 180;
@@ -352,52 +352,52 @@ void loop()
           Serial.println("Theta_Received: " + String(thetaDesired));
           Serial.println("Theta: " + String(theta));
       
-          if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
+          if (inRange(theta, 355, 360) || inRange(theta, 0, 5)) // North
           {
               turnAllMotorsOff();
               Serial.println("North Motors Active");
               analogWrite(ledNorth, pwm_intensity);
           }
-          else if (inRange(theta, 10, 80)) // Northeast
+          else if (inRange(theta, 5, 85)) // Northeast
           {
             turnAllMotorsOff();
             Serial.println("North and East Motors Active");
             analogWrite(ledNorth, pwm_intensity);
             analogWrite(ledEast, pwm_intensity);
           }
-          else if (inRange(theta, 80, 100)) // East
+          else if (inRange(theta, 85, 95)) // East
           {
             turnAllMotorsOff();
             Serial.println("East Motors Active");
             analogWrite(ledEast, pwm_intensity);
           }
-          else if (inRange(theta, 100, 170)) // Southeast
+          else if (inRange(theta, 95, 175)) // Southeast
           {
             turnAllMotorsOff();
             Serial.println("South and East Motors Active");
             analogWrite(ledSouth, pwm_intensity);
             analogWrite(ledEast, pwm_intensity);
           }
-          else if (inRange(theta, 170, 190)) // South
+          else if (inRange(theta, 175, 185)) // South
           {
             turnAllMotorsOff();
             Serial.println("South Motors Active");
             analogWrite(ledSouth, pwm_intensity);
           }
-          else if (inRange(theta, 190, 260)) // Southwest
+          else if (inRange(theta, 185, 265)) // Southwest
           {
             turnAllMotorsOff();
             Serial.println("South and West Motors Active");
             analogWrite(ledSouth, pwm_intensity);
             analogWrite(ledWest, pwm_intensity);
           }
-          else if (inRange(theta, 260, 280)) // West
+          else if (inRange(theta, 265, 275)) // West
           {
             turnAllMotorsOff();
             Serial.println("West Motors Active");
             analogWrite(ledWest, pwm_intensity);
           }
-          else if (inRange(theta, 280, 350)) // Northwest
+          else if (inRange(theta, 275, 355)) // Northwest
           {
             turnAllMotorsOff();
             Serial.println("North and West Motors Active");
@@ -449,7 +449,7 @@ void loop()
 
     Serial.print("\n\n");
   }
-  delay(50);
+  delay(20);
 }
 
 void turnAllMotorsOff()
@@ -508,17 +508,11 @@ void calibrateMagnetometerBias(float * dest1)
     Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
     Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
   */
-   //mag_max[0] = 516; mag_min[0] = -112;
-   //mag_max[1] = 421; mag_min[1] = -98;
-   // mag_max[2] = -8; mag_min[2] = -575;
 
-  mag_max[0] = 493; mag_min[0] = -36;
-  mag_max[1] = 496;  mag_min[1] = -51;
-  mag_max[2] = 172;  mag_min[2] = -362;
-
-  mag_max[0] = 405; mag_min[0] = -125;
-  mag_max[1] = 512;  mag_min[1] = -51;
-  mag_max[2] = -137;  mag_min[2] = -683;
+  mag_max[0] = 437; mag_min[0] = -146;
+  mag_max[1] = 524;  mag_min[1] = -57;
+  mag_max[2] = -91;  mag_min[2] = -677;
+  
   // Get hard iron correction
   mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
   mag_bias[1]  = (mag_max[1] + mag_min[1]) / 2; // get average y mag bias in counts
@@ -536,7 +530,6 @@ void calibrateMagnetometerBias(float * dest1)
 
   float avg_rad = (mag_scale[0] + mag_scale[1] + mag_scale[2]) / 3.0;
 
-  //
   Serial.println("Mag Calibration done!");
 }
 
@@ -701,4 +694,5 @@ void accelgyrocalMPU9250(float * dest1, float * dest2)
   }
   Serial.println("DONE Calibrating MPU9250 (accel and gyro).");
 }
+
 
