@@ -1,4 +1,4 @@
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,125 +7,180 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/form"
-        android:background="@color/navigationBackground"
+    <LinearLayout
+        android:id="@+id/activityContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/instructionInfo"
-            android:layout_width="fill_parent"
+        <RelativeLayout
+            android:id="@+id/form"
+            android:background="@color/navigationBackground"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:layout_marginBottom="3dp"
-            android:weightSum="1">
-                <!--TODO: get direction arrows up left right etc. and add logic to show which-->
-            <ImageView
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_gravity="center_vertical"
-                android:id="@+id/directionIndicator"
-                android:src="@drawable/up_arrow"/>
+            android:layout_weight="0">
 
-            <TextView
-                android:id="@+id/instruction"
-                android:layout_gravity="center_vertical"
-                android:layout_height="wrap_content"
-                android:layout_width="200dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:textColor="@color/white"
-                android:textSize="22sp" />
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="90dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp" >
+            <LinearLayout
+                android:id="@+id/instructionInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="100dp"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:weightSum="1">
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/transportation">
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="0">
+
+                    <!--TODO: get direction arrows up left right etc. and add logic to show which-->
                     <ImageView
-                        android:layout_height="25dp"
-                        android:layout_width="25dp"
                         android:layout_marginLeft="5dp"
                         android:layout_marginRight="5dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
-                        android:layout_gravity="top"
-                        android:id="@+id/walk"
-                        android:src="@drawable/walk"/>
-                    <ImageView
-                        android:layout_height="25dp"
                         android:layout_width="25dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
-                        android:layout_gravity="top"
-                        android:id="@+id/bus"
-                        android:src="@drawable/bus"/>
+                        android:layout_height="25dp"
+                        android:id="@+id/directionIndicator"
+                        android:src="@drawable/up_arrow"/>
+
+                    <RelativeLayout
+                        android:id="@+id/transportation"
+                        android:layout_below="@+id/directionIndicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        <ImageView
+                            android:layout_height="25dp"
+                            android:layout_width="25dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:layout_gravity="top"
+                            android:id="@+id/walk"
+                            android:src="@drawable/walk"/>
+                        <ImageView
+                            android:layout_height="25dp"
+                            android:layout_width="25dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:layout_gravity="top"
+                            android:id="@+id/bus"
+                            android:src="@drawable/bus"/>
+
+                    </RelativeLayout>
+
                 </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/instruction"
+                    android:layout_gravity="center_vertical"
+                    android:layout_height="wrap_content"
+                    android:layout_width="220dp"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:textColor="@color/white"
+                    android:textSize="22sp" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/tripInfo"
+                android:layout_below="@+id/instructionInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/distanceIcon"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@drawable/ic_distance"/>
+
+                <TextView
+                    android:id="@+id/tvDistance"
+                    android:gravity="center"
+                    android:layout_toRightOf="@+id/distanceIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/white"
+                    android:text="0 km" />
+
+                <ImageView
+                    android:id="@+id/clockIcon"
+                    android:layout_toRightOf="@+id/tvDistance"
+                    android:layout_marginLeft="20dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_clock"/>
+
+                <TextView
+                    android:id="@+id/tvDuration"
+                    android:layout_toRightOf="@+id/clockIcon"
+                    android:gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:textColor="@color/white"
+                    android:text="0 min" />
+
+
+                <RelativeLayout
+                    android:id="@+id/returnContent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true">
+
+                    <ImageView
+                        android:id="@+id/returnIcon"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_gravity="right"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_return"/>
+
+                    <TextView
+                        android:id="@+id/returnText"
+                        android:gravity="center"
+                        android:layout_toRightOf="@+id/returnIcon"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="35dp"
+                        android:text="Back"
+                        android:textColor="@color/black"
+                        android:textSize="16dp"
+                        android:textStyle="bold" />
+
+                </RelativeLayout>
+
             </RelativeLayout>
 
-        </LinearLayout>
+        </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/tripInfo"
-            android:layout_below="@+id/instructionInfo"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:layout_marginLeft="20dp"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:src="@drawable/ic_distance"/>
-            <TextView
-                android:layout_marginLeft="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:textColor="@color/white"
-                android:text="0 km"
-                android:id="@+id/tvDistance" />
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            tools:context="com.example.adityajunnarkar.gbelt.NavigationActivity" />
 
-            <ImageView
-                android:layout_marginLeft="20dp"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:padding="5dp"
-                android:src="@drawable/ic_clock"/>
-            <TextView
-                android:layout_marginLeft="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:textColor="@color/white"
-                android:text="0 min"
-                android:id="@+id/tvDuration"
-                android:gravity="center" />
-        </LinearLayout>
-    </RelativeLayout>
+        <com.hamondigital.unlock.UnlockBar
+            android:id="@+id/unlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0" />
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_weight="1"
-        tools:context="com.example.adityajunnarkar.gbelt.NavigationActivity" />
+    </LinearLayout>
 
-    <com.hamondigital.unlock.UnlockBar
-        android:id="@+id/unlock"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0" />
-</LinearLayout>
+    <include layout="@layout/loading_screen"/>
+
+</FrameLayout>

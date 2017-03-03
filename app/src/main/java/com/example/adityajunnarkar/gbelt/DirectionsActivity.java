@@ -35,21 +35,5 @@ public class DirectionsActivity extends ListActivity {
         ArrayAdapter<CharSequence> notes =
                 new ArrayAdapter<CharSequence>(this, R.layout.activity_directions, instructions);
         setListAdapter(notes);
-
-
-        // Add click listeners to ListView
-//        ListView listView = getListView();
-//        listView.setTextFilterEnabled(true);
-//
-//        listView.setOnItemClickListener(new OnItemClickListener() {
-//            public void onItemClick(AdapterView<?> parent, View view,
-//                                    int position, long id) {
-//                // When clicked, show a toast with the TextView text
-//                Toast.makeText(getApplicationContext(),
-//                        ((TextView) view).getText(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
     }
-
 }
