@@ -6,6 +6,7 @@
 #include <SoftwareSerial.h>
 
 #define SerialDebug false  // Set to true to get Serial output for debugging
+#define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
@@ -19,7 +20,13 @@ int ledEast = 10; //mega is 5
 int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
 int magnetometer_connect_counter = 0;
-int pwm_intensity = 128;
+
+// PWM related variables
+int pwm_intensity_min = 0;
+int pwm_intensity_max = 128;
+int right_motor_intensity = 0;
+int range = 70;
+
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
 
@@ -342,10 +349,10 @@ void loop()
           // calculate theta to decide which motors to activate only if IMU reading average has been calculated
           if (yaw > thetaDesired) 
           {
-              theta = 360 - (yaw - thetaDesired);
+              theta = int(360 - (yaw - thetaDesired));
           }
           else {
-              theta = thetaDesired - yaw;
+              theta = int(thetaDesired - yaw);
           }
           
           Serial.println("Yaw: " + String(yaw));
@@ -355,56 +362,59 @@ void loop()
           if (inRange(theta, 355, 360) || inRange(theta, 0, 5)) // North
           {
               turnAllMotorsOff();
-              Serial.println("North Motors Active");
-              analogWrite(ledNorth, pwm_intensity);
+              analogWrite(ledNorth, pwm_intensity_max);
+              Serial.println("North Motors Active");              
           }
           else if (inRange(theta, 5, 85)) // Northeast
           {
             turnAllMotorsOff();
             Serial.println("North and East Motors Active");
-            analogWrite(ledNorth, pwm_intensity);
-            analogWrite(ledEast, pwm_intensity);
+            right_motor_intensity = map(theta - 5, 0, range, pwm_intensity_min, pwm_intensity_max);
+            analogWrite(ledNorth, pwm_intensity_max - right_motor_intensity);
+            analogWrite(ledEast, right_motor_intensity);
           }
           else if (inRange(theta, 85, 95)) // East
           {
             turnAllMotorsOff();
             Serial.println("East Motors Active");
-            analogWrite(ledEast, pwm_intensity);
+            analogWrite(ledEast, pwm_intensity_max);
           }
           else if (inRange(theta, 95, 175)) // Southeast
           {
             turnAllMotorsOff();
             Serial.println("South and East Motors Active");
-            analogWrite(ledSouth, pwm_intensity);
-            analogWrite(ledEast, pwm_intensity);
+            right_motor_intensity = map(theta - 95, 0, range, pwm_intensity_min, pwm_intensity_max);            
+            analogWrite(ledSouth, right_motor_intensity);
+            analogWrite(ledEast, pwm_intensity_max - right_motor_intensity);
           }
           else if (inRange(theta, 175, 185)) // South
           {
             turnAllMotorsOff();
             Serial.println("South Motors Active");
-            analogWrite(ledSouth, pwm_intensity);
+            analogWrite(ledSouth, pwm_intensity_max);
           }
           else if (inRange(theta, 185, 265)) // Southwest
           {
             turnAllMotorsOff();
             Serial.println("South and West Motors Active");
-            analogWrite(ledSouth, pwm_intensity);
-            analogWrite(ledWest, pwm_intensity);
+            right_motor_intensity = map(theta - 185, 0, range, pwm_intensity_min, pwm_intensity_max);                        
+            analogWrite(ledSouth, pwm_intensity_max - right_motor_intensity);
+            analogWrite(ledWest, right_motor_intensity);
           }
           else if (inRange(theta, 265, 275)) // West
           {
             turnAllMotorsOff();
             Serial.println("West Motors Active");
-            analogWrite(ledWest, pwm_intensity);
+            analogWrite(ledWest, pwm_intensity_max);
           }
           else if (inRange(theta, 275, 355)) // Northwest
           {
             turnAllMotorsOff();
             Serial.println("North and West Motors Active");
-            analogWrite(ledNorth, pwm_intensity);
-            analogWrite(ledWest, pwm_intensity);
+            right_motor_intensity = map(theta - 275, 0, range, pwm_intensity_min, pwm_intensity_max);                        
+            analogWrite(ledNorth, right_motor_intensity);
+            analogWrite(ledWest, pwm_intensity_max - right_motor_intensity);
           }
-          //delay(2000);
           averageCalculated = false;
         }
     }
