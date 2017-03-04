@@ -195,7 +195,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         speakButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //startVoiceRecognitionActivity();
+                        startVoiceRecognitionActivity();
                     }
         });
     }
@@ -292,15 +292,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String promptLocation = "Enter destination";
         tts(promptLocation);
 
-        // wait until utterance is complete before opening speech intent
-        while (!utteranceId.equals(promptLocation));
+        if(!TTSDEBUG) {
+            // wait until utterance is complete before opening speech intent
+            while (!utteranceId.equals(promptLocation)) ;
 
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
-                "Speak now");
-        startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                    "Speak now");
+            startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+        }
     }
 
     public void startTextToSpeechActivity() {
@@ -401,7 +403,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String destination = etDestination.getText().toString();
 
         if (origin != null && origin.equals("Your Location")) {
-            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            if(mLastLocation != null) {
+                origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            } else {
+                Toast.makeText(this, "Your Location is not found! ", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         if (origin == null || origin.equals("")) {
