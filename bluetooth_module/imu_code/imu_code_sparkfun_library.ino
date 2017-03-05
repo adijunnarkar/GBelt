@@ -8,6 +8,8 @@
 #define SerialDebug false  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
+#define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
+
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
@@ -341,9 +343,12 @@ void loop()
           direction = "";
         }
         
-        thetaDesired = 300;
-        //thetaDesired = 360 - thetaDesired;
-        receiving_bluetooth = true;
+        if (testingWithoutPhone)
+        {
+            thetaDesired = 300;
+            thetaDesired = 360 - thetaDesired;
+            receiving_bluetooth = true;
+        }
         
         if (receiving_bluetooth) {
           // calculate theta to decide which motors to activate only if IMU reading average has been calculated
