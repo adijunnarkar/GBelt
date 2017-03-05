@@ -75,8 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
-                android:layout_marginRight="10dp"
-                >
+                android:layout_marginRight="10dp">
                 <TextView
                     android:id="@+id/to"
                     android:layout_marginLeft="5dp"
@@ -106,6 +105,15 @@
                         android:layout_marginRight="5dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="5dp" />
+                    <ImageView
+                        android:id="@+id/microphone"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginTop="5dp"
+                        android:src="@drawable/microphone"/>
                 </RelativeLayout>
             </LinearLayout>
 
@@ -118,8 +126,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                >
+                android:layout_marginRight="10dp">
                 <ImageButton
                     android:layout_width="40dp"
                     android:layout_height="40dp"
