@@ -25,7 +25,7 @@ int magnetometer_connect_counter = 0;
 int pwm_intensity_min = 0;
 int pwm_intensity_max = 128;
 int right_motor_intensity = 0;
-int range = 70;
+int range = 80;
 
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
@@ -341,8 +341,8 @@ void loop()
           direction = "";
         }
         
-        thetaDesired = 180;
-        thetaDesired = 360 - thetaDesired;
+        thetaDesired = 300;
+        //thetaDesired = 360 - thetaDesired;
         receiving_bluetooth = true;
         
         if (receiving_bluetooth) {
