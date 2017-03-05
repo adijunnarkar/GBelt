@@ -2,6 +2,7 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,9 +16,19 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -32,8 +43,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.collect.ImmutableMap;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +59,15 @@ import java.util.Map;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
+import Modules.LoadingScreen;
 import Modules.Route;
 
 import com.hamondigital.unlock.UnlockBar;
 import com.hamondigital.unlock.UnlockBar.OnUnlockListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         DirectionFinderListener,
@@ -62,8 +84,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageButton btnSearch;
     ImageButton btnBus;
     ImageButton btnWalk;
-    EditText etOrigin;
-    EditText etDestination;
+    AutoCompleteTextView etOrigin;
+    AutoCompleteTextView etDestination;
+    //EditText etOrigin;
+    //EditText etDestination;
 
     ProgressDialog progressDialog;
 
@@ -77,6 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String utteranceId = "";
 
     UnlockBar unlock;
+    LoadingScreen loader;
 
     // Voice Recognition Request Codes
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
@@ -94,6 +119,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean DEBUG;
     boolean TTSDEBUG;
 
+    //For setting up GET URL for Google Places API to retrieve predictions
+    private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
+    private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
+    private static final String OUT_JSON = "/json";
+    private static final String PLACES_API_KEY = "AIzaSyBitOAspRvs7YXu4xLf-cHMnTXFvqS_Sx8";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,11 +138,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startTextToSpeechActivity();
 
         // Retrieve form elements for later use
-        etOrigin = (EditText) findViewById(R.id.etOrigin);
-        etDestination = (EditText) findViewById(R.id.etDestination);
+        etOrigin = (AutoCompleteTextView) findViewById(R.id.etOrigin);
+        etDestination = (AutoCompleteTextView) findViewById(R.id.etDestination);
+
+        setupAutoComplete();
 
         retrieveStates();
+
         retrieveData();
+
+        setUpLoadingSpinner();
+
+        setUpVoiceRecognitionListener();
 
         setUpCurrentLocationListener();
 
@@ -120,6 +158,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setUpTransitModeListeners();
 
         setUpUnlockListener();
+    }
+
+    private void setupAutoComplete(){
+        etOrigin.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_items));
+
+        etOrigin.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get data associated with the specified position
+                // in the list (AdapterView)
+                String description = (String) parent.getItemAtPosition(position);
+                Toast.makeText(getApplicationContext(), description, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        etDestination.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_items));
+
+        etDestination.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get data associated with the specified position
+                // in the list (AdapterView)
+                String description = (String) parent.getItemAtPosition(position);
+                Toast.makeText(getApplicationContext(), description, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setUpLoadingSpinner() {
+        LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
+        RelativeLayout loadingContent = (RelativeLayout) findViewById(R.id.loadingContent);
+        TextView loadingText = (TextView) findViewById(R.id.loadingText);
+        ProgressBar spinner = (ProgressBar) findViewById(R.id.loadingProgressBar);
+        LinearLayout loadingBg = (LinearLayout) findViewById(R.id.loadingBg);
+
+        loader = new LoadingScreen(activityContent, loadingContent, loadingText, spinner, loadingBg);
+        loader.disableLoading();
     }
 
     private void retrieveStates() {
@@ -188,6 +264,115 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    class GooglePlacesAutocompleteAdapter extends ArrayAdapter implements Filterable {
+        private ArrayList<String> resultList;
+
+        public GooglePlacesAutocompleteAdapter(Context context, int textViewResourceId) {
+            super(context, textViewResourceId);
+        }
+
+        @Override
+        public int getCount() {
+            return resultList.size();
+        }
+
+        @Override
+        public String getItem(int index) {
+            return (String) resultList.get(index);
+        }
+
+        @Override
+        public Filter getFilter() {
+            Filter filter = new Filter() {
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    FilterResults filterResults = new FilterResults();
+                    if (constraint != null) {
+                        // Retrieve the autocomplete results.
+                        resultList = autocomplete(constraint.toString());
+
+                        // Assign the data to the FilterResults
+                        filterResults.values = resultList;
+                        filterResults.count = resultList.size();
+                    }
+                    return filterResults;
+                }
+
+                @Override
+                protected void publishResults(CharSequence constraint, FilterResults results) {
+                    if (results != null && results.count > 0) {
+                        notifyDataSetChanged();
+                    } else {
+                        notifyDataSetInvalidated();
+                    }
+                }
+            };
+            return filter;
+        }
+
+        private ArrayList autocomplete(String input) {
+            ArrayList resultList = null;
+
+            HttpURLConnection conn = null;
+            StringBuilder jsonResults = new StringBuilder();
+            try {
+                StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
+                sb.append("?key=" + PLACES_API_KEY );
+                sb.append("&components=country:ca");
+                sb.append("&input=" + URLEncoder.encode(input, "utf8"));
+
+                URL url = new URL(sb.toString());
+                conn = (HttpURLConnection) url.openConnection();
+                InputStreamReader in = new InputStreamReader(conn.getInputStream());
+
+                // Load the results into a StringBuilder
+                int read;
+                char[] buff = new char[1024];
+                while ((read = in.read(buff)) != -1) {
+                    jsonResults.append(buff, 0, read);
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return resultList;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return resultList;
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+
+            try {
+                // Create a JSON object hierarchy from the results
+                JSONObject jsonObj = new JSONObject(jsonResults.toString());
+                JSONArray predsJsonArray = jsonObj.getJSONArray("predictions");
+
+                // Extract the Place descriptions from the results
+                resultList = new ArrayList(predsJsonArray.length());
+                for (int i = 0; i < predsJsonArray.length(); i++) {
+                    System.out.println(predsJsonArray.getJSONObject(i).getString("description"));
+                    System.out.println("============================================================");
+                    resultList.add(predsJsonArray.getJSONObject(i).getString("description"));
+                }
+            } catch (JSONException e) {
+                //Log.e(LOG_TAG, "Cannot process JSON results", e);
+            }
+
+            return resultList;
+        }
+    }
+
+    private void setUpVoiceRecognitionListener() {
+        speakButton = (ImageView) findViewById(R.id.microphone);
+        speakButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startVoiceRecognitionActivity();
+                    }
+        });
+    }
+
     private void setUpStartNavigationListener() {
         btnSearch = (ImageButton) findViewById(R.id.search);
 
@@ -235,9 +420,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     public void startVoiceMode() {
+        loader.updateLoadingText("Starting Voice Mode...");
+        loader.enableLoading();
         destroyTts();
 
         Intent intent = new Intent(this, VoiceModeActivity.class);
@@ -258,6 +446,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     private void destroyTts() {
@@ -269,7 +458,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && !TTSDEBUG) {
+        if (myHashAlarm != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -280,15 +469,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String promptLocation = "Enter destination";
         tts(promptLocation);
 
-        // wait until utterance is complete before opening speech intent
-        while (!utteranceId.equals(promptLocation));
+        if(TTSDEBUG) {
+            // wait until utterance is complete before opening speech intent
+            while (!utteranceId.equals(promptLocation)) ;
 
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
-                "Speak now");
-        startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                    "Speak now");
+            startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+        }
     }
 
     public void startTextToSpeechActivity() {
@@ -385,11 +576,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void sendDirectionRequest() {
+        loader.enableLoading();
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
 
         if (origin != null && origin.equals("Your Location")) {
-            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            if(mLastLocation != null) {
+                origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            } else {
+                Toast.makeText(this, "Your Location is not found! ", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         if (origin == null || origin.equals("")) {
@@ -411,14 +608,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onDirectionFinderStart() {
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Finding direction...", true);
+        loader.updateLoadingText("Finding direction...");
+//        progressDialog = ProgressDialog.show(this, "Please wait.",
+//                "Finding direction...", true);
     }
 
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
-        progressDialog.dismiss();
+//        progressDialog.dismiss();
 
         for (Route route : routes) {
             mRoute = route;

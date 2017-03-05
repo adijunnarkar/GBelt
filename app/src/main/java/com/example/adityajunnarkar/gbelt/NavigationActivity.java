@@ -17,7 +17,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.content.Intent;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.text.Html;
 
@@ -49,6 +53,7 @@ import java.util.Map;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
+import Modules.LoadingScreen;
 import Modules.Route;
 
 
@@ -79,9 +84,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     HashMap<String, String> myHashAlarm;
     String utteranceId;
 
+    LoadingScreen loader;
+
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
+    private RelativeLayout returnContent;
     private ImageView directionIndicator;
     private TextView instruction;
 
@@ -123,9 +131,24 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             ((ImageView) findViewById(R.id.walk)).setVisibility(View.GONE);
         }
 
+        setUpLoadingSpinner();
+
         setUpDirectionsListener();
 
+        setUpReturnListener();
+
         setUpUnlockListener();
+    }
+
+    private void setUpLoadingSpinner() {
+        LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
+        RelativeLayout loadingContent = (RelativeLayout) findViewById(R.id.loadingContent);
+        TextView loadingText = (TextView) findViewById(R.id.loadingText);
+        ProgressBar spinner = (ProgressBar) findViewById(R.id.loadingProgressBar);
+        LinearLayout loadingBg = (LinearLayout) findViewById(R.id.loadingBg);
+
+        loader = new LoadingScreen(activityContent, loadingContent, loadingText, spinner, loadingBg);
+        loader.disableLoading();
     }
 
     private void retrieveStates() {
@@ -163,6 +186,17 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         });
     }
 
+
+    private void setUpReturnListener() {
+        returnContent = (RelativeLayout) findViewById(R.id.returnContent);
+        returnContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+    }
+
     private void setUpUnlockListener() {
         unlock = (UnlockBar) findViewById(R.id.unlock);
 
@@ -177,8 +211,10 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void startVoiceMode() {
-        destroyTts();
         transmitStop();
+        loader.updateLoadingText("Starting Voice Mode...");
+        loader.enableLoading();
+        destroyTts();
 
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
@@ -199,10 +235,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     public void createDirectionsActivity() {
         destroyTts();
+
+        loader.updateLoadingText("Loading...");
+        loader.enableLoading();
 
         Intent intent = new Intent(this, DirectionsActivity.class);
         Bundle bundle = new Bundle();
@@ -211,11 +251,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         startActivity(intent);
+        loader.disableLoading();
     }
 
     public void onBackPressed() {
-        destroyTts();
         transmitStop();
+        loader.updateLoadingText("");
+        loader.enableLoading();
+        destroyTts();
 
         mRoute= null;
 
@@ -233,6 +276,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         startActivity(intent);
+        finish();
     }
 
     private void destroyTts() {
@@ -291,6 +335,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
+
+        loader.disableLoading();
     }
 
     private void updateInstruction() {
@@ -358,6 +404,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented this haha
         double desired_theta = mRoute.calculateVector(mStep);
+        desired_theta = 0;
         String message = "#" + (float) desired_theta + "~";
         transmission(message);
     }
@@ -382,7 +429,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && !TTSDEBUG) {
+        if (myHashAlarm != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -390,6 +437,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
+        loader.updateLoadingText("Recalculating...");
+        loader.enableLoading();
         if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
