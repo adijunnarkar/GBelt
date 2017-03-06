@@ -91,7 +91,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private ImageView directionIndicator;
     private TextView instruction;
 
-    private boolean tripStarted = false;
+    private boolean tripStarted;
     private int mStep;
     private Route mRoute;
     private int mode;
@@ -164,6 +164,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         origin = (String) bundle.getSerializable("origin");
         destination = (String) bundle.getSerializable("destination");
         mStep = (int) bundle.getSerializable("step");
+        tripStarted = (boolean) bundle.getSerializable("tripStarted");
     }
 
     private void setUpDirectionsListener() {
@@ -230,6 +231,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         bundle.putSerializable("step", (Serializable) mStep);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("tripStarted", (Serializable) tripStarted);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -367,17 +371,20 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (mRoute != null) {
-            // Check if the user is still on the route
-            if (!mRoute.isLocationInPath(point) && !DEBUG) {
+            // Recalculate if the user has started the trip but has drifted off the route
+            if (tripStarted && !mRoute.isLocationInPath(point)) {
                 recalculateRoute();
                 return;
             }
 
+            if (!tripStarted) { // if trip has not started, check if it has started
+                if (mRoute.steps.get(mStep).stepStarted(point) || mRoute.isLocationInPath(point)) {
+                    tripStarted = true;
+                }
+            }
+
             // Check if the user should move on to the next step
-            if (point.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && point.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && point.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && point.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
+            if (mRoute.steps.get(mStep).stepCompleted(point)) {
                 onNextStep();
             }
         }

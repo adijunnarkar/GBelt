@@ -130,6 +130,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     List<Route> mRoutes;
     Route mRoute = null;
     int mStep = 0;
+    boolean tripStarted;
 
     int attemptNumber = 1;
     int maxAttempts = 2;
@@ -270,6 +271,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
+            tripStarted = (boolean) bundle.getSerializable("tripStarted");
 
             if (DEBUG) destination = "Wilfred Laurier";
 
@@ -283,6 +285,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             mode = (int) bundle.getSerializable("mode");
             destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
+            tripStarted = (boolean) bundle.getSerializable("tripStarted");
         }
     }
 
@@ -435,6 +438,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         intent.putExtras(bundle);
 
         bundle.putSerializable("step", (Serializable) mStep);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("tripStarted", (Serializable) tripStarted);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -862,17 +868,20 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (mRoute != null) {
-            // Check if the user is still on the route
-            if (!mRoute.isLocationInPath(point) && !DEBUG) {
+            // Recalculate if the user has started the trip but has drifted off the route
+            if (tripStarted && !mRoute.isLocationInPath(point)) {
                 recalculateRoute();
                 return;
             }
 
+            if (!tripStarted) { // if trip has not started, check if it has started
+                if (mRoute.steps.get(mStep).stepStarted(point) || mRoute.isLocationInPath(point)) {
+                    tripStarted = true;
+                }
+            }
+
             // Check if the user should move on to the next step
-            if (point.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && point.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && point.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && point.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
+            if (mRoute.steps.get(mStep).stepCompleted(point)) {
                 onNextStep();
             }
         }

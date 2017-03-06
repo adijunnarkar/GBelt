@@ -1,7 +1,6 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,9 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -86,10 +83,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageButton btnWalk;
     AutoCompleteTextView etOrigin;
     AutoCompleteTextView etDestination;
-    //EditText etOrigin;
-    //EditText etDestination;
-
-    ProgressDialog progressDialog;
 
     Route mRoute;
     Location mLastLocation;
@@ -411,6 +404,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bundle.putSerializable("step", (Serializable) 0);
         intent.putExtras(bundle);
 
+        bundle.putSerializable("tripStarted", (Serializable) false);
+        intent.putExtras(bundle);
+
         String origin = etOrigin.getText().toString();
         bundle.putSerializable("origin", (Serializable) origin);
         intent.putExtras(bundle);
@@ -443,6 +439,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("tripStarted", (Serializable) false);
         intent.putExtras(bundle);
 
         startActivity(intent);
