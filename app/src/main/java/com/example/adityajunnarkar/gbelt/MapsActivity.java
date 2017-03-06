@@ -557,7 +557,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void sendDirectionRequest() {
-        loader.enableLoading();
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
 
@@ -579,6 +578,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(this, "Please enter destination address!", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        loader.enableLoading();
 
         try {
             new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();

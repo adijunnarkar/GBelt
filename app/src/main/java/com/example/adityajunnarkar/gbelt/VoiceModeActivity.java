@@ -2,7 +2,6 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -33,7 +32,6 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -56,7 +54,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.vision.text.Text;
 import com.google.common.collect.ImmutableMap;
 import com.hamondigital.unlock.UnlockBar;
 import com.mikhaellopez.circularprogressbar.CircularProgressBar;
@@ -111,7 +108,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    ProgressDialog progressDialog;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
     String utteranceId;
@@ -601,7 +597,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 updateMap();
             }
 
-            updateInstruction();
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             tts(instruction.getText().toString());
             transmitVector();
 
@@ -636,21 +632,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
-    public void updateInstruction() {
+    public void updateInstruction(String text) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction,
-                    Html.FROM_HTML_MODE_LEGACY));
+            instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
+            instruction.setText(Html.fromHtml(text));
         }
     }
 
     private void onNextStep() {
-        // TODO: only call this if it is not the last step
-        mStep++;
-        updateInstruction();
-        tts(instruction.getText().toString());
-        transmitVector();
+        if (mStep < mRoute.steps.size() - 1) {
+            mStep++;
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
+            tts(instruction.getText().toString());
+            transmitVector();
+        } else {
+            updateInstruction("");
+            tts("You have reached your destination");
+            transmitStop();
+        }
     }
 
     public void tts(String text) {
@@ -682,7 +682,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        loader.enableLoading();
         if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
@@ -887,16 +886,18 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public void onDirectionFinderStart() {
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Finding direction...", true);
+        loader.updateLoadingText("Finding direction...");
+        loader.enableLoading();
     }
 
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
-        progressDialog.dismiss();
+        loader.disableLoading();
 
         mRoutes = routes;
+
+        mStep = 0; // restart route
 
         drawMap();
 

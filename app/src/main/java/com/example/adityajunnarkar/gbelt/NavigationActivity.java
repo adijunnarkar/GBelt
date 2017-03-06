@@ -1,7 +1,6 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -71,7 +70,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             3, "driving"
     );
 
-    ProgressDialog progressDialog;
     private GoogleMap mMap;
     private List<Route> mRoutes;
     GoogleApiClient mGoogleApiClient;
@@ -312,7 +310,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             tvDuration.setText(route.duration.text);
             tvDistance.setText(route.distance.text);
 
-            updateInstruction();
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             transmitVector();
 
             // Add Markers for origin and destination
@@ -339,12 +337,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         loader.disableLoading();
     }
 
-    private void updateInstruction() {
-        // Display the current direction
+    private void updateInstruction(String text) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
+            instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
+            instruction.setText(Html.fromHtml(text));
         }
     }
 
@@ -393,12 +390,16 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void onNextStep() {
-        // TODO: only onNextStepcall this if it is not the last step
-        // TODO: transmitStop() when the trip is finished
-        mStep++;
-        updateInstruction();
-        tts(instruction.getText().toString());
-        transmitVector();
+        if (mStep < mRoute.steps.size() - 1) {
+            mStep++;
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
+            tts(instruction.getText().toString());
+            transmitVector();
+        } else {
+            updateInstruction("");
+            tts("You have reached your destination");
+            transmitStop();
+        }
     }
 
     public void transmitVector() {
@@ -437,8 +438,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        loader.updateLoadingText("Recalculating...");
-        loader.enableLoading();
         if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
@@ -528,16 +527,18 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onDirectionFinderStart() {
+        loader.updateLoadingText("Recalculating...");
+        loader.enableLoading();
+
         tts("Recalculating");
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Recalculating...", true);
     }
 
     @Override
     public void onDirectionFinderSuccess(List<Route> route) {
-        progressDialog.dismiss();
-
+        loader.disableLoading();
         mRoutes = route;
+
+        mStep = 0; // restart route
 
         drawMap();
     }
