@@ -327,7 +327,7 @@ void loop()
           //turnAllLEDsOff();
           if (direction == "Stop")
           {
-            turnAllMotorsOff();
+            playStopVibrationSequence();
             //Serial.println("STOP");
             receiving_bluetooth = false;
             while(Serial.available()){  //is there anything to read?
@@ -346,11 +346,12 @@ void loop()
         if (testingWithoutPhone)
         {
             thetaDesired = 300;
-            thetaDesired = 360 - thetaDesired;
+            thetaDesired = 360 - thetaDesired; //optional
             receiving_bluetooth = true;
         }
         
-        if (receiving_bluetooth) {
+        if (receiving_bluetooth)
+        {
           // calculate theta to decide which motors to activate only if IMU reading average has been calculated
           if (yaw > thetaDesired) 
           {
@@ -492,6 +493,28 @@ bool inRange(int val, int min, int max)
   return ((min <= val) && (val <= max));
 }
 
+void playStopVibrationSequence()
+{
+    analogWrite(ledNorth, pwm_intensity_max);
+    delay(500);
+    analogWrite(ledNorth, pwm_intensity_min);
+
+    analogWrite(ledEast, pwm_intensity_max);
+    delay(500);
+    analogWrite(ledEast, pwm_intensity_min);
+
+    analogWrite(ledSouth, pwm_intensity_max);
+    delay(500);
+    analogWrite(ledSouth, pwm_intensity_min);
+
+    analogWrite(ledWest, pwm_intensity_max);
+    delay(500);
+    analogWrite(ledWest, pwm_intensity_min);
+
+    analogWrite(ledNorth, pwm_intensity_max);
+    delay(500);
+    analogWrite(ledNorth, pwm_intensity_min);
+}
 void calibrateMagnetometerBias(float * dest1)
 {
   /*
