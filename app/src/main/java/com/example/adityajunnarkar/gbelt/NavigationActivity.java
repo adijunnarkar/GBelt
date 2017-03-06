@@ -2,6 +2,7 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -77,6 +78,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     LocationRequest mLocationRequest;
+    private static BluetoothDevice BluetoothDeviceHDP;
 
     public static final int TTS_DATA_CODE = 1234;
 
@@ -166,6 +168,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         origin = (String) bundle.getSerializable("origin");
         destination = (String) bundle.getSerializable("destination");
         mStep = (int) bundle.getSerializable("step");
+        BluetoothDeviceHDP = bundle.getParcelable("BluetoothDeviceHDP");
     }
 
     private void setUpDirectionsListener() {
@@ -519,8 +522,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
 
+            if(BluetoothDeviceHDP != null) {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                        String.valueOf(AudioManager.STREAM_VOICE_CALL));
+            } else {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+            }
             // TODO: hmmmm...this is a bad place to put this, make this nicer
             tts(instruction.getText().toString());
         }

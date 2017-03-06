@@ -2,6 +2,7 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -17,13 +18,16 @@ import java.util.UUID;
 public class BluetoothService extends Service {
 
     // HC 05 SPP UUID
-    private final static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private final static UUID uuid_HC05 = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private final static UUID uuid_headset = UUID.fromString("00001108-0000-1000-8000-00805F9B34FB");
 
     static ConnectedThread connectedThread;
-    static ConnectingThread connectingThread;
+    static ConnectingThread connectingThread_hc05;
+    static ConnectingThread connectingThread_headset;
+
     BluetoothAdapter mBluetoothAdapter;
     static BluetoothDevice BluetoothDeviceForHC05;
-
+    static BluetoothDevice BluetoothDeviceHDP;
     //private final IBinder mBinder = new LocalBinder();
 
     @Nullable
@@ -45,10 +49,14 @@ public class BluetoothService extends Service {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter != null) {
             BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
-
+            BluetoothDeviceHDP = intent.getParcelableExtra("hands-free");
             byte[] desiredVector = intent.getByteArrayExtra("vector");
             if(BluetoothDeviceForHC05 != null){
                 connectToDevice();
+            }
+
+            if(BluetoothDeviceHDP != null){
+                connectToHeadset();
             }
 
             if (desiredVector!= null && connectedThread != null) { // && connectedThread.isAlive()
@@ -72,10 +80,20 @@ public class BluetoothService extends Service {
     }
 
     void connectToDevice(){
-        if (BluetoothDeviceForHC05 != null && connectingThread == null) {
+        if (BluetoothDeviceForHC05 != null && connectingThread_hc05 == null) {
             // Initiate a connection request in a separate thread
-            connectingThread = new ConnectingThread(BluetoothDeviceForHC05);
-            connectingThread.start();
+            connectingThread_hc05 = new ConnectingThread(BluetoothDeviceForHC05);
+            connectingThread_hc05.start();
+ /*          Toast.makeText(getApplicationContext(), "Connecting Thread Started",
+                                    Toast.LENGTH_LONG).show();*/
+        }
+    }
+
+    void connectToHeadset(){
+        if (BluetoothDeviceHDP != null && connectingThread_headset == null) {
+            // Initiate a connection request in a separate thread
+            connectingThread_headset = new ConnectingThread(BluetoothDeviceHDP);
+            connectingThread_headset.start();
  /*          Toast.makeText(getApplicationContext(), "Connecting Thread Started",
                                     Toast.LENGTH_LONG).show();*/
         }
@@ -143,7 +161,11 @@ public class BluetoothService extends Service {
 
             // Get a BluetoothSocket to connect with the given BluetoothDevice
             try {
-                temp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid);
+                if(device.getAddress().equals("20:16:10:24:54:92")) {  //hc - 05
+                    temp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid_HC05);
+                } else {
+                    temp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid_headset);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -174,12 +196,18 @@ public class BluetoothService extends Service {
 
             // Code to manage the connection in a separate thread
             if(bluetoothSocket.isConnected()) {
-
-                Intent intent = new Intent("intentKey");
-                // You can also include some extra data.
-                intent.putExtra("key", "hc05-connected");
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-                manageBluetoothConnection(bluetoothSocket);
+                if(bluetoothDevice.getBluetoothClass().getDeviceClass() != BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE) {
+                    Intent intent = new Intent("intentKey");
+                    // You can also include some extra data.
+                    intent.putExtra("key", "hc05-connected");
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                    manageBluetoothConnection(bluetoothSocket);
+                } else {
+                    Intent intent = new Intent("intentKey");
+                    // You can also include some extra data.
+                    intent.putExtra("key", "headset-connected");
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                }
             }
         }
 
