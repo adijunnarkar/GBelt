@@ -317,6 +317,10 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             transmitVector();
 
+            if(mStep == 0) {
+                tts("Expected to arrive in " + mRoute.duration.text);
+            }
+
             // Add Markers for origin and destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))

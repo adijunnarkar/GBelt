@@ -607,6 +607,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             tts(instruction.getText().toString());
             transmitVector();
 
+            if(mStep == 0) {
+                tts("Expected to arrive in " + mRoute.duration.text);
+            }
+
             // Add Marker for destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_pin))
