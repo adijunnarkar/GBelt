@@ -33,6 +33,9 @@ public class SplashActivity extends AppCompatActivity implements Serializable {
                 bundle.putSerializable("mode", (Serializable) 1); // walking
                 intent.putExtras(bundle);
 
+                bundle.putSerializable("tripStarted", (Serializable) false); // walking
+                intent.putExtras(bundle);
+
                 startActivity(intent);
                 finish();
                 handler.removeCallbacks(this);
