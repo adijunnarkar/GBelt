@@ -156,6 +156,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     // Global variables across entire application used for debugging:
     boolean DEBUG;
     boolean TTSDEBUG;
+    boolean RECALCULATION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,7 +195,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         setUpTouchAndHoldTimer();
 
         setUpUnlockListener();
-
     }
 
     void setupBluetooth(){
@@ -257,6 +257,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private void retrieveStates() {
         DEBUG = ((MyApplication) this.getApplication()).getDebug();
         TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
+        RECALCULATION = ((MyApplication) this.getApplication()).getRecalculation();
     }
 
     private void retrieveData() {
@@ -634,21 +635,23 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
 
-        if (mStep == 0) {
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    // wait 1 seconds to make sure tts is initialized
-                    String speech = "Expected to arrive in " + mRoute.duration.text;
-                    tts(speech);
-                    // wait until utterance is complete before other tts's
-                    // need the while before tts
-                    while(!utteranceId.equals(speech)) ;
-                    tts(instruction.getText().toString());
-                }
-            }, 2000);
-        } else {
-            tts(instruction.getText().toString());
+        if (mRoute != null) {
+            if (mStep == 0) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // wait 2 seconds to make sure tts is initialized
+                        String speech = "Expected to arrive in " + mRoute.duration.text;
+                        tts(speech);
+                        // wait until utterance is complete before other tts's
+                        // need the while before tts
+                        while (!utteranceId.equals(speech)) ;
+                        tts(instruction.getText().toString());
+                    }
+                }, 2000);
+            } else {
+                tts(instruction.getText().toString());
+            }
         }
 
         loader.disableLoading();
@@ -678,6 +681,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
             tripStarted = false; // cause trip has ended
+            mRoute = null;
             transmitStop();
         }
     }
@@ -700,8 +704,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void transmitStop() {
-        String message = "#" + "Stop" + "~";
-        transmission(message);
+        if (tripStarted) {
+            String message = "#" + "Stop" + "~";
+            transmission(message);
+        }
     }
 
     public void transmission(String message) {
@@ -900,20 +906,19 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             // Recalculate if the user has started the trip but has drifted off the route
-            if (tripStarted && !mRoute.isLocationInPath(point)) {
-                recalculateRoute();
-                return;
-            }
-
-            if (!tripStarted) { // if trip has not started, check if it has started
-                if (mRoute.steps.get(mStep).stepStarted(point)) {
-                    tripStarted = true;
+            if (tripStarted) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION) {
+                    recalculateRoute();
+                    return;
                 }
-            }
 
-            // Check if the user should move on to the next step
-            if (mRoute.steps.get(mStep).stepCompleted(point)) {
-                onNextStep();
+                if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
+                }
+
+                updateMap();
+            } else if (!tripStarted && mRoute.steps.get(mStep).stepStarted(point)) {
+                tripStarted = true;
             }
         }
     }

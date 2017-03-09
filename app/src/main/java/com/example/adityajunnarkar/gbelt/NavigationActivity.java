@@ -105,6 +105,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     // Global variables across entire application used for debugging:
     boolean DEBUG;
     boolean TTSDEBUG;
+    boolean RECALCULATION;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -155,6 +156,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private void retrieveStates() {
         DEBUG = ((MyApplication) this.getApplication()).getDebug();
         TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
+        RECALCULATION = ((MyApplication) this.getApplication()).getRecalculation();
     }
 
     private void retrieveData() {
@@ -404,7 +406,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         if (mRoute != null) {
             // Recalculate if the user has started the trip but has drifted off the route
             if (tripStarted) {
-                if (!mRoute.isLocationInPath(point) && false) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION) {
                     recalculateRoute();
                     return;
                 }
@@ -436,6 +438,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
             tripStarted = false; // cause trip has ended
+            mRoute = null;
             transmitStop();
         }
     }
@@ -450,8 +453,10 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void transmitStop() {
-        String message = "#" + "Stop" + "~";
-        transmission(message);
+        if (tripStarted) {
+            String message = "#" + "Stop" + "~";
+            transmission(message);
+        }
     }
 
     public void transmission(String message) {
