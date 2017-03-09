@@ -110,7 +110,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     Location mLastLocation;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId;
+    String utteranceId = "";
     TextView instruction;
 
     RelativeLayout activity;
@@ -134,6 +134,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     int attemptNumber = 1;
     int maxAttempts = 2;
+
+    boolean ttsReady = false;
 
     // Drawing map
     private List<Marker> destinationMarkers = new ArrayList<>();
@@ -272,8 +274,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
             tripStarted = (boolean) bundle.getSerializable("tripStarted");
-
-            if (DEBUG) destination = "Wilfred Laurier";
 
             if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
             if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
@@ -457,7 +457,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if(mTts != null) {
             mTts.stop();
             mTts.shutdown();
+            mTts = null;
         }
+        ttsReady = false;
     }
 
     private void destroySpeechRecognizer() {
@@ -576,7 +578,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             String message = intent.getStringExtra("key");
 
-            if(message.equals("hc05-connected")){
+            if(message.equals("hc05-connected")) {
+                while(!utteranceId.equals("Voice Mode Activated"));
                 tts("Bluetooth connection with HC05 established");
             }
             // Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
@@ -584,6 +587,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     };
 
     private void drawMap() {
+        mMap.clear(); // clear the map before drawing anything on it (mainly for redrawing)
+        polylinePaths.clear();
+
         polylinePaths = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
@@ -604,12 +610,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
-            tts(instruction.getText().toString());
             transmitVector();
-
-            if(mStep == 0) {
-                tts("Expected to arrive in " + mRoute.duration.text);
-            }
 
             // Add Marker for destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -631,6 +632,23 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+
+        if (mStep == 0) {
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    // wait 1 seconds to make sure tts is initialized
+                    String speech = "Expected to arrive in " + mRoute.duration.text;
+                    tts(speech);
+                    // wait until utterance is complete before other tts's
+                    // need the while before tts
+                    while(!utteranceId.equals(speech)) ;
+                    tts(instruction.getText().toString());
+                }
+            }, 2000);
+        } else {
+            tts(instruction.getText().toString());
         }
 
         loader.disableLoading();
@@ -657,14 +675,16 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             tts(instruction.getText().toString());
             transmitVector();
         } else {
-            updateInstruction("");
+            updateInstruction("Arrived at destination");
             tts("You have reached your destination");
+            tripStarted = false; // cause trip has ended
             transmitStop();
         }
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && TTSDEBUG) {
+        while(!ttsReady);
+        if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -672,9 +692,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented this haha
-        double desired_theta = mRoute.calculateVector(mStep);
-        String message = "#" + (float) desired_theta + "~";
-        transmission(message);
+        if (mRoute != null) {
+            double desired_theta = mRoute.calculateVector(mStep);
+            String message = "#" + (float) desired_theta + "~";
+            transmission(message);
+        }
     }
 
     public void transmitStop() {
@@ -692,22 +714,27 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        if (origin != null && origin.equals("Your Location")) {
-            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
-        }
-
         if (origin == null || origin.equals("")) {
-            mTts.speak("Starting location has not been set", TextToSpeech.QUEUE_FLUSH, null);
+            tts("Starting location has not been set");
             return;
         }
 
         if (destination == null || destination.equals("")) {
-            mTts.speak("Destination has not been set", TextToSpeech.QUEUE_FLUSH, null);
+            tts("Destination has not been set");
             return;
         }
 
+        // because we want to retain origin and not change it to our current coordinates
+        String mOrigin;
+        if (origin.equals("Your Location")) {
+            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+        } else {
+            mOrigin = origin;
+        }
+
         try {
-            new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
+            new DirectionFinder(this, mOrigin, destination,
+                    transportationModes.get(mode)).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -741,7 +768,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onBackPressed() {
         // Override the onBackPressed() function: do nothing on back key
         // because we do not want to go back to Maps or Navigation Mode
-        return;
+        finish();
     }
 
 
@@ -879,7 +906,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             if (!tripStarted) { // if trip has not started, check if it has started
-                if (mRoute.steps.get(mStep).stepStarted(point) || mRoute.isLocationInPath(point)) {
+                if (mRoute.steps.get(mStep).stepStarted(point)) {
                     tripStarted = true;
                 }
             }
@@ -924,6 +951,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            ttsReady = true;
             mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
 
                 @Override
