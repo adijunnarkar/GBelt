@@ -9,7 +9,7 @@
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 #define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
-
+#define MAGCode "Tiff" // location code here for mag calibration (STC,)
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
@@ -347,8 +347,8 @@ void loop()
         
         if (testingWithoutPhone)
         {
-            thetaDesired = 0;
-            thetaDesired = 360 - thetaDesired;
+            thetaDesired = 45;
+            //thetaDesired = 360 - thetaDesired;
             receiving_bluetooth = true;
         }
         
@@ -375,11 +375,11 @@ void loop()
           else if (inRange(theta, 5, 85)) // Northeast
           {
             turnAllMotorsOff();
-            //Serial.print("North and East Motors Active: ");
+            Serial.print("North and East Motors Active: ");
             right_motor_intensity = map(theta - 5, 0, range, pwm_intensity_min, pwm_intensity_max);
             analogWrite(ledNorth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
             analogWrite(ledEast, right_motor_intensity);
-           // Serial.println(right_motor_intensity);
+            Serial.println(right_motor_intensity);
           }
           else if (inRange(theta, 85, 95)) // East
           {
@@ -390,11 +390,11 @@ void loop()
           else if (inRange(theta, 95, 175)) // Southeast
           {
             turnAllMotorsOff();
-            //Serial.print("South and East Motors Active: ");
+            Serial.print("South and East Motors Active: ");
             right_motor_intensity = map(theta - 95, 0, range, pwm_intensity_min, pwm_intensity_max);            
             analogWrite(ledSouth, right_motor_intensity);
             analogWrite(ledEast, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
-            //Serial.println(right_motor_intensity);
+            Serial.println(right_motor_intensity);
           }
           else if (inRange(theta, 175, 185)) // South
           {
@@ -405,11 +405,11 @@ void loop()
           else if (inRange(theta, 185, 265)) // Southwest
           {
             turnAllMotorsOff();
-            //Serial.print("South and West Motors Active: ");
+            Serial.print("South and West Motors Active: ");
             right_motor_intensity = map(theta - 185, 0, range, pwm_intensity_min, pwm_intensity_max);                        
             analogWrite(ledSouth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
             analogWrite(ledWest, right_motor_intensity);
-            //Serial.println(right_motor_intensity);
+            Serial.println(right_motor_intensity);
           }
           else if (inRange(theta, 265, 275)) // West
           {
@@ -420,11 +420,11 @@ void loop()
           else if (inRange(theta, 275, 355)) // Northwest
           {
             turnAllMotorsOff();
-            //Serial.print("North and West Motors Active: ");
+            Serial.print("North and West Motors Active: ");
             right_motor_intensity = map(theta - 275, 0, range, pwm_intensity_min, pwm_intensity_max);                        
             analogWrite(ledNorth, right_motor_intensity);
             analogWrite(ledWest, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
-            //Serial.println(right_motor_intensity);
+            Serial.println(right_motor_intensity);
           }
           averageCalculated = false;
         }
@@ -530,10 +530,19 @@ void calibrateMagnetometerBias(float * dest1)
     Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
   */
 
-  mag_max[0] = 400; mag_min[0] = -65;
-  mag_max[1] = 486;  mag_min[1] = -160;
-  mag_max[2] = 140;  mag_min[2] = -651;
-  
+  if (MAGCode == "STC")
+  {
+    mag_max[0] = 400; mag_min[0] = -65;
+    mag_max[1] = 486;  mag_min[1] = -160;
+    mag_max[2] = 140;  mag_min[2] = -651;
+  }
+
+  if (MAGCode == "Tiff")
+  {
+    mag_max[0] = 469; mag_min[0] = -141;
+    mag_max[1] = 533;  mag_min[1] = -112;
+    mag_max[2] = -20;  mag_min[2] = -697;    
+  }
   // Get hard iron correction
   mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
   mag_bias[1]  = (mag_max[1] + mag_min[1]) / 2; // get average y mag bias in counts
