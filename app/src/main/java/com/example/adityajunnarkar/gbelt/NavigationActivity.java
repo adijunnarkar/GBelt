@@ -1,7 +1,6 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -71,7 +70,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             3, "driving"
     );
 
-    ProgressDialog progressDialog;
     private GoogleMap mMap;
     private List<Route> mRoutes;
     GoogleApiClient mGoogleApiClient;
@@ -93,7 +91,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private ImageView directionIndicator;
     private TextView instruction;
 
-    private boolean tripStarted = false;
+    private boolean tripStarted;
     private int mStep;
     private Route mRoute;
     private int mode;
@@ -166,6 +164,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         origin = (String) bundle.getSerializable("origin");
         destination = (String) bundle.getSerializable("destination");
         mStep = (int) bundle.getSerializable("step");
+        tripStarted = (boolean) bundle.getSerializable("tripStarted");
     }
 
     private void setUpDirectionsListener() {
@@ -232,6 +231,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         intent.putExtras(bundle);
 
         bundle.putSerializable("step", (Serializable) mStep);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("tripStarted", (Serializable) tripStarted);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -312,8 +314,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             tvDuration.setText(route.duration.text);
             tvDistance.setText(route.distance.text);
 
-            updateInstruction();
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             transmitVector();
+
+            if(mStep == 0) {
+                tts("Expected to arrive in " + mRoute.duration.text);
+            }
 
             // Add Markers for origin and destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -339,12 +345,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         loader.disableLoading();
     }
 
-    private void updateInstruction() {
-        // Display the current direction
+    private void updateInstruction(String text) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction, Html.FROM_HTML_MODE_LEGACY));
+            instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
+            instruction.setText(Html.fromHtml(text));
         }
     }
 
@@ -370,17 +375,20 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (mRoute != null) {
-            // Check if the user is still on the route
-            if (!mRoute.isLocationInPath(point) && !DEBUG) {
+            // Recalculate if the user has started the trip but has drifted off the route
+            if (tripStarted && !mRoute.isLocationInPath(point)) {
                 recalculateRoute();
                 return;
             }
 
+            if (!tripStarted) { // if trip has not started, check if it has started
+                if (mRoute.steps.get(mStep).stepStarted(point) || mRoute.isLocationInPath(point)) {
+                    tripStarted = true;
+                }
+            }
+
             // Check if the user should move on to the next step
-            if (point.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && point.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && point.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && point.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
+            if (mRoute.steps.get(mStep).stepCompleted(point)) {
                 onNextStep();
             }
         }
@@ -393,12 +401,16 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void onNextStep() {
-        // TODO: only onNextStepcall this if it is not the last step
-        // TODO: transmitStop() when the trip is finished
-        mStep++;
-        updateInstruction();
-        tts(instruction.getText().toString());
-        transmitVector();
+        if (mStep < mRoute.steps.size() - 1) {
+            mStep++;
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
+            tts(instruction.getText().toString());
+            transmitVector();
+        } else {
+            updateInstruction("");
+            tts("You have reached your destination");
+            transmitStop();
+        }
     }
 
     public void transmitVector() {
@@ -437,8 +449,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        loader.updateLoadingText("Recalculating...");
-        loader.enableLoading();
         if (origin != null && origin.equals("Your Location")) {
             origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
         }
@@ -528,16 +538,18 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onDirectionFinderStart() {
+        loader.updateLoadingText("Recalculating...");
+        loader.enableLoading();
+
         tts("Recalculating");
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Recalculating...", true);
     }
 
     @Override
     public void onDirectionFinderSuccess(List<Route> route) {
-        progressDialog.dismiss();
-
+        loader.disableLoading();
         mRoutes = route;
+
+        mStep = 0; // restart route
 
         drawMap();
     }

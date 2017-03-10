@@ -109,13 +109,13 @@ public class UnlockBar extends RelativeLayout
 			sliderPosition = (int) (initialSliderPosition + (event.getX() - initialSlidingX));
 			if (sliderPosition <= 0) sliderPosition = 0;
 			
-			if (sliderPosition >= (getMeasuredWidth() - thumbWidth))
+			if (sliderPosition >= (getMeasuredWidth() - thumbWidth - 110))
 			{
-				sliderPosition = (int) (getMeasuredWidth()  - thumbWidth);
+				sliderPosition = (int) (getMeasuredWidth()  - thumbWidth - 110);
 			}
 			else
 			{
-				int max = (int) (getMeasuredWidth() - thumbWidth);
+				int max = (int) (getMeasuredWidth() - thumbWidth + 620);
 				int progress = (int) (sliderPosition * 100 / (max * 1.0f));
 				text_label.setAlpha(1f - progress * 0.02f);
 			}
