@@ -358,7 +358,6 @@ void loop()
         {
             thetaDesired = 45;
             //thetaDesired = 360 - thetaDesired;
->>>>>>> master
             receiving_bluetooth = true;
         }
         
