@@ -9,7 +9,7 @@
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 #define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Tiff" // location code here for mag calibration (STC,)
+#define MAGCode "Tung" // location code here for mag calibration (STC,)
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
@@ -369,7 +369,7 @@ void loop()
           if (inRange(theta, 355, 360) || inRange(theta, 0, 5)) // North
           {
               turnAllMotorsOff();
-              analogWrite(ledNorth, pwm_intensity_max);
+              analogWrite(ledNorth, pwm_intensity_max+100);
               Serial.println("North Motors Active");
           }
           else if (inRange(theta, 5, 85)) // Northeast
@@ -543,6 +543,14 @@ void calibrateMagnetometerBias(float * dest1)
     mag_max[1] = 533;  mag_min[1] = -112;
     mag_max[2] = -20;  mag_min[2] = -697;    
   }
+
+  if (MAGCode == "Tung")
+  {
+    mag_max[0] = 496; mag_min[0] = -167;
+    mag_max[1] = 530;  mag_min[1] = -135;
+    mag_max[2] = 1;  mag_min[2] = -676;
+  }
+  
   // Get hard iron correction
   mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
   mag_bias[1]  = (mag_max[1] + mag_min[1]) / 2; // get average y mag bias in counts
