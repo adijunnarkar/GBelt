@@ -136,6 +136,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     int maxAttempts = 2;
 
     boolean ttsReady = false;
+    boolean recalculating = false;
 
     // Drawing map
     private List<Marker> destinationMarkers = new ArrayList<>();
@@ -270,7 +271,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Each activity passes different bundles
         if (activityMode.equals("Maps")) {
             // grab data from MapsActivity
-            activityMode = (String) bundle.getSerializable("activity");
             origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
@@ -680,10 +680,22 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         } else {
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
-            tripStarted = false; // cause trip has ended
-            mRoute = null;
-            transmitStop();
+            finishTrip();
         }
+    }
+
+    public void finishTrip() {
+        transmitStop();
+        tripStarted = false;
+        mRoute = null;
+        activityMode = "Maps";
+        destination = "";
+        origin = "Your Location";
+        mRoutes.clear();
+
+        if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
     }
 
     public void tts(String text) {
@@ -907,7 +919,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if (mRoute != null) {
             // Recalculate if the user has started the trip but has drifted off the route
             if (tripStarted) {
-                if (!mRoute.isLocationInPath(point) && RECALCULATION) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION && !recalculating) {
+                    recalculating = true;
                     recalculateRoute();
                     return;
                 }
@@ -945,6 +958,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         mStep = 0; // restart route
 
         drawMap();
+
+        recalculating = false;
 
         if (mRoute != null) {
             activityMode = "Navigation";
@@ -1064,14 +1079,34 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else if (match.contains("touch screen")) {
                 // expecting 'Activate Touch-Screen Mode'
                 finish(); // return to previous intent
-            } else {
-                tts("No commmand found");
-            }
+            } else if (match.contains("origin")) {
+                // expecting 'Set origin to ____'
+                // i.e. 'Set origin to my location'
+                String[] phrase = match.split(" to ");
 
+                if (phrase[1].equals("my location")) {
+                    origin = "Your Location";
+                } else {
+                    origin = phrase[1];
+                }
+
+                tts("origin set to " + origin);
+                if (DEBUG)
+                    ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+            } else {
+                tts("No command found");
+            }
         } else if (activityMode.equals("Navigation")){
             if (match.contains("repeat")) {
                 // expecting 'repeat direction/instruction'
                 tts(instruction.getText().toString());
+            } else if (match.contains("stop")) {
+                updateInstruction("");
+                tts("Navigation stopped");
+                finishTrip();
+                drawMap();
+            } else {
+                tts("No command found");
             }
         }
 

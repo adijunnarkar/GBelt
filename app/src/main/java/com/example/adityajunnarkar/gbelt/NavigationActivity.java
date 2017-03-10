@@ -96,6 +96,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private int mode;
 
     boolean ttsReady = false;
+    boolean recalculating = false;
 
     String origin;
     String destination;
@@ -223,19 +224,28 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
 
-        bundle.putSerializable("activity", (Serializable) "Navigation");
-        intent.putExtras(bundle);
+        // for the case where trip has completed
+        if (tripStarted) {
+            bundle.putSerializable("activity", (Serializable) "Navigation");
+            intent.putExtras(bundle);
 
-        bundle.putSerializable("routes", (Serializable) mRoutes);
-        intent.putExtras(bundle);
+            bundle.putSerializable("routes", (Serializable) mRoutes);
+            intent.putExtras(bundle);
+
+            bundle.putSerializable("step", (Serializable) mStep);
+            intent.putExtras(bundle);
+        } else {
+            bundle.putSerializable("activity", (Serializable) "Maps");
+            intent.putExtras(bundle);
+
+            bundle.putSerializable("origin", (Serializable) origin);
+            intent.putExtras(bundle);
+        }
 
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
         bundle.putSerializable("destination", (Serializable) destination);
-        intent.putExtras(bundle);
-
-        bundle.putSerializable("step", (Serializable) mStep);
         intent.putExtras(bundle);
 
         bundle.putSerializable("tripStarted", (Serializable) tripStarted);
@@ -406,7 +416,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         if (mRoute != null) {
             // Recalculate if the user has started the trip but has drifted off the route
             if (tripStarted) {
-                if (!mRoute.isLocationInPath(point) && RECALCULATION) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION && !recalculating) {
+                    recalculating = true;
                     recalculateRoute();
                     return;
                 }
@@ -437,10 +448,16 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         } else {
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
-            tripStarted = false; // cause trip has ended
-            mRoute = null;
-            transmitStop();
+            finishTrip();
         }
+    }
+
+    public void finishTrip() {
+        transmitStop();
+        tripStarted = false;
+        mRoute = null;
+        destination = "";
+        origin = "Your Location";
     }
 
     public void transmitVector() {
@@ -591,6 +608,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         mRoutes = route;
 
         mStep = 0; // restart route
+        recalculating = false;
 
         drawMap();
     }
