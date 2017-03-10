@@ -506,6 +506,8 @@ bool inRange(int val, int min, int max)
 
 void playStopVibrationSequence()
 {
+    turnAllMotorsOff();
+
     analogWrite(ledNorth, pwm_intensity_max);
     delay(500);
     analogWrite(ledNorth, pwm_intensity_min);
