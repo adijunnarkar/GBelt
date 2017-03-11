@@ -184,8 +184,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         setUpMap();
 
-
-
         // Find layout elements for future use
         instruction = ((TextView) findViewById(R.id.instruction));
         circularProgressBar = (CircularProgressBar)findViewById(R.id.progressBar);
@@ -719,7 +717,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void finishTrip() {
-        transmitStop();
+        transmitFinish();
         tripStarted = false;
         mRoute = null;
         activityMode = "Maps";
@@ -745,6 +743,13 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if (mRoute != null) {
             double desired_theta = mRoute.calculateVector(mStep);
             String message = "#" + (float) desired_theta + "~";
+            transmission(message);
+        }
+    }
+
+    public void transmitFinish() {
+        if (tripStarted) {
+            String message = "#" + "Finish" + "~";
             transmission(message);
         }
     }

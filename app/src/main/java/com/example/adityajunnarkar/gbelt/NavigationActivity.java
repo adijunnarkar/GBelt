@@ -453,7 +453,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void finishTrip() {
-        transmitStop();
+        transmitFinish();
         tripStarted = false;
         mRoute = null;
         destination = "";
@@ -465,6 +465,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         if (mRoute != null) {
             double desired_theta = mRoute.calculateVector(mStep);
             String message = "#" + (float) desired_theta + "~";
+            transmission(message);
+        }
+    }
+
+    public void transmitFinish() {
+        if (tripStarted) {
+            String message = "#" + "Finish" + "~";
             transmission(message);
         }
     }
