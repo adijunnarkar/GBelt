@@ -2,11 +2,11 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
@@ -110,7 +111,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     Location mLastLocation;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId;
+    String utteranceId = "";
     TextView instruction;
 
     RelativeLayout activity;
@@ -135,6 +136,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     int attemptNumber = 1;
     int maxAttempts = 2;
 
+    static boolean ttsReady = false;
+    boolean recalculating = false;
+
     // Drawing map
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
@@ -154,6 +158,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     // Global variables across entire application used for debugging:
     boolean DEBUG;
     boolean TTSDEBUG;
+    boolean RECALCULATION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,9 +180,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         setupBluetooth();
 
-        setUpMap();
-
         startTextToSpeechActivity();
+
+        setUpMap();
 
         // Find layout elements for future use
         instruction = ((TextView) findViewById(R.id.instruction));
@@ -192,7 +197,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         setUpTouchAndHoldTimer();
 
         setUpUnlockListener();
-
     }
 
     void setupBluetooth(){
@@ -209,13 +213,41 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 //Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
                 //"\n" + "Scanning for remote Bluetooth devices...",
                 //Toast.LENGTH_SHORT).show();
-
-                // To discover remote Bluetooth devices
-                if (BluetoothDeviceForHC05 == null) discoverDevices();
+                checkPairedOrDoDiscovery();
 
             }
         }
 
+    }
+
+    //This function checks if HC05 is already present as a paired device and stats service to connect to it, if not starts discovery
+    public void checkPairedOrDoDiscovery() {
+
+        // To discover remote Bluetooth devices
+        if (BluetoothDeviceForHC05 == null) {
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            boolean deviceFound = false;
+            if (pairedDevices.size() > 0) {
+                // There are paired devices.
+                for (BluetoothDevice device : pairedDevices) {
+                    if (device.getAddress().equals(((MyApplication) this.getApplication()).getBTDeviceAddress())) {
+                        deviceFound = true;
+                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                        Bundle b = new Bundle();
+                        b.putParcelable("HC-05", device);
+                        intentBT.putExtras(b);
+                        startService(intentBT);
+
+                    }
+                }
+                // if device is not paired but bluetooth is enabled
+                if (!deviceFound) {
+                    discoverDevices();
+                }
+            } else {
+                discoverDevices();
+            }
+        }
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -255,6 +287,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private void retrieveStates() {
         DEBUG = ((MyApplication) this.getApplication()).getDebug();
         TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
+        RECALCULATION = ((MyApplication) this.getApplication()).getRecalculation();
     }
 
     private void retrieveData() {
@@ -267,13 +300,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Each activity passes different bundles
         if (activityMode.equals("Maps")) {
             // grab data from MapsActivity
-            activityMode = (String) bundle.getSerializable("activity");
             origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
             tripStarted = (boolean) bundle.getSerializable("tripStarted");
-
-            if (DEBUG) destination = "Wilfred Laurier";
 
             if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
             if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
@@ -457,7 +487,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if(mTts != null) {
             mTts.stop();
             mTts.shutdown();
+            mTts = null;
         }
+        ttsReady = false;
     }
 
     private void destroySpeechRecognizer() {
@@ -477,8 +509,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             // Bluetooth successfully enabled!
             if (resultCode == Activity.RESULT_OK) {
 
-                // To discover remote Bluetooth devices
-                discoverDevices();
+                checkPairedOrDoDiscovery();
 
             } else { // RESULT_CANCELED as user refused or failed to enable Bluetooth
                 //Toast.makeText(getApplicationContext(), "Bluetooth is not enabled.",
@@ -544,27 +575,18 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                         Toast.LENGTH_SHORT).show();
 
                 //MAC address of HC05
-                if (address.equals("20:16:10:24:54:92")) {
+                if (address.equals(((MyApplication) getApplication()).getBTDeviceAddress())) {
 
-                        BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
+                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
 
-                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
-                        Bundle b = new Bundle();
-                        b.putParcelable("HC-05", BluetoothDeviceForHC05);
-                        intentBT.putExtras(b);
-                        startService(intentBT);
+                    Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                    Bundle b = new Bundle();
+                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                    intentBT.putExtras(b);
+                    startService(intentBT);
 
-                    }
-               // }
-            } /*else if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
-
-                //HC 05 has uncategorized device major class
-                if(deviceClass == BluetoothClass.Device.Major.UNCATEGORIZED && BluetoothDeviceForHC05 != null){
-                    tts("Bluetooth connection with HC 05 established");
-                    //Toast.makeText(getApplicationContext(), "Bluetooth established", Toast.LENGTH_LONG).show();
                 }
-
-            }*/
+            }
         }
     };
 
@@ -576,14 +598,29 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             String message = intent.getStringExtra("key");
 
-            if(message.equals("hc05-connected")){
-                tts("Bluetooth connection with HC05 established");
+            if(message.equals("hc05-connected")) {
+                ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+                List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
+                String currentActivity = taskInfo.get(0).topActivity.getClassName();
+                //Toast.makeText(getApplicationContext(), "CURRENT Activity: " + componentInfo.getClassName(), Toast.LENGTH_LONG).show();
+                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
+                    while (!utteranceId.equals("Voice Mode Activated")) ;
+                    tts("Bluetooth connection with HC05 established");
+                } else {
+                    Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
+                }
+                BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
+            } else if(message.equals("hc05-not-connected") && BluetoothDeviceForHC05 == null){
+                discoverDevices();
             }
-            // Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+
         }
     };
 
     private void drawMap() {
+        mMap.clear(); // clear the map before drawing anything on it (mainly for redrawing)
+        polylinePaths.clear();
+
         polylinePaths = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
@@ -604,12 +641,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
-            tts(instruction.getText().toString());
             transmitVector();
-
-            if(mStep == 0) {
-                tts("Expected to arrive in " + mRoute.duration.text);
-            }
 
             // Add Marker for destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -631,6 +663,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+
+        if (mRoute != null) {
+            if (mStep == 0) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // wait 2 seconds to make sure tts is initialized
+                        String speech = "Expected to arrive in " + mRoute.duration.text;
+                        tts(speech);
+                        // wait until utterance is complete before other tts's
+                        // need the while before tts
+                        while (!utteranceId.equals(speech)) ;
+                        tts(instruction.getText().toString());
+                    }
+                }, 2000);
+            } else {
+                tts(instruction.getText().toString());
+            }
         }
 
         loader.disableLoading();
@@ -657,14 +708,29 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             tts(instruction.getText().toString());
             transmitVector();
         } else {
-            updateInstruction("");
+            updateInstruction("Arrived at destination");
             tts("You have reached your destination");
-            transmitStop();
+            finishTrip();
         }
     }
 
+    public void finishTrip() {
+        transmitFinish();
+        tripStarted = false;
+        mRoute = null;
+        activityMode = "Maps";
+        destination = "";
+        origin = "Your Location";
+        mRoutes.clear();
+
+        if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+    }
+
     public void tts(String text) {
-        if (myHashAlarm != null && TTSDEBUG) {
+        while(!ttsReady);
+        if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -672,14 +738,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented this haha
-        double desired_theta = mRoute.calculateVector(mStep);
-        String message = "#" + (float) desired_theta + "~";
-        transmission(message);
+        if (mRoute != null) {
+            double desired_theta = mRoute.calculateVector(mStep);
+            String message = "#" + (float) desired_theta + "~";
+            transmission(message);
+        }
+    }
+
+    public void transmitFinish() {
+        if (tripStarted) {
+            String message = "#" + "Finish" + "~";
+            transmission(message);
+        }
     }
 
     public void transmitStop() {
-        String message = "#" + "Stop" + "~";
-        transmission(message);
+        if (tripStarted) {
+            String message = "#" + "Stop" + "~";
+            transmission(message);
+        }
     }
 
     public void transmission(String message) {
@@ -692,22 +769,27 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        if (origin != null && origin.equals("Your Location")) {
-            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
-        }
-
         if (origin == null || origin.equals("")) {
-            mTts.speak("Starting location has not been set", TextToSpeech.QUEUE_FLUSH, null);
+            tts("Starting location has not been set");
             return;
         }
 
         if (destination == null || destination.equals("")) {
-            mTts.speak("Destination has not been set", TextToSpeech.QUEUE_FLUSH, null);
+            tts("Destination has not been set");
             return;
         }
 
+        // because we want to retain origin and not change it to our current coordinates
+        String mOrigin;
+        if (origin.equals("Your Location")) {
+            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+        } else {
+            mOrigin = origin;
+        }
+
         try {
-            new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
+            new DirectionFinder(this, mOrigin, destination,
+                    transportationModes.get(mode)).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -741,7 +823,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onBackPressed() {
         // Override the onBackPressed() function: do nothing on back key
         // because we do not want to go back to Maps or Navigation Mode
-        return;
+        finish();
     }
 
 
@@ -873,20 +955,20 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             // Recalculate if the user has started the trip but has drifted off the route
-            if (tripStarted && !mRoute.isLocationInPath(point)) {
-                recalculateRoute();
-                return;
-            }
-
-            if (!tripStarted) { // if trip has not started, check if it has started
-                if (mRoute.steps.get(mStep).stepStarted(point) || mRoute.isLocationInPath(point)) {
-                    tripStarted = true;
+            if (tripStarted) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION && !recalculating) {
+                    recalculating = true;
+                    recalculateRoute();
+                    return;
                 }
-            }
 
-            // Check if the user should move on to the next step
-            if (mRoute.steps.get(mStep).stepCompleted(point)) {
-                onNextStep();
+                if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
+                }
+
+                updateMap();
+            } else if (!tripStarted && mRoute.steps.get(mStep).stepStarted(point)) {
+                tripStarted = true;
             }
         }
     }
@@ -914,6 +996,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         drawMap();
 
+        recalculating = false;
+
         if (mRoute != null) {
             activityMode = "Navigation";
             if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
@@ -924,6 +1008,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            ttsReady = true;
             mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
 
                 @Override
@@ -1031,14 +1116,34 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else if (match.contains("touch screen")) {
                 // expecting 'Activate Touch-Screen Mode'
                 finish(); // return to previous intent
-            } else {
-                tts("No commmand found");
-            }
+            } else if (match.contains("origin")) {
+                // expecting 'Set origin to ____'
+                // i.e. 'Set origin to my location'
+                String[] phrase = match.split(" to ");
 
+                if (phrase[1].equals("my location")) {
+                    origin = "Your Location";
+                } else {
+                    origin = phrase[1];
+                }
+
+                tts("origin set to " + origin);
+                if (DEBUG)
+                    ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+            } else {
+                tts("No command found");
+            }
         } else if (activityMode.equals("Navigation")){
             if (match.contains("repeat")) {
                 // expecting 'repeat direction/instruction'
                 tts(instruction.getText().toString());
+            } else if (match.contains("stop")) {
+                updateInstruction("");
+                tts("Navigation stopped");
+                finishTrip();
+                drawMap();
+            } else {
+                tts("No command found");
             }
         }
 

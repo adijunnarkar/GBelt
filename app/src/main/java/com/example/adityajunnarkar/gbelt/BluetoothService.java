@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -176,10 +177,21 @@ public class BluetoothService extends Service {
             if(bluetoothSocket.isConnected()) {
 
                 Intent intent = new Intent("intentKey");
+                Bundle b = new Bundle();
+                b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                intent.putExtras(b);
                 // You can also include some extra data.
                 intent.putExtra("key", "hc05-connected");
+
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 manageBluetoothConnection(bluetoothSocket);
+            } else {
+                Intent intent = new Intent("intentKey");
+                // You can also include some extra data.
+                intent.putExtra("key", "hc05-not-connected");
+                connectingThread = null;
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
             }
         }
 

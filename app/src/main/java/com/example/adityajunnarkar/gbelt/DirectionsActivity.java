@@ -36,4 +36,8 @@ public class DirectionsActivity extends ListActivity {
                 new ArrayAdapter<CharSequence>(this, R.layout.activity_directions, instructions);
         setListAdapter(notes);
     }
+
+    public void onBackPressed() {
+        finish();
+    }
 }

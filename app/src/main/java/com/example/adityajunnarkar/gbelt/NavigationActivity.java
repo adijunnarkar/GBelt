@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
@@ -16,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.content.Intent;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -55,7 +55,6 @@ import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
 
-
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -80,7 +79,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId;
+    String utteranceId = "";
 
     LoadingScreen loader;
 
@@ -96,6 +95,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private Route mRoute;
     private int mode;
 
+    boolean ttsReady = false;
+    boolean recalculating = false;
+
     String origin;
     String destination;
 
@@ -104,6 +106,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     // Global variables across entire application used for debugging:
     boolean DEBUG;
     boolean TTSDEBUG;
+    boolean RECALCULATION;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -136,6 +139,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         setUpReturnListener();
 
         setUpUnlockListener();
+
+        loader.enableLoading();
     }
 
     private void setUpLoadingSpinner() {
@@ -152,6 +157,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private void retrieveStates() {
         DEBUG = ((MyApplication) this.getApplication()).getDebug();
         TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
+        RECALCULATION = ((MyApplication) this.getApplication()).getRecalculation();
     }
 
     private void retrieveData() {
@@ -218,19 +224,28 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         Intent intent = new Intent(this, VoiceModeActivity.class);
         Bundle bundle = new Bundle(); // pass bundle to voice mode activity
 
-        bundle.putSerializable("activity", (Serializable) "Navigation");
-        intent.putExtras(bundle);
+        // for the case where trip has completed
+        if (tripStarted) {
+            bundle.putSerializable("activity", (Serializable) "Navigation");
+            intent.putExtras(bundle);
 
-        bundle.putSerializable("routes", (Serializable) mRoutes);
-        intent.putExtras(bundle);
+            bundle.putSerializable("routes", (Serializable) mRoutes);
+            intent.putExtras(bundle);
+
+            bundle.putSerializable("step", (Serializable) mStep);
+            intent.putExtras(bundle);
+        } else {
+            bundle.putSerializable("activity", (Serializable) "Maps");
+            intent.putExtras(bundle);
+
+            bundle.putSerializable("origin", (Serializable) origin);
+            intent.putExtras(bundle);
+        }
 
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
         bundle.putSerializable("destination", (Serializable) destination);
-        intent.putExtras(bundle);
-
-        bundle.putSerializable("step", (Serializable) mStep);
         intent.putExtras(bundle);
 
         bundle.putSerializable("tripStarted", (Serializable) tripStarted);
@@ -241,8 +256,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void createDirectionsActivity() {
-        destroyTts();
-
         loader.updateLoadingText("Loading...");
         loader.enableLoading();
 
@@ -287,9 +300,20 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             mTts.shutdown();
             mTts = null;
         }
+        ttsReady = false;
+    }
+
+    private void updateMap() {
+        if (mLastLocation != null) {
+            LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+        }
     }
 
     private void drawMap() {
+        mMap.clear(); // clear the map before drawing anything on it (mainly for redrawing)
+        polylinePaths.clear();
+
         polylinePaths = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
@@ -304,8 +328,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             if (mStep == 0 || mLastLocation == null) { // first step
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
             } else { // not first step
-                LatLng currLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 16));
+                updateMap();
             }
 
             TextView tvDuration = (TextView) findViewById(R.id.tvDuration);
@@ -316,10 +339,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             transmitVector();
-
-            if(mStep == 0) {
-                tts("Expected to arrive in " + mRoute.duration.text);
-            }
 
             // Add Markers for origin and destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -340,6 +359,26 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             }
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+
+
+        if (mRoute != null) {
+            if (mStep == 0) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // wait 1 seconds to make sure tts is initialized
+                        String speech = "Expected to arrive in " + mRoute.duration.text;
+                        tts(speech);
+                        // wait until utterance is complete before other tts's
+                        // need the while before tts
+                        while (!utteranceId.equals(speech)) ;
+                        tts(instruction.getText().toString());
+                    }
+                }, 2000);
+            } else {
+                tts(instruction.getText().toString());
+            }
         }
 
         loader.disableLoading();
@@ -376,20 +415,20 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         if (mRoute != null) {
             // Recalculate if the user has started the trip but has drifted off the route
-            if (tripStarted && !mRoute.isLocationInPath(point)) {
-                recalculateRoute();
-                return;
-            }
-
-            if (!tripStarted) { // if trip has not started, check if it has started
-                if (mRoute.steps.get(mStep).stepStarted(point) || mRoute.isLocationInPath(point)) {
-                    tripStarted = true;
+            if (tripStarted) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION && !recalculating) {
+                    recalculating = true;
+                    recalculateRoute();
+                    return;
                 }
-            }
 
-            // Check if the user should move on to the next step
-            if (mRoute.steps.get(mStep).stepCompleted(point)) {
-                onNextStep();
+                if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
+                }
+
+                updateMap();
+            } else if (!tripStarted && mRoute.steps.get(mStep).stepStarted(point)) {
+                tripStarted = true;
             }
         }
     }
@@ -407,23 +446,41 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             tts(instruction.getText().toString());
             transmitVector();
         } else {
-            updateInstruction("");
+            updateInstruction("Arrived at destination");
             tts("You have reached your destination");
-            transmitStop();
+            finishTrip();
         }
+    }
+
+    public void finishTrip() {
+        transmitFinish();
+        tripStarted = false;
+        mRoute = null;
+        destination = "";
+        origin = "Your Location";
     }
 
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented this haha
-        double desired_theta = mRoute.calculateVector(mStep);
-        desired_theta = 0;
-        String message = "#" + (float) desired_theta + "~";
-        transmission(message);
+        if (mRoute != null) {
+            double desired_theta = mRoute.calculateVector(mStep);
+            String message = "#" + (float) desired_theta + "~";
+            transmission(message);
+        }
+    }
+
+    public void transmitFinish() {
+        if (tripStarted) {
+            String message = "#" + "Finish" + "~";
+            transmission(message);
+        }
     }
 
     public void transmitStop() {
-        String message = "#" + "Stop" + "~";
-        transmission(message);
+        if (tripStarted) {
+            String message = "#" + "Stop" + "~";
+            transmission(message);
+        }
     }
 
     public void transmission(String message) {
@@ -441,7 +498,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && TTSDEBUG) {
+        while(!ttsReady);
+        if (myHashAlarm != null && mTts!= null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -449,12 +507,21 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        if (origin != null && origin.equals("Your Location")) {
-            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+        if (origin == null || origin.equals("")) {
+            tts("Starting location has not been set");
+            return;
+        }
+
+        // because we want to retain origin and not change it to our current coordinates
+        String mOrigin;
+        if (origin.equals("Your Location")) {
+            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+        } else {
+            mOrigin = origin;
         }
 
         try {
-            new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
+            new DirectionFinder(this, mOrigin, destination, transportationModes.get(mode)).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -518,6 +585,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            ttsReady = true;
             mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
 
                 @Override
@@ -530,9 +598,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
             myHashAlarm = new HashMap<String, String>();
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
-
-            // TODO: hmmmm...this is a bad place to put this, make this nicer
-            tts(instruction.getText().toString());
         }
     }
 
@@ -550,6 +615,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         mRoutes = route;
 
         mStep = 0; // restart route
+        recalculating = false;
 
         drawMap();
     }
