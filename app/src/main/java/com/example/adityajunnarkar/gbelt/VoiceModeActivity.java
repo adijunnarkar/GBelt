@@ -6,6 +6,8 @@ import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -60,6 +62,8 @@ import com.mikhaellopez.circularprogressbar.CircularProgressBar;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,6 +124,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     UnlockBar unlock;
     LoadingScreen loader;
 
+    static BluetoothDevice BluetoothDeviceHDP;
+    static BluetoothHeadset mBluetoothHeadset;
+    static BluetoothDevice mConnectedHeadset;
+
+    static AudioManager mAudioManager;
+
     String activityMode; // Maps or Navigation
 
     // Maps mode
@@ -174,11 +184,13 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         checkRecordAudioPermission();
-
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+       
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("intentKey"));
 
         setupBluetooth();
+
 
         startTextToSpeechActivity();
 
@@ -224,24 +236,35 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void checkPairedOrDoDiscovery() {
 
         // To discover remote Bluetooth devices
-        if (BluetoothDeviceForHC05 == null) {
+        if (BluetoothDeviceForHC05 == null || BluetoothDeviceHDP == null) {
             Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-            boolean deviceFound = false;
+            boolean HC05Found = false, headsetFound = false;
+
             if (pairedDevices.size() > 0) {
                 // There are paired devices.
                 for (BluetoothDevice device : pairedDevices) {
                     if (device.getAddress().equals(((MyApplication) this.getApplication()).getBTDeviceAddress())) {
-                        deviceFound = true;
+                        HC05Found = true;
                         Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                         Bundle b = new Bundle();
                         b.putParcelable("HC-05", device);
                         intentBT.putExtras(b);
                         startService(intentBT);
 
+                    } else if(isHandsFreeDevice(device.getBluetoothClass().getDeviceClass())){
+                        BluetoothDeviceHDP = mBluetoothAdapter.getRemoteDevice(device.getAddress());
+                        headsetFound = true;
+                        if (BluetoothDeviceHDP != null ) {
+                            Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                            Bundle b = new Bundle();
+                            b.putParcelable("hands-free", BluetoothDeviceHDP);
+                            intentBT.putExtras(b);
+                            startService(intentBT);
+                        }
                     }
                 }
-                // if device is not paired but bluetooth is enabled
-                if (!deviceFound) {
+                // if devices are not paired but bluetooth is enabled
+                if (!(HC05Found && headsetFound)) {
                     discoverDevices();
                 }
             } else {
@@ -249,6 +272,195 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
         }
     }
+
+    public boolean isHandsFreeDevice(int deviceClass){
+        return ((deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE)
+                || (deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES)
+                || (deviceClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET));
+    }
+
+    private BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if (profile == BluetoothProfile.HEADSET) {
+                mBluetoothHeadset = (BluetoothHeadset) proxy;
+                Method connect = getConnectMethod();
+                //  BluetoothDevice device = findBondedDeviceByName(mAdapter, HTC_MEDIA);
+
+                try {
+                    connect.setAccessible(true);
+                    connect.invoke(proxy, BluetoothDeviceHDP);
+                } catch (InvocationTargetException ex) {
+                    ex.printStackTrace();
+                    //Log.e(TAG, "Unable to invoke connect(BluetoothDevice) method on proxy. " + ex.toString());
+                } catch (IllegalAccessException ex) {
+                    ex.printStackTrace();
+                    //Log.e(TAG, "Illegal Access! " + ex.toString());
+                }
+
+                while(mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED );
+                List<BluetoothDevice> devices = mBluetoothHeadset.getConnectedDevices();
+
+                if (devices.size() > 0)
+                {
+
+                    mConnectedHeadset = devices.get(0);
+                    //   if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
+                    //       Toast.makeText(getApplicationContext(), "voice recognition not supported",
+                    //               Toast.LENGTH_SHORT).show();
+
+                    //   };
+                }
+               /* Toast.makeText(getApplicationContext(), "reached here " + devices.size(),
+                        Toast.LENGTH_SHORT).show();*/
+            }
+        }
+        public void onServiceDisconnected(int profile) {
+            if (profile == BluetoothProfile.HEADSET) {
+                //    mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+                mBluetoothHeadset = null;
+            }
+        }
+    };
+
+    /**
+     * Wrapper around some reflection code to get the hidden 'connect()' method
+     * @return the connect(BluetoothDevice) method, or null if it could not be found
+     */
+    private Method getConnectMethod () {
+        try {
+            return BluetoothHeadset.class.getDeclaredMethod("connect", BluetoothDevice.class);
+        } catch (NoSuchMethodException ex) {
+            //Log.e(TAG, "Unable to find connect(BluetoothDevice) method in BluetoothA2dp proxy.");
+            return null;
+        }
+    }
+
+    protected void discoverDevices(){
+
+        // Register the BroadcastReceiver for ACTION_FOUND
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        this.registerReceiver(broadcastReceiver, filter);
+
+        // To scan for remote Bluetooth devices
+        if (mBluetoothAdapter.startDiscovery()) {
+/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
+                    Toast.LENGTH_SHORT).show();*/
+        }
+
+    }
+
+    // Create a BroadcastReceiver for ACTION_FOUND
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+
+            // Get the BluetoothDevice object from the Intent
+            BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            String address = bluetoothDevice.getAddress();
+            int deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
+
+            // Whenever a remote Bluetooth device is found
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+
+
+                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName()+" Device class: "+ deviceClass,
+                        Toast.LENGTH_SHORT).show();
+
+                //MAC address of HC05
+                if (address.equals(((MyApplication) getApplication()).getBTDeviceAddress())) {
+
+                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
+
+                    Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                    Bundle b = new Bundle();
+                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                    intentBT.putExtras(b);
+                    startService(intentBT);
+
+                } else if (isHandsFreeDevice(deviceClass)){
+
+                    BluetoothDeviceHDP = mBluetoothAdapter.getRemoteDevice(address);
+                    if (BluetoothDeviceHDP != null ) {
+                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                        Bundle b = new Bundle();
+                        b.putParcelable("hands-free", BluetoothDeviceHDP);
+                        intentBT.putExtras(b);
+                        startService(intentBT);
+                    }
+                }
+            } else if(BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
+                if (isHandsFreeDevice(deviceClass)){
+
+                    try {
+
+                        mAudioManager.setMode(AudioManager.MODE_NORMAL);
+                        mAudioManager.setBluetoothScoOn(false);
+                        mAudioManager.stopBluetoothSco();
+
+                        // Establish connection to the proxy
+                        if(mBluetoothHeadset != null){
+                            mBluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET,  mBluetoothHeadset);
+
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    };
+
+    // Create a BroadcastReceiver for device connected to HC 05, string is broadcast from BluetoothService class
+    // indicating device is connected
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String message = intent.getStringExtra("key");
+            ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+            List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
+            String currentActivity = taskInfo.get(0).topActivity.getClassName();
+
+            if(message.equals("hc05-connected")) {
+                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
+                    while (!utteranceId.equals("Voice Mode Activated")) ;
+                    tts("Bluetooth connection with HC05 established");
+                } else {
+                    Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
+                }
+                BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
+            } else if(message.equals("hc05-not-connected") && BluetoothDeviceForHC05 == null){
+                discoverDevices();
+            } else if(message.equals("headset-connected")) {
+                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
+                    try {
+                        mAudioManager.setMode(0);
+                        mAudioManager.setBluetoothScoOn(true);
+                        mAudioManager.startBluetoothSco();
+                        mAudioManager.setMode(AudioManager.MODE_IN_CALL);
+                        while (!utteranceId.equals("Voice Mode Activated")) ;
+                        tts("Bluetooth connection with headset established");
+                        if (mBluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) != BluetoothHeadset.STATE_CONNECTED) {
+                            // Establish connection to the proxy
+                            if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
+                                Toast.makeText(getApplicationContext(), "established",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "headset is now connected", Toast.LENGTH_LONG).show();
+                }
+                BluetoothDeviceHDP = intent.getParcelableExtra("HC-05");
+            } else if(message.equals("headset-not-connected") && BluetoothDeviceHDP == null){
+                discoverDevices();
+            }
+        }
+    };
 
     /** Defines callbacks for service binding, passed to bindService() */
    /* private ServiceConnection mConnection = new ServiceConnection() {
@@ -273,6 +485,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
     };
 */
+
     private void setUpLoadingSpinner() {
         LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
         RelativeLayout loadingContent = (RelativeLayout) findViewById(R.id.loadingContent);
@@ -541,81 +754,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
         }
     }
-
-    protected void discoverDevices(){
-
-        // Register the BroadcastReceiver for ACTION_FOUND
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        this.registerReceiver(broadcastReceiver, filter);
-
-        // To scan for remote Bluetooth devices
-        if (mBluetoothAdapter.startDiscovery()) {
-/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
-                    Toast.LENGTH_SHORT).show();*/
-        }
-
-    }
-
-    // Create a BroadcastReceiver for ACTION_FOUND
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-
-            String action = intent.getAction();
-
-            // Get the BluetoothDevice object from the Intent
-            BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            String address = bluetoothDevice.getAddress();
-            int deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
-
-            // Whenever a remote Bluetooth device is found
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-
-
-                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName()+" Device class: "+ deviceClass,
-                        Toast.LENGTH_SHORT).show();
-
-                //MAC address of HC05
-                if (address.equals(((MyApplication) getApplication()).getBTDeviceAddress())) {
-
-                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
-
-                    Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
-                    Bundle b = new Bundle();
-                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
-                    intentBT.putExtras(b);
-                    startService(intentBT);
-
-                }
-            }
-        }
-    };
-
-    // Create a BroadcastReceiver for device connected to HC 05, string is broadcast from BluetoothService class
-    // indicating device is connected
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String message = intent.getStringExtra("key");
-
-            if(message.equals("hc05-connected")) {
-                ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
-                List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
-                String currentActivity = taskInfo.get(0).topActivity.getClassName();
-                //Toast.makeText(getApplicationContext(), "CURRENT Activity: " + componentInfo.getClassName(), Toast.LENGTH_LONG).show();
-                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
-                    while (!utteranceId.equals("Voice Mode Activated")) ;
-                    tts("Bluetooth connection with HC05 established");
-                } else {
-                    Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
-                }
-                BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
-            } else if(message.equals("hc05-not-connected") && BluetoothDeviceForHC05 == null){
-                discoverDevices();
-            }
-
-        }
-    };
 
     private void drawMap() {
         mMap.clear(); // clear the map before drawing anything on it (mainly for redrawing)
@@ -1020,9 +1158,13 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                    String.valueOf(AudioManager.STREAM_ALARM));
-
+            if(BluetoothDeviceHDP != null){
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                        String.valueOf(AudioManager.STREAM_VOICE_CALL));
+            } else {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                        String.valueOf(AudioManager.STREAM_ALARM));
+            }
             tts("Voice Mode Activated");
         }
 
@@ -1214,14 +1356,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             // other 'case' lines to check for other permissions this app might request.
             // You can add here other case statements according to your requirement.
         }
-    }
-
-    protected void makeDiscoverable(){
-        // Make local device discoverable
-        Intent discoverableIntent = new
-                Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, DISCOVERABLE_DURATION);
-        startActivityForResult(discoverableIntent, DISCOVERABLE_BT_REQUEST_CODE);
     }
 
     @Override

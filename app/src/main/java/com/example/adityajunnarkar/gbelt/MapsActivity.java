@@ -377,8 +377,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Extract the Place descriptions from the results
                 resultList = new ArrayList(predsJsonArray.length());
                 for (int i = 0; i < predsJsonArray.length(); i++) {
-                    System.out.println(predsJsonArray.getJSONObject(i).getString("description"));
-                    System.out.println("============================================================");
                     resultList.add(predsJsonArray.getJSONObject(i).getString("description"));
                 }
             } catch (JSONException e) {
