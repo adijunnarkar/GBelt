@@ -7,6 +7,7 @@ public class MyApplication extends Application {
     public boolean tts = true;
     public boolean recalculation = false;
     String bluetoothAddress = "20:16:10:24:54:92";
+
     public boolean getTTS() {
         return tts;
     }

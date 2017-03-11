@@ -215,8 +215,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 //Toast.LENGTH_SHORT).show();
                 checkPairedOrDoDiscovery();
 
-
-
             }
         }
 
