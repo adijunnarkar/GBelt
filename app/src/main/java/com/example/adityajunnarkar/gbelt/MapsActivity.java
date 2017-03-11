@@ -1,7 +1,7 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
-import android.app.ProgressDialog;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,15 +15,16 @@ import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -86,10 +87,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageButton btnWalk;
     AutoCompleteTextView etOrigin;
     AutoCompleteTextView etDestination;
-    //EditText etOrigin;
-    //EditText etDestination;
-
-    ProgressDialog progressDialog;
 
     Route mRoute;
     Location mLastLocation;
@@ -147,6 +144,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         retrieveData();
 
+        setupUI(findViewById(R.id.activityContent));
+
         setUpLoadingSpinner();
 
         setUpVoiceRecognitionListener();
@@ -168,8 +167,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Get data associated with the specified position
                 // in the list (AdapterView)
-                String description = (String) parent.getItemAtPosition(position);
-                Toast.makeText(getApplicationContext(), description, Toast.LENGTH_SHORT).show();
+                hideSoftKeyboard(MapsActivity.this);
             }
         });
 
@@ -181,11 +179,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Get data associated with the specified position
                 // in the list (AdapterView)
-                String description = (String) parent.getItemAtPosition(position);
-                Toast.makeText(getApplicationContext(), description, Toast.LENGTH_SHORT).show();
+                hideSoftKeyboard(MapsActivity.this);
             }
         });
     }
+
+    private void setupUI(View view) {
+        // Set up touch listener for non-text box views to hide keyboard.
+        if (!(view instanceof AutoCompleteTextView)) {
+            view.setOnTouchListener(new View.OnTouchListener() {
+                public boolean onTouch(View v, MotionEvent event) {
+                    hideSoftKeyboard(MapsActivity.this);
+                    return false;
+                }
+            });
+        }
+
+        //If a layout container, iterate over children and seed recursion.
+        if (view instanceof ViewGroup) {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                View innerView = ((ViewGroup) view).getChildAt(i);
+                setupUI(innerView);
+            }
+        }
+    }
+
+    private static void hideSoftKeyboard(Activity activity) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) activity.getSystemService(
+                        Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(
+                activity.getCurrentFocus().getWindowToken(), 0);
+    }
+
 
     private void setUpLoadingSpinner() {
         LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
@@ -411,6 +437,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bundle.putSerializable("step", (Serializable) 0);
         intent.putExtras(bundle);
 
+        bundle.putSerializable("tripStarted", (Serializable) false);
+        intent.putExtras(bundle);
+
         String origin = etOrigin.getText().toString();
         bundle.putSerializable("origin", (Serializable) origin);
         intent.putExtras(bundle);
@@ -443,6 +472,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("tripStarted", (Serializable) false);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -529,25 +561,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    /** Defines callbacks for service binding, passed to bindService() */
- /*   private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
-            localBTService = binder.getService();
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-            localBTService = null;
-        }
-    };
-*/
 
     @SuppressWarnings("deprecation") // haha haha
     @Override
@@ -576,7 +589,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void sendDirectionRequest() {
-        loader.enableLoading();
         String origin = etOrigin.getText().toString();
         String destination = etDestination.getText().toString();
 
@@ -598,6 +610,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(this, "Please enter destination address!", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        loader.enableLoading();
 
         try {
             new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
@@ -683,7 +697,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
-        updateMap();
     }
 
     @Override

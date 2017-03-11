@@ -2,19 +2,22 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -23,12 +26,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -51,7 +54,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.vision.text.Text;
 import com.google.common.collect.ImmutableMap;
 import com.hamondigital.unlock.UnlockBar;
 import com.mikhaellopez.circularprogressbar.CircularProgressBar;
@@ -63,11 +65,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
+
+import static android.support.v4.content.LocalBroadcastManager.*;
 
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
@@ -104,10 +109,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    ProgressDialog progressDialog;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId;
+    String utteranceId = "";
     TextView instruction;
 
     RelativeLayout activity;
@@ -127,9 +131,13 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     List<Route> mRoutes;
     Route mRoute = null;
     int mStep = 0;
+    boolean tripStarted;
 
     int attemptNumber = 1;
     int maxAttempts = 2;
+
+    static boolean ttsReady = false;
+    boolean recalculating = false;
 
     // Drawing map
     private List<Marker> destinationMarkers = new ArrayList<>();
@@ -150,6 +158,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     // Global variables across entire application used for debugging:
     boolean DEBUG;
     boolean TTSDEBUG;
+    boolean RECALCULATION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,29 +175,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         checkRecordAudioPermission();
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
-        } else {
-            // Any valid Bluetooth operations
-            if (!mBluetoothAdapter.isEnabled()) {
-                // A dialog will appear requesting user permission to enable Bluetooth
-                Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBluetoothIntent, ENABLE_BT_REQUEST_CODE);
-            } else {
-                //Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
-                //"\n" + "Scanning for remote Bluetooth devices...",
-                //Toast.LENGTH_SHORT).show();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("intentKey"));
 
-                // To discover remote Bluetooth devices
-                if (BluetoothDeviceForHC05 == null) discoverDevices();
-
-            }
-        }
-
-        setUpMap();
+        setupBluetooth();
 
         startTextToSpeechActivity();
+
+        setUpMap();
 
         // Find layout elements for future use
         instruction = ((TextView) findViewById(R.id.instruction));
@@ -203,9 +197,82 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         setUpTouchAndHoldTimer();
 
         setUpUnlockListener();
+    }
+
+    void setupBluetooth(){
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            // Device does not support Bluetooth
+        } else {
+            // Any valid Bluetooth operations
+            if (!mBluetoothAdapter.isEnabled()) {
+                // A dialog will appear requesting user permission to enable Bluetooth
+                Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetoothIntent, ENABLE_BT_REQUEST_CODE);
+            } else {
+                //Toast.makeText(getApplicationContext(), "Your device has already been enabled." +
+                //"\n" + "Scanning for remote Bluetooth devices...",
+                //Toast.LENGTH_SHORT).show();
+                checkPairedOrDoDiscovery();
+
+            }
+        }
 
     }
 
+    //This function checks if HC05 is already present as a paired device and stats service to connect to it, if not starts discovery
+    public void checkPairedOrDoDiscovery() {
+
+        // To discover remote Bluetooth devices
+        if (BluetoothDeviceForHC05 == null) {
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            boolean deviceFound = false;
+            if (pairedDevices.size() > 0) {
+                // There are paired devices.
+                for (BluetoothDevice device : pairedDevices) {
+                    if (device.getAddress().equals(((MyApplication) this.getApplication()).getBTDeviceAddress())) {
+                        deviceFound = true;
+                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                        Bundle b = new Bundle();
+                        b.putParcelable("HC-05", device);
+                        intentBT.putExtras(b);
+                        startService(intentBT);
+
+                    }
+                }
+                // if device is not paired but bluetooth is enabled
+                if (!deviceFound) {
+                    discoverDevices();
+                }
+            } else {
+                discoverDevices();
+            }
+        }
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+   /* private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
+            localBTService = binder.getService();
+            Toast.makeText(getApplicationContext(), "Service bound",
+            Toast.LENGTH_SHORT).show();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+            Toast.makeText(getApplicationContext(), "Service unbound",
+                    Toast.LENGTH_SHORT).show();
+            localBTService = null;
+        }
+    };
+*/
     private void setUpLoadingSpinner() {
         LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
         RelativeLayout loadingContent = (RelativeLayout) findViewById(R.id.loadingContent);
@@ -220,6 +287,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private void retrieveStates() {
         DEBUG = ((MyApplication) this.getApplication()).getDebug();
         TTSDEBUG = ((MyApplication) this.getApplication()).getTTS();
+        RECALCULATION = ((MyApplication) this.getApplication()).getRecalculation();
     }
 
     private void retrieveData() {
@@ -232,12 +300,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Each activity passes different bundles
         if (activityMode.equals("Maps")) {
             // grab data from MapsActivity
-            activityMode = (String) bundle.getSerializable("activity");
             origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mode = (int) bundle.getSerializable("mode");
-
-            if (DEBUG) destination = "Wilfred Laurier";
+            tripStarted = (boolean) bundle.getSerializable("tripStarted");
 
             if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
             if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
@@ -249,6 +315,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             mode = (int) bundle.getSerializable("mode");
             destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
+            tripStarted = (boolean) bundle.getSerializable("tripStarted");
         }
     }
 
@@ -403,6 +470,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("step", (Serializable) mStep);
         intent.putExtras(bundle);
 
+        bundle.putSerializable("tripStarted", (Serializable) tripStarted);
+        intent.putExtras(bundle);
+
         startActivity(intent);
         finish();
     }
@@ -417,7 +487,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if(mTts != null) {
             mTts.stop();
             mTts.shutdown();
+            mTts = null;
         }
+        ttsReady = false;
     }
 
     private void destroySpeechRecognizer() {
@@ -436,12 +508,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             // Bluetooth successfully enabled!
             if (resultCode == Activity.RESULT_OK) {
-                //Toast.makeText(getApplicationContext(), "Ha! Bluetooth is now enabled." +
-                //"\n" + "Scanning for remote Bluetooth devices...",
-                //Toast.LENGTH_SHORT).show();
 
-                // To discover remote Bluetooth devices
-                discoverDevices();
+                checkPairedOrDoDiscovery();
 
             } else { // RESULT_CANCELED as user refused or failed to enable Bluetooth
                 //Toast.makeText(getApplicationContext(), "Bluetooth is not enabled.",
@@ -474,7 +542,85 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
     }
 
+    protected void discoverDevices(){
+
+        // Register the BroadcastReceiver for ACTION_FOUND
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        this.registerReceiver(broadcastReceiver, filter);
+
+        // To scan for remote Bluetooth devices
+        if (mBluetoothAdapter.startDiscovery()) {
+/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
+                    Toast.LENGTH_SHORT).show();*/
+        }
+
+    }
+
+    // Create a BroadcastReceiver for ACTION_FOUND
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+
+            // Get the BluetoothDevice object from the Intent
+            BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            String address = bluetoothDevice.getAddress();
+            int deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
+
+            // Whenever a remote Bluetooth device is found
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+
+
+                Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName()+" Device class: "+ deviceClass,
+                        Toast.LENGTH_SHORT).show();
+
+                //MAC address of HC05
+                if (address.equals(((MyApplication) getApplication()).getBTDeviceAddress())) {
+
+                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
+
+                    Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                    Bundle b = new Bundle();
+                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                    intentBT.putExtras(b);
+                    startService(intentBT);
+
+                }
+            }
+        }
+    };
+
+    // Create a BroadcastReceiver for device connected to HC 05, string is broadcast from BluetoothService class
+    // indicating device is connected
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String message = intent.getStringExtra("key");
+
+            if(message.equals("hc05-connected")) {
+                ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+                List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
+                String currentActivity = taskInfo.get(0).topActivity.getClassName();
+                //Toast.makeText(getApplicationContext(), "CURRENT Activity: " + componentInfo.getClassName(), Toast.LENGTH_LONG).show();
+                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
+                    while (!utteranceId.equals("Voice Mode Activated")) ;
+                    tts("Bluetooth connection with HC05 established");
+                } else {
+                    Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
+                }
+                BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
+            } else if(message.equals("hc05-not-connected") && BluetoothDeviceForHC05 == null){
+                discoverDevices();
+            }
+
+        }
+    };
+
     private void drawMap() {
+        mMap.clear(); // clear the map before drawing anything on it (mainly for redrawing)
+        polylinePaths.clear();
+
         polylinePaths = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
@@ -494,8 +640,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 updateMap();
             }
 
-            updateInstruction();
-            tts(instruction.getText().toString());
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             transmitVector();
 
             // Add Marker for destination
@@ -520,6 +665,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             polylinePaths.add(mMap.addPolyline(polylineOptions));
         }
 
+        if (mRoute != null) {
+            if (mStep == 0) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // wait 2 seconds to make sure tts is initialized
+                        String speech = "Expected to arrive in " + mRoute.duration.text;
+                        tts(speech);
+                        // wait until utterance is complete before other tts's
+                        // need the while before tts
+                        while (!utteranceId.equals(speech)) ;
+                        tts(instruction.getText().toString());
+                    }
+                }, 2000);
+            } else {
+                tts(instruction.getText().toString());
+            }
+        }
+
         loader.disableLoading();
     }
 
@@ -529,25 +693,44 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
-    public void updateInstruction() {
+    public void updateInstruction(String text) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction,
-                    Html.FROM_HTML_MODE_LEGACY));
+            instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
-            instruction.setText(Html.fromHtml(mRoute.steps.get(mStep).htmlInstruction));
+            instruction.setText(Html.fromHtml(text));
         }
     }
 
     private void onNextStep() {
-        // TODO: only call this if it is not the last step
-        mStep++;
-        updateInstruction();
-        tts(instruction.getText().toString());
-        transmitVector();
+        if (mStep < mRoute.steps.size() - 1) {
+            mStep++;
+            updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
+            tts(instruction.getText().toString());
+            transmitVector();
+        } else {
+            updateInstruction("Arrived at destination");
+            tts("You have reached your destination");
+            finishTrip();
+        }
+    }
+
+    public void finishTrip() {
+        transmitFinish();
+        tripStarted = false;
+        mRoute = null;
+        activityMode = "Maps";
+        destination = "";
+        origin = "Your Location";
+        mRoutes.clear();
+
+        if (DEBUG) ((TextView) findViewById(R.id.activity)).setText("Activity Mode: " + activityMode); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+        if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
     }
 
     public void tts(String text) {
-        if (myHashAlarm != null && TTSDEBUG) {
+        while(!ttsReady);
+        if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
         }
@@ -555,14 +738,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     public void transmitVector() {
         // uncomment when we actually test for reals - uncommented this haha
-        double desired_theta = mRoute.calculateVector(mStep);
-        String message = "#" + (float) desired_theta + "~";
-        transmission(message);
+        if (mRoute != null) {
+            double desired_theta = mRoute.calculateVector(mStep);
+            String message = "#" + (float) desired_theta + "~";
+            transmission(message);
+        }
+    }
+
+    public void transmitFinish() {
+        if (tripStarted) {
+            String message = "#" + "Finish" + "~";
+            transmission(message);
+        }
     }
 
     public void transmitStop() {
-        String message = "#" + "Stop" + "~";
-        transmission(message);
+        if (tripStarted) {
+            String message = "#" + "Stop" + "~";
+            transmission(message);
+        }
     }
 
     public void transmission(String message) {
@@ -575,23 +769,27 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @SuppressWarnings("deprecation") // haha haha
     private void sendDirectionRequest() {
-        loader.enableLoading();
-        if (origin != null && origin.equals("Your Location")) {
-            origin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
-        }
-
         if (origin == null || origin.equals("")) {
-            mTts.speak("Starting location has not been set", TextToSpeech.QUEUE_FLUSH, null);
+            tts("Starting location has not been set");
             return;
         }
 
         if (destination == null || destination.equals("")) {
-            mTts.speak("Destination has not been set", TextToSpeech.QUEUE_FLUSH, null);
+            tts("Destination has not been set");
             return;
         }
 
+        // because we want to retain origin and not change it to our current coordinates
+        String mOrigin;
+        if (origin.equals("Your Location")) {
+            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+        } else {
+            mOrigin = origin;
+        }
+
         try {
-            new DirectionFinder(this, origin, destination, transportationModes.get(mode)).execute();
+            new DirectionFinder(this, mOrigin, destination,
+                    transportationModes.get(mode)).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -625,7 +823,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onBackPressed() {
         // Override the onBackPressed() function: do nothing on back key
         // because we do not want to go back to Maps or Navigation Mode
-        return;
+        finish();
     }
 
 
@@ -756,18 +954,21 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (mRoute != null) {
-            // Check if the user is still on the route
-            if (!mRoute.isLocationInPath(point) && !DEBUG) {
-                recalculateRoute();
-                return;
-            }
+            // Recalculate if the user has started the trip but has drifted off the route
+            if (tripStarted) {
+                if (!mRoute.isLocationInPath(point) && RECALCULATION && !recalculating) {
+                    recalculating = true;
+                    recalculateRoute();
+                    return;
+                }
 
-            // Check if the user should move on to the next step
-            if (point.latitude > mRoute.steps.get(mStep).lowerThreshold.latitude
-                    && point.latitude < mRoute.steps.get(mStep).upperThreshold.latitude
-                    && point.longitude > mRoute.steps.get(mStep).lowerThreshold.longitude
-                    && point.longitude < mRoute.steps.get(mStep).upperThreshold.longitude) {
-                onNextStep();
+                if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
+                }
+
+                updateMap();
+            } else if (!tripStarted && mRoute.steps.get(mStep).stepStarted(point)) {
+                tripStarted = true;
             }
         }
     }
@@ -780,18 +981,22 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public void onDirectionFinderStart() {
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Finding direction...", true);
+        loader.updateLoadingText("Finding direction...");
+        loader.enableLoading();
     }
 
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
-        progressDialog.dismiss();
+        loader.disableLoading();
 
         mRoutes = routes;
 
+        mStep = 0; // restart route
+
         drawMap();
+
+        recalculating = false;
 
         if (mRoute != null) {
             activityMode = "Navigation";
@@ -803,6 +1008,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            ttsReady = true;
             mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
 
                 @Override
@@ -865,7 +1071,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     public void run() {
-                        speech.startListening(recognizerIntent);
+                        if(speech != null) {
+                            speech.startListening(recognizerIntent);
+                        }
                     }
                 }, 3700);
             } else {
@@ -908,14 +1116,34 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else if (match.contains("touch screen")) {
                 // expecting 'Activate Touch-Screen Mode'
                 finish(); // return to previous intent
-            } else {
-                tts("No commmand found");
-            }
+            } else if (match.contains("origin")) {
+                // expecting 'Set origin to ____'
+                // i.e. 'Set origin to my location'
+                String[] phrase = match.split(" to ");
 
+                if (phrase[1].equals("my location")) {
+                    origin = "Your Location";
+                } else {
+                    origin = phrase[1];
+                }
+
+                tts("origin set to " + origin);
+                if (DEBUG)
+                    ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
+            } else {
+                tts("No command found");
+            }
         } else if (activityMode.equals("Navigation")){
             if (match.contains("repeat")) {
                 // expecting 'repeat direction/instruction'
                 tts(instruction.getText().toString());
+            } else if (match.contains("stop")) {
+                updateInstruction("");
+                tts("Navigation stopped");
+                finishTrip();
+                drawMap();
+            } else {
+                tts("No command found");
             }
         }
 
@@ -988,21 +1216,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
     }
 
-    protected void discoverDevices(){
-        // To scan for remote Bluetooth devices
-        if (mBluetoothAdapter.startDiscovery()) {
-/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
-                    Toast.LENGTH_SHORT).show();*/
-        } else {
-/*            Toast.makeText(getApplicationContext(), "Discovery failed to start.",
-                    Toast.LENGTH_SHORT).show();*/
-        }
-
-        // Register the BroadcastReceiver for ACTION_FOUND
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        this.registerReceiver(broadcastReceiver, filter);
-    }
-
     protected void makeDiscoverable(){
         // Make local device discoverable
         Intent discoverableIntent = new
@@ -1010,42 +1223,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, DISCOVERABLE_DURATION);
         startActivityForResult(discoverableIntent, DISCOVERABLE_BT_REQUEST_CODE);
     }
-
-    // Create a BroadcastReceiver for ACTION_FOUND
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
-
-        // Whenever a remote Bluetooth device is found
-        if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-
-            // Get the BluetoothDevice object from the Intent
-            BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            Toast.makeText(getApplicationContext(), "Device Found: "+ bluetoothDevice.getName(),
-                    Toast.LENGTH_SHORT).show();
-
-
-            if (bluetoothDevice.getName() != null) {
-                if (bluetoothDevice.getName().equals("HC-05")) {
-                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(bluetoothDevice.getAddress());
-
-                    Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
-                    Bundle b = new Bundle();
-                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
-                    intentBT.putExtras(b);
-                    startService(intentBT);
-
-                    tts("Bluetooth established");
-                    Toast.makeText(getApplicationContext(), "Bluetooth established", Toast.LENGTH_LONG).show();
-
-                    // Bind to LocalService
-                    //bindService(intentBT, mConnection, Context.BIND_AUTO_CREATE);
-
-                }
-            }
-        }
-        }
-    };
 
     @Override
     protected void onResume() {

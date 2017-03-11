@@ -6,8 +6,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,10 +19,12 @@ public class BluetoothService extends Service {
 
     // HC 05 SPP UUID
     private final static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     static ConnectedThread connectedThread;
     static ConnectingThread connectingThread;
     BluetoothAdapter mBluetoothAdapter;
     static BluetoothDevice BluetoothDeviceForHC05;
+
     //private final IBinder mBinder = new LocalBinder();
 
     @Nullable
@@ -34,14 +38,15 @@ public class BluetoothService extends Service {
             // Return this instance of BluetoothService so clients can call public methods
             return BluetoothService.this;
         }
-    }
- */
+    }*/
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter != null) {
             BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
+
             byte[] desiredVector = intent.getByteArrayExtra("vector");
             if(BluetoothDeviceForHC05 != null){
                 connectToDevice();
@@ -50,13 +55,17 @@ public class BluetoothService extends Service {
             if (desiredVector!= null && connectedThread != null) { // && connectedThread.isAlive()
                 connectedThread.write(desiredVector);
             }
+
         }
-      /*  String stopservice = intent.getStringExtra("stopservice");
+        /*  String stopservice = intent.getStringExtra("stopservice");
         if (stopservice != null && stopservice.length() > 0) {
             stop();
         }*/
+        // We want this service to continue running until it is explicitly
+        // stopped, so return sticky
         return START_STICKY;
     }
+
 
     void manageBluetoothConnection(BluetoothSocket bluetoothSocket){
         connectedThread = new ConnectedThread(bluetoothSocket);
@@ -68,10 +77,11 @@ public class BluetoothService extends Service {
             // Initiate a connection request in a separate thread
             connectingThread = new ConnectingThread(BluetoothDeviceForHC05);
             connectingThread.start();
- /*                           Toast.makeText(getApplicationContext(), "Connecting Thread Started",
+ /*          Toast.makeText(getApplicationContext(), "Connecting Thread Started",
                                     Toast.LENGTH_LONG).show();*/
         }
     }
+
     public class ConnectedThread extends Thread implements Runnable {
         private final BluetoothSocket mmSocket;
 
@@ -96,7 +106,7 @@ public class BluetoothService extends Service {
             //   int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
-//            Toast.makeText(this, "Hi Hans sent", Toast.LENGTH_SHORT).show();
+
             while (true) {
 //                write("#Hi Hans~".toString().getBytes());
 //
@@ -165,7 +175,23 @@ public class BluetoothService extends Service {
 
             // Code to manage the connection in a separate thread
             if(bluetoothSocket.isConnected()) {
+
+                Intent intent = new Intent("intentKey");
+                Bundle b = new Bundle();
+                b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                intent.putExtras(b);
+                // You can also include some extra data.
+                intent.putExtra("key", "hc05-connected");
+
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 manageBluetoothConnection(bluetoothSocket);
+            } else {
+                Intent intent = new Intent("intentKey");
+                // You can also include some extra data.
+                intent.putExtra("key", "hc05-not-connected");
+                connectingThread = null;
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
             }
         }
 
@@ -173,6 +199,7 @@ public class BluetoothService extends Service {
         public void cancel() {
             try {
                 bluetoothSocket.close();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

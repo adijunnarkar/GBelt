@@ -1,15 +1,25 @@
 package Modules;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.Serializable;
 
 public class Step implements Serializable {
     public Distance distance; // x km
     public Duration duration; // x mins
     public String htmlInstruction;// Turn xxx onto xxx Street
-    public Coordinate lowerThreshold; // lat, lng
     public Coordinate startLocation; // lat, lng
     public Coordinate endLocation; // lat, lng
-    public Coordinate upperThreshold; // lat, lng
+    public Coordinate startLowerThreshold; // lat, lng
+    public Coordinate startUpperThreshold; // lat, lng
+    public Coordinate endLowerThreshold; // lat, lng
+    public Coordinate endUpperThreshold; // lat, lng
+
+    // current threshold is +- 4 m away from current location
+    public static final double dx = 0.025; // km
+    public static final double dy = 0.025; // km
+
+    public static final double rEarth = 6371; // km
 
     public Step(Distance distance, Duration duration, String htmlInstruction,
                 Coordinate startLocation, Coordinate endLocation) {
@@ -19,30 +29,44 @@ public class Step implements Serializable {
         this.startLocation = startLocation;
         this.endLocation = endLocation;
 
-        calculateThresholdLatLng();
+        calculateThresholds();
     }
 
-    public void calculateThresholdLatLng() {
-        Coordinate latLng = this.endLocation;
+    public void calculateThresholds() {
+        this.startLowerThreshold = calculateLowerThreshold(this.startLocation);
+        this.startUpperThreshold = calculateUpperThreshold(this.startLocation);
+        this.endLowerThreshold = calculateLowerThreshold(this.endLocation);
+        this.endUpperThreshold = calculateUpperThreshold(this.endLocation);
+    }
 
-        // current threshold is +- 4 m away from current location
-        double dx = 0.004; // km
-        double dy = 0.004; // km
-
-        double r_earth = 6371; // km
-
-        double lowerThresholdLat  = latLng.latitude  - (dy / r_earth) * (180 / Math.PI);
-        double lowerThresholdLong = latLng.longitude - (dx / r_earth) * (180 / Math.PI) /
+    public Coordinate calculateLowerThreshold(Coordinate latLng) {
+        double lowerThresholdLat  = latLng.latitude  - (dy / rEarth) * (180 / Math.PI);
+        double lowerThresholdLong = latLng.longitude - (dx / rEarth) * (180 / Math.PI) /
                 Math.cos(latLng.latitude * Math.PI/180);
 
-        double upperThresholdLat  = latLng.latitude  + (dy / r_earth) * (180 / Math.PI);
-        double upperThresholdLong = latLng.longitude + (dx / r_earth) * (180 / Math.PI) /
+        return new Coordinate(lowerThresholdLat, lowerThresholdLong);
+    }
+
+    public Coordinate calculateUpperThreshold(Coordinate latLng) {
+        double upperThresholdLat  = latLng.latitude  + (dy / rEarth) * (180 / Math.PI);
+        double upperThresholdLong = latLng.longitude + (dx / rEarth) * (180 / Math.PI) /
                 Math.cos(latLng.latitude * Math.PI/180);
 
-        Coordinate lowerThreshold = new Coordinate(lowerThresholdLat, lowerThresholdLong);
-        Coordinate upperThreshold = new Coordinate(upperThresholdLat, upperThresholdLong);
+        return new Coordinate(upperThresholdLat, upperThresholdLong);
+    }
 
-        this.lowerThreshold = lowerThreshold;
-        this.upperThreshold = upperThreshold;
+    public boolean stepStarted(LatLng point) {
+        return point.latitude > startLowerThreshold.latitude
+                && point.latitude < startUpperThreshold.latitude
+                && point.longitude > startLowerThreshold.longitude
+                && point.longitude < startUpperThreshold.longitude;
+
+    }
+
+    public boolean stepCompleted(LatLng point) {
+        return point.latitude > endLowerThreshold.latitude
+                && point.latitude < endUpperThreshold.latitude
+                && point.longitude > endLowerThreshold.longitude
+                && point.longitude < endUpperThreshold.longitude;
     }
 }
