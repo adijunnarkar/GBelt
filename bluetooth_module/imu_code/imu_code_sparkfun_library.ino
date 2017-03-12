@@ -15,10 +15,10 @@ SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
 int intPin = 7;  // These can be changed, 2 and 3 are the Arduinos ext int pins
-int ledEast = 11; // mega is 3
-int ledSouth = 6; // mega is 4
-int ledWest = 5; // mega is 2
-int ledNorth = 10; //mega is 5
+int motorEast = 11; // mega is 3
+int motorSouth = 6; // mega is 4
+int motorWest = 5; // mega is 2
+int motorNorth = 10; //mega is 5
 
 int sample_counter = 0;
 int accel_gyro_connect_counter = 0;
@@ -62,10 +62,10 @@ struct timer_flags {
     bool timer_northwest_started;
 };
 
-String ledToLightUp = "";
 String direction = "";
 
 byte c = 0x00, d = 0x00;
+
 timer_flags timers;
 
 MPU9250 myIMU;
@@ -80,16 +80,16 @@ void setup()
 
     // Set up the interrupt pin, its set as active high, push-pull
     pinMode(intPin, INPUT);
-    pinMode(ledNorth, OUTPUT);
-    pinMode(ledSouth, OUTPUT);
-    pinMode(ledWest, OUTPUT);
-    pinMode(ledEast, OUTPUT);
+    pinMode(motorNorth, OUTPUT);
+    pinMode(motorSouth, OUTPUT);
+    pinMode(motorWest, OUTPUT);
+    pinMode(motorEast, OUTPUT);
 
     digitalWrite(intPin, LOW);
-    digitalWrite(ledNorth, LOW);
-    digitalWrite(ledSouth, LOW);
-    digitalWrite(ledWest, LOW);
-    digitalWrite(ledEast, LOW);
+    digitalWrite(motorNorth, LOW);
+    digitalWrite(motorSouth, LOW);
+    digitalWrite(motorWest, LOW);
+    digitalWrite(motorEast, LOW);
 
     // Read the WHO_AM_I register
     do {
@@ -300,7 +300,6 @@ void loop()
 
         if (newDirectionReady)
         {
-            //turnAllLEDsOff();
             if (direction == "Stop")
             {
                 turnAllMotorsOff();
@@ -313,7 +312,7 @@ void loop()
             else if (direction == "Finish")
             {
                 playStopVibrationSequence();
-                //Serial.println("STOP");
+                //Serial.println("FINISH");
                 receiving_bluetooth = false;
                 while(Serial.available()){  //is there anything to read?
                     char getData = Serial.read();  //if yes, read it
@@ -357,7 +356,7 @@ void loop()
             {
                 if (!timers.motor_deactivate_timer)
                 {
-                    analogWrite(ledNorth, pwm_intensity_max+100);
+                    analogWrite(motorNorth, pwm_intensity_max+100);
                     if (!timers.timer_north_started)
                     {
                         turnAllTimersOff();
@@ -374,8 +373,8 @@ void loop()
                 if (!timers.motor_deactivate_timer)
                 {
                     right_motor_intensity = map(theta - 5, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(ledNorth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
-                    analogWrite(ledEast, right_motor_intensity);
+                    analogWrite(motorNorth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                    analogWrite(motorEast, right_motor_intensity);
                     if (!(timers.timer_northeast_started))
                     {
                         turnAllTimersOff();
@@ -392,7 +391,7 @@ void loop()
             {
                 if (!timers.motor_deactivate_timer)
                 {
-                    analogWrite(ledEast, pwm_intensity_max);
+                    analogWrite(motorEast, pwm_intensity_max);
                     if (!(timers.timer_east_started))
                     {
                         turnAllTimersOff();
@@ -409,8 +408,8 @@ void loop()
                 if (!timers.motor_deactivate_timer)
                 {
                     right_motor_intensity = map(theta - 95, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(ledSouth, right_motor_intensity);
-                    analogWrite(ledEast, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                    analogWrite(motorSouth, right_motor_intensity);
+                    analogWrite(motorEast, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
                     if (!(timers.timer_southeast_started))
                     {
                         turnAllTimersOff();
@@ -427,7 +426,7 @@ void loop()
             {
                 if (!timers.motor_deactivate_timer)
                 {
-                    analogWrite(ledSouth, pwm_intensity_max);
+                    analogWrite(motorSouth, pwm_intensity_max);
                     if (!(timers.timer_south_started))
                     {
                         turnAllTimersOff();
@@ -444,8 +443,8 @@ void loop()
                 if (!timers.motor_deactivate_timer)
                 {
                     right_motor_intensity = map(theta - 185, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(ledSouth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
-                    analogWrite(ledWest, right_motor_intensity);
+                    analogWrite(motorSouth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                    analogWrite(motorWest, right_motor_intensity);
                     if (!(timers.timer_southwest_started))
                     {
                         turnAllTimersOff();
@@ -462,7 +461,7 @@ void loop()
             {
                 if (!timers.motor_deactivate_timer)
                 {
-                    analogWrite(ledWest, pwm_intensity_max);
+                    analogWrite(motorWest, pwm_intensity_max);
                     if (!(timers.timer_west_started))
                     {
                         turnAllTimersOff();
@@ -479,8 +478,8 @@ void loop()
                 if (!timers.motor_deactivate_timer)
                 {
                     right_motor_intensity = map(theta - 275, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(ledNorth, right_motor_intensity);
-                    analogWrite(ledWest, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                    analogWrite(motorNorth, right_motor_intensity);
+                    analogWrite(motorWest, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
                     if (!(timers.timer_northwest_started))
                     {
                         turnAllTimersOff();
@@ -563,10 +562,10 @@ void loop()
 
 void turnAllMotorsOff()
 {
-    analogWrite(ledNorth, 0);
-    analogWrite(ledSouth, 0);
-    analogWrite(ledEast, 0);
-    analogWrite(ledWest, 0);
+    analogWrite(motorNorth, 0);
+    analogWrite(motorSouth, 0);
+    analogWrite(motorEast, 0);
+    analogWrite(motorWest, 0);
 }
 
 
@@ -580,15 +579,6 @@ void turnAllTimersOff()
     timers.timer_southwest_started = false;
     timers.timer_west_started = false;
     timers.timer_northwest_started = false;
-}
-
-
-void turnAllLEDsOff()
-{
-  digitalWrite(ledNorth, LOW);
-  digitalWrite(ledSouth, LOW);
-  digitalWrite(ledWest, LOW);
-  digitalWrite(ledEast, LOW);
 }
 
 
@@ -614,25 +604,25 @@ void playStopVibrationSequence()
     turnAllMotorsOff();
     delay(100);
 
-    analogWrite(ledNorth, pwm_intensity_max);
+    analogWrite(motorNorth, pwm_intensity_max);
     delay(500);
-    analogWrite(ledNorth, pwm_intensity_min);
+    analogWrite(motorNorth, pwm_intensity_min);
 
-    analogWrite(ledEast, pwm_intensity_max);
+    analogWrite(motorEast, pwm_intensity_max);
     delay(500);
-    analogWrite(ledEast, pwm_intensity_min);
+    analogWrite(motorEast, pwm_intensity_min);
 
-    analogWrite(ledSouth, pwm_intensity_max);
+    analogWrite(motorSouth, pwm_intensity_max);
     delay(500);
-    analogWrite(ledSouth, pwm_intensity_min);
+    analogWrite(motorSouth, pwm_intensity_min);
 
-    analogWrite(ledWest, pwm_intensity_max);
+    analogWrite(motorWest, pwm_intensity_max);
     delay(500);
-    analogWrite(ledWest, pwm_intensity_min);
+    analogWrite(motorWest, pwm_intensity_min);
 
-    analogWrite(ledNorth, pwm_intensity_max);
+    analogWrite(motorNorth, pwm_intensity_max);
     delay(500);
-    analogWrite(ledNorth, pwm_intensity_min);
+    analogWrite(motorNorth, pwm_intensity_min);
 
     turnAllMotorsOff();
 }
