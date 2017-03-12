@@ -782,7 +782,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // because we want to retain origin and not change it to our current coordinates
         String mOrigin;
         if (origin.equals("Your Location")) {
-            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            if(mLastLocation != null) {
+                mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            } else {
+                tts("Please turn on your location");
+                return;
+            }
         } else {
             mOrigin = origin;
         }
@@ -1097,9 +1102,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             if (match.contains("destination")) {
                 // expecting 'Set destination to ____'
                 String[] phrase = match.split(" to ");
-                destination = phrase[1];
-                tts("destination set to " + destination);
-                if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                if(phrase.length == 2) {
+                    destination = phrase[1];
+                    tts("destination set to " + destination);
+                    if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                } else{
+                    tts("No command found, make sure you don't skip any required phrase");
+                }
+
             } else if (match.contains("walking")) {
                 // expecting 'Set to walking'
                 mode = 1;
@@ -1120,16 +1130,19 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 // expecting 'Set origin to ____'
                 // i.e. 'Set origin to my location'
                 String[] phrase = match.split(" to ");
+                if(phrase.length == 2) {
+                    if (phrase[1].equals("my location")) {
+                        origin = "Your Location";
+                    } else {
+                        origin = phrase[1];
+                    }
 
-                if (phrase[1].equals("my location")) {
-                    origin = "Your Location";
+                    tts("origin set to " + origin);
+                    if (DEBUG)
+                        ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
                 } else {
-                    origin = phrase[1];
+                    tts("No command found, make sure you don't skip any required phrase");
                 }
-
-                tts("origin set to " + origin);
-                if (DEBUG)
-                    ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
             } else {
                 tts("No command found");
             }
