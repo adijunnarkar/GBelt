@@ -9,7 +9,7 @@
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 #define testingWithoutPhone true // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Manual" // location code here for mag calibration (STC,)
+#define MAGCode "Manual" // location code here for mag calibration (Manual, STC, Tung, Home)
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
