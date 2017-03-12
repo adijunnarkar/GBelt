@@ -28,7 +28,7 @@ int magnetometer_connect_counter = 0;
 int pwm_intensity_min = 70;
 int pwm_intensity_max = 150;
 int right_motor_intensity = 0;
-int range = 80;
+int range = 70;
 
 unsigned long motor_start_time, motor_deactive_start_time = 0; // to activate motors for an interval of time
 int motor_active_time = 1000; // length of time each motor will be active in [ms]
@@ -353,7 +353,7 @@ void loop()
             #endif
 
             //turnAllMotorsOff();
-            if (inRange(theta, 355, 360) || inRange(theta, 0, 5)) // North
+            if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -369,7 +369,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 5, 85)) // Northeast
+            else if (inRange(theta, 10, 80)) // Northeast
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -388,7 +388,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 85, 95)) // East
+            else if (inRange(theta, 80, 100)) // East
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -404,7 +404,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 95, 175)) // Southeast
+            else if (inRange(theta, 100, 170)) // Southeast
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -423,7 +423,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 175, 185)) // South
+            else if (inRange(theta, 170, 190)) // South
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -439,7 +439,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 185, 265)) // Southwest
+            else if (inRange(theta, 190, 260)) // Southwest
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -458,7 +458,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 265, 275)) // West
+            else if (inRange(theta, 260, 280)) // West
             {
                 if (!timers.motor_deactivate_timer)
                 {
@@ -474,7 +474,7 @@ void loop()
                     #endif
                 }
             }
-            else if (inRange(theta, 275, 355)) // Northwest
+            else if (inRange(theta, 280, 350)) // Northwest
             {
                 if (!timers.motor_deactivate_timer)
                 {
