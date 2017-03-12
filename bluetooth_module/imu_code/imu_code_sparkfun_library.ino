@@ -8,8 +8,9 @@
 #define SerialDebug false  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
-#define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Tung" // location code here for mag calibration (STC,)
+#define testingWithoutPhone true // certain small changes to fake bluetooth messages if no phone available
+#define MAGCode "Home" // location code here for mag calibration (STC,)
+
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
 // Pin definitions
@@ -30,7 +31,8 @@ int right_motor_intensity = 0;
 int range = 80;
 
 unsigned long motor_start_time, motor_deactive_start_time = 0; // to activate motors for an interval of time
-int motor_active_time, motor_deactive_time = motor_active_time = 1000; // length of time each motor will be active in [ms]
+int motor_active_time = 1000; // length of time each motor will be active in [ms]
+int motor_deactive_time = 500; // length of time motor will be deactive in [ms]
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
 
@@ -373,7 +375,7 @@ void loop()
 
         if (testingWithoutPhone)
         {
-            thetaDesired = 45;
+            thetaDesired = 0;
             //thetaDesired = 360 - thetaDesired;
             receiving_bluetooth = true;
         }
@@ -434,7 +436,7 @@ void loop()
                 if (!(timers.timer_east_started))
                 {
                     turnAllTimersOff();
-                    timers.timer_northeast_started = true;
+                    timers.timer_east_started = true;
                     motor_start_time = millis();
                 }
             }
@@ -713,6 +715,13 @@ void calibrateMagnetometerBias(float * dest1)
     mag_max[0] = 496; mag_min[0] = -167;
     mag_max[1] = 530;  mag_min[1] = -135;
     mag_max[2] = 1;  mag_min[2] = -676;
+  }
+
+  if (MAGCode == "Home")
+  {
+    mag_max[0] = 440; mag_min[0] = -121;
+    mag_max[1] = 500;  mag_min[1] = -55;
+    mag_max[2] = -64;  mag_min[2] = -634;
   }
 
   // Get hard iron correction
