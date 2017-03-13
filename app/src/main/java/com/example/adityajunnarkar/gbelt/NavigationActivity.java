@@ -1,6 +1,7 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
+import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -80,6 +81,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
     String utteranceId = "";
+
+    static BluetoothDevice BluetoothDeviceHDP;
 
     LoadingScreen loader;
 
@@ -171,6 +174,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         destination = (String) bundle.getSerializable("destination");
         mStep = (int) bundle.getSerializable("step");
         tripStarted = (boolean) bundle.getSerializable("tripStarted");
+        BluetoothDeviceHDP = bundle.getParcelable("headset_connected");
+
     }
 
     private void setUpDirectionsListener() {
@@ -597,7 +602,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+            if(BluetoothDeviceHDP != null) {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_VOICE_CALL));
+            } else {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+            }
         }
     }
 

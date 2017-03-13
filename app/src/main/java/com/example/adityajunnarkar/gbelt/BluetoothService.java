@@ -213,6 +213,9 @@ public class BluetoothService extends Service {
 
                 } else if(bluetoothDevice.getBluetoothClass().getDeviceClass() == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE){
                     Intent intent = new Intent("intentKey");
+                    Bundle b = new Bundle();
+                    b.putParcelable("hands-free", BluetoothDeviceHDP);
+                    intent.putExtras(b);
                     // You can also include some extra data.
                     intent.putExtra("key", "headset-connected");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);

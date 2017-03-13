@@ -173,6 +173,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_voice_mode);
 
@@ -185,7 +186,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         checkRecordAudioPermission();
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-       
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("intentKey"));
 
@@ -302,13 +303,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
                 if (devices.size() > 0)
                 {
-
                     mConnectedHeadset = devices.get(0);
-                    //   if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
-                    //       Toast.makeText(getApplicationContext(), "voice recognition not supported",
-                    //               Toast.LENGTH_SHORT).show();
+                    if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
+                       Toast.makeText(getApplicationContext(), "voice recognition not supported",
+                                   Toast.LENGTH_SHORT).show();
 
-                    //   };
+                    };
                 }
                /* Toast.makeText(getApplicationContext(), "reached here " + devices.size(),
                         Toast.LENGTH_SHORT).show();*/
@@ -316,7 +316,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
         public void onServiceDisconnected(int profile) {
             if (profile == BluetoothProfile.HEADSET) {
-                //    mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+                mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
                 mBluetoothHeadset = null;
             }
         }
@@ -455,7 +455,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 } else {
                     Toast.makeText(getApplicationContext(), "headset is now connected", Toast.LENGTH_LONG).show();
                 }
-                BluetoothDeviceHDP = intent.getParcelableExtra("HC-05");
+                BluetoothDeviceHDP = intent.getParcelableExtra("hands-free");
             } else if(message.equals("headset-not-connected") && BluetoothDeviceHDP == null){
                 discoverDevices();
             }
@@ -652,6 +652,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("mode", (Serializable) mode);
         intent.putExtras(bundle);
 
+        bundle.putParcelable("headset_connected", BluetoothDeviceHDP);
+        intent.putExtras(bundle);
+
         mRoute = null;
 
         startActivity(intent);
@@ -684,6 +687,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         intent.putExtras(bundle);
 
         bundle.putSerializable("tripStarted", (Serializable) tripStarted);
+        intent.putExtras(bundle);
+
+        bundle.putParcelable("headset_connected", BluetoothDeviceHDP);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -870,7 +876,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         while(!ttsReady);
         if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
-            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            mTts.speak(text, TextToSpeech.QUEUE_ADD, myHashAlarm);
         }
     }
 
@@ -1279,7 +1285,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             if (match.contains("repeat")) {
                 // expecting 'repeat direction/instruction'
                 tts(instruction.getText().toString());
-            } else if (match.contains("stop")) {
+            } else if (match.contains("stop") || match.contains("cancel")) {
                 updateInstruction("");
                 tts("Navigation stopped");
                 finishTrip();
