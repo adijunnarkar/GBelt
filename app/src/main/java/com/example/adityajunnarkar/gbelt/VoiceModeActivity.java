@@ -990,6 +990,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onDirectionFinderSuccess(List<Route> routes) {
         loader.disableLoading();
 
+        if (routes.isEmpty()) {
+            tts("Sorry, no route was found. Please try another search.");
+            return;
+        }
+
         mRoutes = routes;
 
         mStep = 0; // restart route

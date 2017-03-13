@@ -1,6 +1,7 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -102,6 +103,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     String destination;
 
     UnlockBar unlock;
+
+    ProgressDialog progressDialog;
 
     // Global variables across entire application used for debugging:
     boolean DEBUG;
@@ -612,6 +615,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     public void onDirectionFinderSuccess(List<Route> route) {
         loader.disableLoading();
+
+        // Note: there is no check to see if a route is found, assumes that if they were able to
+        // reach Navigation Activity a route must be available unless they leave their country
+        // and lose the available route would be strange.
+
         mRoutes = route;
 
         mStep = 0; // restart route
