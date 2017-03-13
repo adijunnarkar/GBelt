@@ -58,6 +58,16 @@
                         android:hint="Your Location">
                     </AutoCompleteTextView>
                     <ImageView
+                        android:id="@+id/deleteOrigin"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginTop="5dp"
+                        android:src="@drawable/x"/>
+                    <ImageView
                         android:id="@+id/location"
                         android:layout_width="25dp"
                         android:layout_height="25dp"
@@ -107,6 +117,16 @@
                         android:paddingRight="34dp"
                         android:hint="Your Destination">
                     </AutoCompleteTextView>
+                    <ImageView
+                        android:id="@+id/deleteDestination"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginTop="5dp"
+                        android:src="@drawable/x"/>
                     <ImageView
                         android:id="@+id/microphone"
                         android:layout_width="25dp"

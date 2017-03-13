@@ -15,9 +15,14 @@ import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.KeyListener;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -87,11 +92,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageButton btnWalk;
     AutoCompleteTextView etOrigin;
     AutoCompleteTextView etDestination;
+    ImageView deleteOrigin;
+    ImageView deleteDestination;
+    ImageView speakButton;
+    ImageView locationButton;
 
     Route mRoute;
     Location mLastLocation;
-    ImageView speakButton;
-    ImageView locationButton;
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
@@ -157,6 +164,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setUpTransitModeListeners();
 
         setUpUnlockListener();
+
+        setUpBackSpaceListeners();
     }
 
     private void setupAutoComplete(){
@@ -168,9 +177,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Get data associated with the specified position
                 // in the list (AdapterView)
                 hideSoftKeyboard(MapsActivity.this);
+                updateOriginButtons();
             }
         });
 
+        etOrigin.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateOriginButtons();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
         etDestination.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_items));
 
@@ -182,6 +208,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 hideSoftKeyboard(MapsActivity.this);
             }
         });
+
+        etDestination.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateDestButtons();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
     }
 
     private void setupUI(View view) {
@@ -190,6 +233,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             view.setOnTouchListener(new View.OnTouchListener() {
                 public boolean onTouch(View v, MotionEvent event) {
                     hideSoftKeyboard(MapsActivity.this);
+                    updateOriginButtons();
+                    updateDestButtons();
                     return false;
                 }
             });
@@ -212,6 +257,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 activity.getCurrentFocus().getWindowToken(), 0);
     }
 
+    private void updateOriginButtons() {
+        String origin = etOrigin.getText().toString();
+
+        if (deleteOrigin != null && locationButton!= null) {
+            if (origin.isEmpty()) {
+                deleteOrigin.setVisibility(View.GONE);
+                locationButton.setVisibility(View.VISIBLE);
+            } else {
+                locationButton.setVisibility(View.GONE);
+                deleteOrigin.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void updateDestButtons() {
+        String destination = etDestination.getText().toString();
+
+        if (deleteDestination != null && speakButton!= null) {
+            if (destination.isEmpty()) {
+                deleteDestination.setVisibility(View.GONE);
+                speakButton.setVisibility(View.VISIBLE);
+            } else {
+                speakButton.setVisibility(View.GONE);
+                deleteDestination.setVisibility(View.VISIBLE);
+            }
+        }
+    }
 
     private void setUpLoadingSpinner() {
         LinearLayout activityContent = (LinearLayout) findViewById(R.id.activityContent);
@@ -258,6 +330,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             {
                 unlock.reset();
                 startVoiceMode(); // switch to voice mode => starts voice mode intent
+            }
+        });
+    }
+
+    private void setUpBackSpaceListeners() {
+        deleteOrigin = (ImageView) findViewById(R.id.deleteOrigin);
+        deleteDestination = (ImageView) findViewById(R.id.deleteDestination);
+
+        updateOriginButtons();
+        updateDestButtons();
+
+        deleteOrigin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etOrigin.setText("");
+                updateOriginButtons();
+            }
+        });
+
+        deleteDestination.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etDestination.setText("");
+                updateDestButtons();
             }
         });
     }
@@ -417,6 +513,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 etOrigin.setText("Your Location");
+                updateOriginButtons();
             }
         });
     }
@@ -529,6 +626,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // could have heard
             ArrayList matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             etDestination.setText(matches.get(0).toString());
+            updateDestButtons();
             // matches is the result of voice input. It is a list of what the
             // user possibly said.
             // Using an if statement for the keyword you want to use allows the

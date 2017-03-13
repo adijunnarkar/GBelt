@@ -4,20 +4,17 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -71,8 +68,6 @@ import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
-
-import static android.support.v4.content.LocalBroadcastManager.*;
 
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
