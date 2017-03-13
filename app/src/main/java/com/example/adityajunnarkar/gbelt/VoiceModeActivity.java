@@ -1021,7 +1021,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             myHashAlarm = new HashMap<String, String>();
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                    String.valueOf(AudioManager.STREAM_ALARM));
+                    String.valueOf(AudioManager.STREAM_MUSIC));
 
             tts("Voice Mode Activated");
         }
