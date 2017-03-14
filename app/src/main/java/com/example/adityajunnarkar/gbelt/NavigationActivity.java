@@ -1,7 +1,11 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
+
 import android.bluetooth.BluetoothDevice;
+
+import android.app.ProgressDialog;
+
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -105,6 +109,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     String destination;
 
     UnlockBar unlock;
+
+    ProgressDialog progressDialog;
 
     // Global variables across entire application used for debugging:
     boolean DEBUG;
@@ -373,12 +379,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 handler.postDelayed(new Runnable() {
                     public void run() {
                         // wait 1 seconds to make sure tts is initialized
-                        String speech = "Expected to arrive in " + mRoute.duration.text;
-                        tts(speech);
-                        // wait until utterance is complete before other tts's
-                        // need the while before tts
-                        while (!utteranceId.equals(speech)) ;
-                        tts(instruction.getText().toString());
+                        if(mRoute != null) {
+                            String speech = "Expected to arrive in " + mRoute.duration.text;
+                            tts(speech);
+                            // wait until utterance is complete before other tts's
+                            // need the while before tts
+                            while (!utteranceId.equals(speech)) ;
+                            tts(instruction.getText().toString());
+                        }
                     }
                 }, 2000);
             } else {
@@ -602,6 +610,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
+
             if(BluetoothDeviceHDP != null) {
                 myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_VOICE_CALL));
             } else {
@@ -621,6 +630,11 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     public void onDirectionFinderSuccess(List<Route> route) {
         loader.disableLoading();
+
+        // Note: there is no check to see if a route is found, assumes that if they were able to
+        // reach Navigation Activity a route must be available unless they leave their country
+        // and lose the available route would be strange.
+
         mRoutes = route;
 
         mStep = 0; // restart route

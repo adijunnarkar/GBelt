@@ -12,14 +12,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -75,8 +73,6 @@ import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
-
-import static android.support.v4.content.LocalBroadcastManager.*;
 
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
@@ -926,7 +922,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // because we want to retain origin and not change it to our current coordinates
         String mOrigin;
         if (origin.equals("Your Location")) {
-            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            if(mLastLocation != null) {
+                mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            } else {
+                tts("Please turn on your location");
+                return;
+            }
         } else {
             mOrigin = origin;
         }
@@ -1134,6 +1135,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onDirectionFinderSuccess(List<Route> routes) {
         loader.disableLoading();
 
+        if (routes.isEmpty()) {
+            tts("Sorry, no route was found. Please try another search.");
+            return;
+        }
+
         mRoutes = routes;
 
         mStep = 0; // restart route
@@ -1164,6 +1170,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
+
             if(BluetoothDeviceHDP != null){
                 myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
                         String.valueOf(AudioManager.STREAM_VOICE_CALL));
@@ -1171,6 +1178,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
                         String.valueOf(AudioManager.STREAM_ALARM));
             }
+
             tts("Voice Mode Activated");
         }
 
@@ -1245,9 +1253,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             if (match.contains("destination")) {
                 // expecting 'Set destination to ____'
                 String[] phrase = match.split(" to ");
-                destination = phrase[1];
-                tts("destination set to " + destination);
-                if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                if(phrase.length == 2) {
+                    destination = phrase[1];
+                    tts("destination set to " + destination);
+                    if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                } else{
+                    tts("No command found, make sure you don't skip any required phrase");
+                }
+
             } else if (match.contains("walking")) {
                 // expecting 'Set to walking'
                 mode = 1;
@@ -1268,16 +1281,19 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 // expecting 'Set origin to ____'
                 // i.e. 'Set origin to my location'
                 String[] phrase = match.split(" to ");
+                if(phrase.length == 2) {
+                    if (phrase[1].equals("my location")) {
+                        origin = "Your Location";
+                    } else {
+                        origin = phrase[1];
+                    }
 
-                if (phrase[1].equals("my location")) {
-                    origin = "Your Location";
+                    tts("origin set to " + origin);
+                    if (DEBUG)
+                        ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
                 } else {
-                    origin = phrase[1];
+                    tts("No command found, make sure you don't skip any required phrase");
                 }
-
-                tts("origin set to " + origin);
-                if (DEBUG)
-                    ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
             } else {
                 tts("No command found");
             }
