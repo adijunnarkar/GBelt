@@ -371,12 +371,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 handler.postDelayed(new Runnable() {
                     public void run() {
                         // wait 1 seconds to make sure tts is initialized
-                        String speech = "Expected to arrive in " + mRoute.duration.text;
-                        tts(speech);
-                        // wait until utterance is complete before other tts's
-                        // need the while before tts
-                        while (!utteranceId.equals(speech)) ;
-                        tts(instruction.getText().toString());
+                        if(mRoute != null) {
+                            String speech = "Expected to arrive in " + mRoute.duration.text;
+                            tts(speech);
+                            // wait until utterance is complete before other tts's
+                            // need the while before tts
+                            while (!utteranceId.equals(speech)) ;
+                            tts(instruction.getText().toString());
+                        }
                     }
                 }, 2000);
             } else {

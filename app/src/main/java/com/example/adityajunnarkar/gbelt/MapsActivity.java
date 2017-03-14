@@ -27,6 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -174,6 +175,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void setupAutoComplete(){
+
         etOrigin.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_items));
 
         etOrigin.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -228,6 +230,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void afterTextChanged(Editable editable) {
 
+            }
+        });
+
+        //search for directions when user selects the enter button on virtual keyboard
+        etDestination.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
+                if (event == null) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        sendDirectionRequest();
+                        // Let system handle all other null KeyEvents
+                        return false;
+                    }
+                }
+                return false;
             }
         });
     }
@@ -478,8 +495,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Extract the Place descriptions from the results
                 resultList = new ArrayList(predsJsonArray.length());
                 for (int i = 0; i < predsJsonArray.length(); i++) {
-                    System.out.println(predsJsonArray.getJSONObject(i).getString("description"));
-                    System.out.println("============================================================");
                     resultList.add(predsJsonArray.getJSONObject(i).getString("description"));
                 }
             } catch (JSONException e) {
