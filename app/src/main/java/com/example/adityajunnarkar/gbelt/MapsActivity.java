@@ -115,7 +115,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     UnlockBar unlock;
     LoadingScreen loader;
-    ProgressDialog progressDialog;
 
     static BluetoothDevice mConnectedHeadset;
     static BluetoothDevice BluetoothDeviceHDP;
@@ -577,6 +576,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         intent.putExtras(bundle);
 
         bundle.putParcelable("headset_connected", BluetoothDeviceHDP);
+
+        bundle.putSerializable("snappedPointIndex", (Serializable) 1);
+
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -712,7 +714,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
            if(BluetoothDeviceHDP != null) {
                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_VOICE_CALL));
            } else {
-               myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+               myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
            }
         }
     }

@@ -42,7 +42,6 @@ public class BluetoothService extends Service {
     static BluetoothDevice BluetoothDeviceForHC05;
     static BluetoothDevice BluetoothDeviceHDP;
 
-    static boolean TTSReady;
     //private final IBinder mBinder = new LocalBinder();
 
     @Nullable
@@ -66,7 +65,6 @@ public class BluetoothService extends Service {
             BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
             BluetoothDeviceHDP = intent.getParcelableExtra("hands-free");
             boolean paired_headset = intent.getExtras().getBoolean("paired");
-            TTSReady = intent.getExtras().getBoolean("TTS initialized");
 
             byte[] desiredVector = intent.getByteArrayExtra("vector");
             if(BluetoothDeviceForHC05 != null){
@@ -149,13 +147,7 @@ public class BluetoothService extends Service {
             // Keep listening to the InputStream until an exception occurs
 
             while (true) {
-//                write("#Hi Hans~".toString().getBytes());
-//
-//                try {
-//                    Thread.sleep(500);
-//                } catch(InterruptedException ex) {
-//                    Thread.currentThread().interrupt();
-//                }
+
             }
         }
 
@@ -195,8 +187,7 @@ public class BluetoothService extends Service {
             }
             bluetoothSocket = temp;
             if(temp == null){
-/*                Toast.makeText(getApplicationContext(), "Null "+ bluetoothDevice.getName(),
-                        Toast.LENGTH_SHORT).show();*/
+
             }
         }
 
@@ -325,8 +316,10 @@ public class BluetoothService extends Service {
         }
         public void onServiceDisconnected(int profile) {
             if (profile == BluetoothProfile.HEADSET) {
-                mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
-                mBluetoothHeadset = null;
+                if(mBluetoothHeadset != null) {
+                    mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+                    mBluetoothHeadset = null;
+                }
             }
         }
     };

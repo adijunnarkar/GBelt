@@ -69,14 +69,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import Modules.Coordinate;
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
+import Modules.SnapToRoad;
+import Modules.SnapToRoadListener;
+import Modules.Threshold;
 
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
         LocationListener,
+        SnapToRoadListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         TextToSpeech.OnInitListener,
@@ -111,7 +116,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     Location mLastLocation;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId = "";
     TextView instruction;
 
     RelativeLayout activity;
@@ -149,6 +153,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
 
+    private List<String> ttsQueue = new ArrayList<>();
+
     // for Timer to switch to touch screen mode
     int timerDuration = 3000; // ms, timer completion time
     int timerTimeout = 200; // ms, call run every 100 ms
@@ -160,6 +166,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
+
+    // Snap to Road variables
+    List<LatLng> mSnappedPoints = new ArrayList<>();
+    int mSnappedPointIndex = 1;
+    Threshold mSnappedPointThreshold;
 
     // Global variables across entire application used for debugging:
     boolean DEBUG;
@@ -359,7 +370,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
     };
 
-    // Create a BroadcastReceiver for device connected to HC 05, string is broadcast from BluetoothService class
+    // Create a BroadcastReceiver for app connected to HC 05 and headset, string is broadcast from BluetoothService class
     // indicating device is connected
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
@@ -370,7 +381,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
             if(message.equals("hc05-connected")) {
                 if(getCurrentActivity().equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
-                    while (!utteranceId.equals("Voice Mode Activated")) ;
+
                     tts("Bluetooth connection with HC05 established");
                 } else {
                     Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
@@ -385,7 +396,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 }  */
                // configureHeadSet();
                 if(getCurrentActivity().equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
-                    while (!utteranceId.equals("Voice Mode Activated"));
+
                     tts("Bluetooth connection with headset established");
 
                 } else {
@@ -470,9 +481,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             // grab data from NavigationActivity
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
+            origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
             tripStarted = (boolean) bundle.getSerializable("tripStarted");
+            mSnappedPointIndex = (int) bundle.getSerializable("snappedPointIndex");
         }
     }
 
@@ -633,7 +646,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         bundle.putSerializable("tripStarted", (Serializable) tripStarted);
         intent.putExtras(bundle);
 
+
         bundle.putParcelable("headset_connected", BluetoothDeviceHDP);
+
+        bundle.putSerializable("snappedPointIndex", (Serializable) mSnappedPointIndex);
+
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -705,6 +722,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         }
     }
 
+
     private void drawMap() {
         mMap.clear(); // clear the map before drawing anything on it (mainly for redrawing)
         polylinePaths.clear();
@@ -714,6 +732,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         for (Route route : mRoutes) {
             mRoute = route;
+
+            sendSnapToRoadRequest();
 
             // Note: route has a Coordinate instead of LatLng because LatLng is not serializable
             // but the map only takes LatLng
@@ -729,7 +749,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
-            transmitVector();
 
             // Add Marker for destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -755,18 +774,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             if (mStep == 0) {
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        // wait 2 seconds to make sure tts is initialized
-                        String speech = "Expected to arrive in " + mRoute.duration.text;
-                        tts(speech);
-                        // wait until utterance is complete before other tts's
-                        // need the while before tts
-                        while (!utteranceId.equals(speech)) ;
-                        tts(instruction.getText().toString());
-                    }
-                }, 2000);
+                String speech = "Expected to arrive in " + mRoute.duration.text;
+                tts(speech);
+                tts(instruction.getText().toString());
             } else {
                 tts(instruction.getText().toString());
             }
@@ -782,6 +792,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void updateInstruction(String text) {
+        if (text.length() > 80)
+            instruction.setTextSize(25);
+        else
+            instruction.setTextSize(35);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
@@ -792,9 +807,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private void onNextStep() {
         if (mStep < mRoute.steps.size() - 1) {
             mStep++;
+            mSnappedPointIndex = 1;
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             tts(instruction.getText().toString());
-            transmitVector();
+            sendSnapToRoadRequest();
         } else {
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
@@ -817,7 +833,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void tts(String text) {
-        while(!ttsReady);
+        if (!ttsReady) {
+            ttsQueue.add(text);
+            return;
+        }
+
         if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_ADD, myHashAlarm);
@@ -825,12 +845,36 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void transmitVector() {
-        // uncomment when we actually test for reals - uncommented this haha
-        if (mRoute != null) {
-            double desired_theta = mRoute.calculateVector(mStep);
+        if (mRoute != null && !mSnappedPoints.isEmpty()) {
+            double desired_theta = calculateVector();
+
             String message = "#" + (float) desired_theta + "~";
             transmission(message);
         }
+    }
+
+    public double calculateVector() {
+        double vector = 0;
+
+        // Starting location
+        double x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
+        double y1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
+
+        // Ending location
+        double x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
+        double y2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
+
+        if (x2 >= x1 && y2 >= y1 ) {
+            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        } else if (x2 > x1 && y2 < y1) {
+            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else if (x2 < x1 && y2 < y1) {
+            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        } else {
+            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        }
+
+        return vector;
     }
 
     public void transmitFinish() {
@@ -1055,8 +1099,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     return;
                 }
 
-                if (mRoute.steps.get(mStep).stepCompleted(point)) {
-                    onNextStep();
+                if (!mSnappedPoints.isEmpty() && passedSnappedPoint(point)) {
+                    onNextSnappedPoint();
                 }
 
                 updateMap();
@@ -1070,6 +1114,44 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Recalculate route with current location
         origin = "Your Location";
         sendDirectionRequest();
+    }
+
+    public boolean passedSnappedPoint(LatLng point) {
+        return point.latitude > mSnappedPointThreshold.endLower.latitude
+                && point.latitude < mSnappedPointThreshold.endUpper.latitude
+                && point.longitude > mSnappedPointThreshold.endLower.longitude
+                && point.longitude < mSnappedPointThreshold.endUpper.longitude;
+    }
+
+    public void onNextSnappedPoint() {
+        if (mSnappedPointIndex < mSnappedPoints.size() - 1) {
+            mSnappedPointIndex++;
+            // Calculate threshold for next snapped point
+            mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
+                    mSnappedPoints.get(mSnappedPointIndex));
+            transmitVector();
+        } else {
+            onNextStep();
+        }
+    }
+
+    public void sendSnapToRoadRequest() {
+        // Starting location
+        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
+        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
+
+        // Ending location
+        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
+
+        LatLng start = new LatLng(y1, x1);
+        LatLng end = new LatLng(y2, x2);
+
+        try {
+            new SnapToRoad(this, start, end).execute();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -1107,16 +1189,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true;
-            //Intent intentTTS = new Intent(VoiceModeActivity.this, BluetoothService.class);
-            //intentTTS.putExtra("TTS initialized", true);
-            //startService(intentTTS);
-            mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
-
-                @Override
-                public void onUtteranceCompleted(String s) {
-                    utteranceId = s;
-                }
-            });
 
             mTts.setLanguage(Locale.ENGLISH);
 
@@ -1131,6 +1203,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             tts("Voice Mode Activated");
+
+            // tts all in the ttsQueue
+            for (String text : ttsQueue ) {
+                tts(text);
+            }
+
+            // clear the queue
+            ttsQueue.clear();
         }
 
     }
@@ -1344,5 +1424,23 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     protected void onPause() {
         super.onPause();
         this.unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    public void onSnapToRoadSuccess(List<LatLng> snappedPoints) {
+        mSnappedPoints.clear();
+        mSnappedPoints = snappedPoints;
+        if (!snappedPoints.isEmpty())
+            mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
+                    mSnappedPoints.get(mSnappedPointIndex));
+        else {
+            Coordinate start = mRoute.steps.get(mStep).startLocation;
+            Coordinate end = mRoute.steps.get(mStep).startLocation;
+
+            mSnappedPointThreshold = new Threshold(new LatLng (start.latitude, start.longitude),
+                    new LatLng (end.latitude, end.longitude));
+        }
+
+        transmitVector();
     }
 }
