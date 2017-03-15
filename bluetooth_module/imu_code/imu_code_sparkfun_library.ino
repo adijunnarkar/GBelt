@@ -9,7 +9,7 @@
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 #define testingWithoutPhone true // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Manual" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
+#define MAGCode "" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
@@ -30,9 +30,10 @@ int pwm_intensity_max = 150;
 int right_motor_intensity = 0;
 int range = 70;
 
-unsigned long motor_start_time, motor_deactive_start_time = 0; // to activate motors for an interval of time
+unsigned long motor_start_time, motor_deactive_start_time, motor_already_active_deactive_start_time = 0; // to activate motors for an interval of time
 int motor_active_time = 1000; // length of time each motor will be active in [ms]
-int motor_deactive_time = 500; // length of time motor will be deactive in [ms]
+int motor_deactive_time = 750; // length of time motor will be deactive in [ms]
+int motor_already_active_deactive_time = 250; // length of time motors will stay off if we are constantly changing between two directions that are next to each other
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
 
@@ -52,6 +53,7 @@ static bool receiving_bluetooth = false; // set to true when we first receive in
 // initialize timers used
 struct timer_flags {
     bool motor_deactivate_timer;
+    bool motor_already_active_deactive_timer;
     bool timer_north_started;
     bool timer_northeast_started;
     bool timer_east_started;
@@ -145,7 +147,7 @@ void setup()
 
     turnAllMotorsOff();
 
-    timers = { false, false, false, false, false, false, false, false, false }; // initialize timers struct
+    timers = { false, false, false, false, false, false, false, false, false, false }; // initialize timers struct
 
     #if SerialDebug
         Serial.print("X-Axis sensitivity adjustment value ");
@@ -352,15 +354,20 @@ void loop()
                 Serial.println("Theta: " + String(theta));
             #endif
 
-            //turnAllMotorsOff();
             if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_east_started || timers.timer_west_started)
                 {
-                    analogWrite(motorNorth, pwm_intensity_max+100);
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!timers.timer_north_started)
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        analogWrite(motorNorth, pwm_intensity_max+100);
                         timers.timer_north_started = true;
                         motor_start_time = millis();
                     }
@@ -371,14 +378,20 @@ void loop()
             }
             else if (inRange(theta, 10, 80)) // Northeast
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_north_started || timers.timer_east_started)
                 {
-                    right_motor_intensity = map(theta - 5, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(motorNorth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
-                    analogWrite(motorEast, right_motor_intensity);
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!(timers.timer_northeast_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        right_motor_intensity = map(theta - 5, 0, range, pwm_intensity_min, pwm_intensity_max);
+                        analogWrite(motorNorth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                        analogWrite(motorEast, right_motor_intensity);
                         timers.timer_northeast_started = true;
                         motor_start_time = millis();
                     }
@@ -390,12 +403,18 @@ void loop()
             }
             else if (inRange(theta, 80, 100)) // East
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_north_started || timers.timer_south_started)
                 {
-                    analogWrite(motorEast, pwm_intensity_max);
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!(timers.timer_east_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        analogWrite(motorEast, pwm_intensity_max);
                         timers.timer_east_started = true;
                         motor_start_time = millis();
                     }
@@ -406,14 +425,20 @@ void loop()
             }
             else if (inRange(theta, 100, 170)) // Southeast
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_south_started || timers.timer_east_started)
                 {
-                    right_motor_intensity = map(theta - 95, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(motorSouth, right_motor_intensity);
-                    analogWrite(motorEast, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!(timers.timer_southeast_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        right_motor_intensity = map(theta - 95, 0, range, pwm_intensity_min, pwm_intensity_max);
+                        analogWrite(motorSouth, right_motor_intensity);
+                        analogWrite(motorEast, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
                         timers.timer_southeast_started = true;
                         motor_start_time = millis();
                     }
@@ -425,12 +450,18 @@ void loop()
             }
             else if (inRange(theta, 170, 190)) // South
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_east_started || timers.timer_west_started)
                 {
-                    analogWrite(motorSouth, pwm_intensity_max);
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!(timers.timer_south_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        analogWrite(motorSouth, pwm_intensity_max+100);
                         timers.timer_south_started = true;
                         motor_start_time = millis();
                     }
@@ -441,14 +472,20 @@ void loop()
             }
             else if (inRange(theta, 190, 260)) // Southwest
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_south_started || timers.timer_west_started)
                 {
-                    right_motor_intensity = map(theta - 185, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(motorSouth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
-                    analogWrite(motorWest, right_motor_intensity);
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer)
+                {
                     if (!(timers.timer_southwest_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        right_motor_intensity = map(theta - 185, 0, range, pwm_intensity_min, pwm_intensity_max);
+                        analogWrite(motorSouth, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                        analogWrite(motorWest, right_motor_intensity);
                         timers.timer_southwest_started = true;
                         motor_start_time = millis();
                     }
@@ -460,12 +497,18 @@ void loop()
             }
             else if (inRange(theta, 260, 280)) // West
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_north_started || timers.timer_south_started)
                 {
-                    analogWrite(motorWest, pwm_intensity_max);
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!(timers.timer_west_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        analogWrite(motorWest, pwm_intensity_max);
                         timers.timer_west_started = true;
                         motor_start_time = millis();
                     }
@@ -476,14 +519,20 @@ void loop()
             }
             else if (inRange(theta, 280, 350)) // Northwest
             {
-                if (!timers.motor_deactivate_timer)
+                if (timers.timer_north_started || timers.timer_west_started)
                 {
-                    right_motor_intensity = map(theta - 275, 0, range, pwm_intensity_min, pwm_intensity_max);
-                    analogWrite(motorNorth, right_motor_intensity);
-                    analogWrite(motorWest, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
+                    timers.motor_already_active_deactive_timer = true;
+                    motor_already_active_deactive_start_time = millis();
+                }
+                else if (!timers.motor_deactivate_timer && !timers.motor_already_active_deactive_timer)
+                {
                     if (!(timers.timer_northwest_started))
                     {
                         turnAllTimersOff();
+                        turnAllMotorsOff();
+                        right_motor_intensity = map(theta - 275, 0, range, pwm_intensity_min, pwm_intensity_max);
+                        analogWrite(motorNorth, right_motor_intensity);
+                        analogWrite(motorWest, pwm_intensity_max - (right_motor_intensity - pwm_intensity_min));
                         timers.timer_northwest_started = true;
                         motor_start_time = millis();
                     }
@@ -504,7 +553,7 @@ void loop()
             timers.motor_deactivate_timer = true;
             motor_deactive_start_time = millis();
             #if SerialDebug
-                Serial.println("MOTORS OFF");
+                Serial.println("------------------MOTORS OFF-----------------------------");
             #endif
         }
 
@@ -513,6 +562,14 @@ void loop()
             timers.motor_deactivate_timer = false;
             #if SerialDebug
                 Serial.println("------------------MOTORS DEACTIVATED---------------------");
+            #endif
+        }
+
+        if (timers.motor_already_active_deactive_timer && motor_function_duration_complete(motor_already_active_deactive_start_time, motor_already_active_deactive_time))
+        {
+            timers.motor_already_active_deactive_timer = false;
+            #if SerialDebug
+                Serial.println("------------------MOTORS DEACTIVATED FOR SHORTER TIME---------------------");
             #endif
         }
     }
@@ -641,7 +698,7 @@ void calibrateMagnetometerBias(float * dest1)
     */
 
     int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
-    int16_t mag_max[3] = { -32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
+    int16_t mag_max[3] = {-32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
 
     if (MAGCode == "Manual")
     {
@@ -701,6 +758,10 @@ void calibrateMagnetometerBias(float * dest1)
         mag_max[2] = 250;  mag_min[2] = -370;
     }
 
+    mag_max[0] = 307; mag_min[0] = -146;
+    mag_max[1] = 365;  mag_min[1] = -85;
+    mag_max[2] = 159;  mag_min[2] = -311;
+
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
     mag_bias[1]  = (mag_max[1] + mag_min[1]) / 2; // get average y mag bias in counts
@@ -719,12 +780,13 @@ void calibrateMagnetometerBias(float * dest1)
 
     float avg_rad = (mag_scale[0] + mag_scale[1] + mag_scale[2]) / 3.0;
 
-    #if SerialDebug
-        Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
-        Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
-        Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
-        Serial.println("Mag Calibration done!");
-    #endif
+    //#if SerialDebug
+    Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
+    Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
+    Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
+    Serial.println("Mag Calibration done!");
+    delay(5000);
+    //#endif
 }
 
 // Function which accumulates gyro and accelerometer data after device initialization. It calculates the average
