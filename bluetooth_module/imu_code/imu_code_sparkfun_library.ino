@@ -5,11 +5,11 @@
 #include "MPU9250.h"
 #include "math.h"
 
-#define SerialDebug false  // Set to true to get Serial output for debugging
+#define SerialDebug true  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
-#define testingWithoutPhone true // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Manual" // location code here for mag calibration (Manual, STC, Tung, Home)
+#define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
+#define MAGCode "Home_NEW_mag" // location code here for mag calibration (Manual, STC, Tung, Home_OLD_mag, Home_NEW_mag)
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
@@ -261,18 +261,18 @@ void loop()
     if (averageCalculated)
     {
         /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
-        //pitch = atan2(-accelAverage[0], sqrt(accelAverage[1] * accelAverage[1] + accelAverage[2] * accelAverage[2])) * RAD_TO_DEG;
-        /*roll = atan2(accelAverage[1], accelAverage[2]) * RAD_TO_DEG;
-        if (!(inRange(int(roll), -15, 15))) // if roll gives us problematic data, then hardcode pitch, roll
-        {
-          pitch = 0;
-          roll = 180;
-        }*/
-        pitch = 0;
-        roll = 180;
+        pitch = atan2(-accelAverage[0], sqrt(accelAverage[2] * accelAverage[2] + accelAverage[1] * accelAverage[1])) * RAD_TO_DEG;
+        roll = atan2(-accelAverage[2], accelAverage[1]) * RAD_TO_DEG;
+        //if (!(inRange(int(roll), -15, 15))) // if roll gives us problematic data, then hardcode pitch, roll
+        //{
+          //pitch = 0;
+          //roll = 180;
+        //}
+        //pitch = 90;
+        //roll = 0;
 
-        Xh = magAverage[0] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) + magAverage[2] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
-        Yh = magAverage[1] * cos(roll * DEG_TO_RAD) - magAverage[2] * sin(roll * DEG_TO_RAD);
+        Xh = magAverage[2] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - magAverage[0] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
+        Yh = magAverage[1] * cos(roll * DEG_TO_RAD) + magAverage[0] * sin(roll * DEG_TO_RAD);
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
         yaw = ((360 + (int)yaw) % 360);
 
@@ -681,12 +681,18 @@ void calibrateMagnetometerBias(float * dest1)
         mag_max[1] = 530;  mag_min[1] = -135;
         mag_max[2] = 1;  mag_min[2] = -676;
     }
-    else if (MAGCode == "Home")
+    else if (MAGCode == "Home_OLD_mag")
     {
         mag_max[0] = 440; mag_min[0] = -121;
         mag_max[1] = 500;  mag_min[1] = -55;
         mag_max[2] = -64;  mag_min[2] = -634;
     }
+    else if (MAGCode == "Home_NEW_mag")
+    {
+        mag_max[0] = 317; mag_min[0] = -227;
+        mag_max[1] = 415;  mag_min[1] = -128;
+        mag_max[2] = 190;  mag_min[2] = -390;
+    }    
 
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
