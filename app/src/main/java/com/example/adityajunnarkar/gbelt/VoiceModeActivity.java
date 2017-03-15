@@ -220,7 +220,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 //"\n" + "Scanning for remote Bluetooth devices...",
                 //Toast.LENGTH_SHORT).show();
                 checkPairedOrDoDiscovery();
-
             }
         }
 
@@ -759,15 +758,29 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public double calculateVector() {
-        double vector = 0;
+        double vector;
+        double x1, y1, x2, y2;
 
-        // Starting location
-        double x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
-        double y1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
+        if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4) {
+            // Starting location
+            x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
+            y1 = mSnappedPoints.get(mSnappedPointIndex - 1).latitude;
 
-        // Ending location
-        double x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
-        double y2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
+            // Ending location
+            x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
+            y2 = mSnappedPoints.get(mSnappedPointIndex).latitude;
+        } else {
+            Coordinate start = mRoute.steps.get(mStep).startLocation;
+            Coordinate end = mRoute.steps.get(mStep).startLocation;
+
+            // Starting location
+            x1 = start.longitude;
+            y1 = start.latitude;
+
+            // Ending location
+            x2 = end.longitude;
+            y2 = end.latitude;
+        }
 
         if (x2 >= x1 && y2 >= y1 ) {
             vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
@@ -1018,6 +1031,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private void recalculateRoute() {
         // Recalculate route with current location
         origin = "Your Location";
+        mSnappedPointIndex = 1;
         sendDirectionRequest();
     }
 
@@ -1032,7 +1046,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void onNextSnappedPoint() {
-        if (mSnappedPointIndex < mSnappedPoints.size() - 1) {
+        if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4 &&
+                mSnappedPointIndex < mSnappedPoints.size() - 1) {
             mSnappedPointIndex++;
             // Calculate threshold for next snapped point
             mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
@@ -1044,6 +1059,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void sendSnapToRoadRequest() {
+        mSnappedPoints.clear();
+
         // Starting location
         double x1 = mRoute.steps.get(mStep).startLocation.longitude;
         double y1 = mRoute.steps.get(mStep).startLocation.latitude;
@@ -1071,9 +1088,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @SuppressWarnings("deprecation") // haha haha
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
-        loader.disableLoading();
-
         if (routes.isEmpty()) {
+            loader.disableLoading();
             tts("Sorry, no route was found. Please try another search.");
             return;
         }
@@ -1338,19 +1354,37 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public void onSnapToRoadSuccess(List<LatLng> snappedPoints) {
-        mSnappedPoints.clear();
-        mSnappedPoints = snappedPoints;
-        if (!snappedPoints.isEmpty())
+        mSnappedPoints.addAll(snappedPoints); // append to mSnappedPoints
+
+        if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4)
             mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
                     mSnappedPoints.get(mSnappedPointIndex));
         else {
             Coordinate start = mRoute.steps.get(mStep).startLocation;
-            Coordinate end = mRoute.steps.get(mStep).startLocation;
+            Coordinate end = mRoute.steps.get(mStep).endLocation;
 
             mSnappedPointThreshold = new Threshold(new LatLng (start.latitude, start.longitude),
                     new LatLng (end.latitude, end.longitude));
         }
 
         transmitVector();
+
+        LatLng lastPoint = mSnappedPoints.get(mSnappedPoints.size() - 1);
+
+        // if the last point in the snap is not close to the end point of the step, then call
+        // snap to road again
+        if (!mRoute.steps.get(mStep).stepCompleted(lastPoint)) {
+            double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+            double y2 = mRoute.steps.get(mStep).endLocation.latitude;
+            LatLng endPoint = new LatLng(y2, x2);
+
+            try {
+                new SnapToRoad(this, lastPoint, endPoint).execute();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            loader.disableLoading();
+        }
     }
 }

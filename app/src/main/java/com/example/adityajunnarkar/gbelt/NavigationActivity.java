@@ -338,8 +338,10 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
             // Note: route has a Coordinate instead of LatLng because LatLng is not serializable
             // but the map only takes LatLng
-            LatLng startLocation = new LatLng(route.startLocation.latitude, route.startLocation.longitude);
-            LatLng endLocation = new LatLng(route.endLocation.latitude, route.endLocation.longitude);
+            LatLng startLocation = new LatLng(route.startLocation.latitude,
+                    route.startLocation.longitude);
+            LatLng endLocation = new LatLng(route.endLocation.latitude,
+                    route.endLocation.longitude);
 
             if (mStep == 0 || mLastLocation == null) { // first step
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 16));
@@ -526,7 +528,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public double calculateVector() {
-        double vector = 0;
+        double vector;
         double x1, y1, x2, y2;
 
         if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4) {
@@ -734,6 +736,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             mSnappedPointThreshold = new Threshold(new LatLng (start.latitude, start.longitude),
                     new LatLng (end.latitude, end.longitude));
         }
+
         transmitVector();
 
         LatLng lastPoint = mSnappedPoints.get(mSnappedPoints.size() - 1);
@@ -753,6 +756,5 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         } else {
             loader.disableLoading();
         }
-
     }
 }
