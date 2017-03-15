@@ -111,6 +111,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     UnlockBar unlock;
     LoadingScreen loader;
+    ProgressDialog progressDialog;
 
     // Voice Recognition Request Codes
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
@@ -562,9 +563,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String destination = etDestination.getText().toString();
         bundle.putSerializable("destination", (Serializable) destination);
-        intent.putExtras(bundle);
-
-        bundle.putSerializable("snappedPointIndex", (Serializable) 1);
         intent.putExtras(bundle);
 
         startActivity(intent);
