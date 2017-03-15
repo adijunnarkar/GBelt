@@ -20,7 +20,7 @@ import java.util.List;
 
 
 public class SnapToRoad {
-    private static final String API_KEY = "AIzaSyBi7VkQHCcjkKUgBKKcapNDKjSEz-XsZwI";
+    private static final String API_KEY = "AIzaSyCKkaeFF0jmNamkkew9FriLm5lXCX2Ds7A";
     private static final String TAG = SnapToRoad.class.getSimpleName();
     private SnapToRoadListener listener;
     private LatLng start;

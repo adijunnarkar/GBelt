@@ -22,7 +22,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.text.Html;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -151,6 +150,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         setUpUnlockListener();
 
+        loader.updateLoadingText("Loading, please wait...");
         loader.enableLoading();
     }
 
@@ -386,8 +386,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                 tts(instruction.getText().toString());
             }
         }
-
-        loader.disableLoading();
     }
 
     private void updateInstruction(String text) {
@@ -471,12 +469,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                     mSnappedPoints.get(mSnappedPointIndex));
             transmitVector();
         } else {
-            Toast.makeText(this, "Next Step", Toast.LENGTH_LONG).show();
             onNextStep();
         }
     }
 
     public void sendSnapToRoadRequest() {
+        mSnappedPoints.clear();
+
         // Starting location
         double x1 = mRoute.steps.get(mStep).startLocation.longitude;
         double y1 = mRoute.steps.get(mStep).startLocation.latitude;
@@ -709,8 +708,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onDirectionFinderSuccess(List<Route> route) {
-        loader.disableLoading();
-
         // Note: there is no check to see if a route is found, assumes that if they were able to
         // reach Navigation Activity a route must be available unless they leave their country
         // and lose the available route would be strange.
@@ -725,20 +722,37 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onSnapToRoadSuccess(List<LatLng> snappedPoints) {
+        mSnappedPoints.addAll(snappedPoints); // append to mSnappedPoints
 
-        Toast.makeText(this, "Snap To Road Complete", Toast.LENGTH_LONG).show();
-        mSnappedPoints.clear();
-        mSnappedPoints = snappedPoints;
         if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4)
             mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
                     mSnappedPoints.get(mSnappedPointIndex));
         else {
             Coordinate start = mRoute.steps.get(mStep).startLocation;
-            Coordinate end = mRoute.steps.get(mStep).startLocation;
+            Coordinate end = mRoute.steps.get(mStep).endLocation;
 
             mSnappedPointThreshold = new Threshold(new LatLng (start.latitude, start.longitude),
                     new LatLng (end.latitude, end.longitude));
         }
         transmitVector();
+
+        LatLng lastPoint = mSnappedPoints.get(mSnappedPoints.size() - 1);
+
+        // if the last point in the snap is not close to the end point of the step, then call
+        // snap to road again
+        if (!mRoute.steps.get(mStep).stepCompleted(lastPoint)) {
+            double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+            double y2 = mRoute.steps.get(mStep).endLocation.latitude;
+            LatLng endPoint = new LatLng(y2, x2);
+
+            try {
+                new SnapToRoad(this, lastPoint, endPoint).execute();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            loader.disableLoading();
+        }
+
     }
 }
