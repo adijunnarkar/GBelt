@@ -30,30 +30,6 @@ public class Route implements Serializable {
         this.steps = steps;
     }
 
-    public double calculateVector(int stepNum) {
-        double vector = 0;
-
-        // Starting location
-        double x1 = steps.get(stepNum).startLocation.longitude;
-        double y1 = steps.get(stepNum).startLocation.latitude;
-
-        // Ending location
-        double x2 = steps.get(stepNum).endLocation.longitude;
-        double y2 = steps.get(stepNum).endLocation.latitude;
-
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        }
-
-        return vector;
-    }
-
     public boolean isLocationInPath(LatLng location) {
         // LatLng is not Serializable, so we have to initialize it every time to use PolyUtil
         // which is why we made the Coordinate class to begin with

@@ -560,6 +560,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bundle.putSerializable("destination", (Serializable) destination);
         intent.putExtras(bundle);
 
+        bundle.putSerializable("snappedPointIndex", (Serializable) 1);
+        intent.putExtras(bundle);
+
         startActivity(intent);
         finish();
     }

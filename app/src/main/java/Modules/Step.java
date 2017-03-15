@@ -12,8 +12,6 @@ public class Step implements Serializable {
     public Coordinate endLocation; // lat, lng
     public Coordinate startLowerThreshold; // lat, lng
     public Coordinate startUpperThreshold; // lat, lng
-    public Coordinate endLowerThreshold; // lat, lng
-    public Coordinate endUpperThreshold; // lat, lng
 
     // current threshold is +- 25 m away from current location
     public static final double dx = 0.025; // km
@@ -35,8 +33,6 @@ public class Step implements Serializable {
     public void calculateThresholds() {
         this.startLowerThreshold = calculateLowerThreshold(this.startLocation);
         this.startUpperThreshold = calculateUpperThreshold(this.startLocation);
-        this.endLowerThreshold = calculateLowerThreshold(this.endLocation);
-        this.endUpperThreshold = calculateUpperThreshold(this.endLocation);
     }
 
     public Coordinate calculateLowerThreshold(Coordinate latLng) {
@@ -60,13 +56,5 @@ public class Step implements Serializable {
                 && point.latitude < startUpperThreshold.latitude
                 && point.longitude > startLowerThreshold.longitude
                 && point.longitude < startUpperThreshold.longitude;
-
-    }
-
-    public boolean stepCompleted(LatLng point) {
-        return point.latitude > endLowerThreshold.latitude
-                && point.latitude < endUpperThreshold.latitude
-                && point.longitude > endLowerThreshold.longitude
-                && point.longitude < endUpperThreshold.longitude;
     }
 }
