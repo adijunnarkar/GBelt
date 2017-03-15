@@ -261,6 +261,7 @@ void loop()
     if (averageCalculated)
     {
         /* PITCH: tilting the body from side to side, ROLL: tilting the body forwards and backwards*/
+        // March 15, 2017 - pitch, roll and yaw formulas for final prototype design orientation
         pitch = atan2(-accelAverage[0], sqrt(accelAverage[2] * accelAverage[2] + accelAverage[1] * accelAverage[1])) * RAD_TO_DEG;
         roll = atan2(-accelAverage[2], accelAverage[1]) * RAD_TO_DEG;
         //if (!(inRange(int(roll), -15, 15))) // if roll gives us problematic data, then hardcode pitch, roll
