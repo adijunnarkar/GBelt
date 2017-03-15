@@ -4,20 +4,17 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -72,8 +69,6 @@ import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
 
-import static android.support.v4.content.LocalBroadcastManager.*;
-
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
         LocationListener,
@@ -111,7 +106,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     Location mLastLocation;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId = "";
     TextView instruction;
 
     RelativeLayout activity;
@@ -142,6 +136,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     // Drawing map
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
+
+    private List<String> ttsQueue = new ArrayList<>();
 
     // for Timer to switch to touch screen mode
     int timerDuration = 3000; // ms, timer completion time
@@ -313,6 +309,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             // grab data from NavigationActivity
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
+            origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
             tripStarted = (boolean) bundle.getSerializable("tripStarted");
@@ -604,7 +601,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 String currentActivity = taskInfo.get(0).topActivity.getClassName();
                 //Toast.makeText(getApplicationContext(), "CURRENT Activity: " + componentInfo.getClassName(), Toast.LENGTH_LONG).show();
                 if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
-                    while (!utteranceId.equals("Voice Mode Activated")) ;
                     tts("Bluetooth connection with HC05 established");
                 } else {
                     Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
@@ -667,18 +663,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             if (mStep == 0) {
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        // wait 2 seconds to make sure tts is initialized
-                        String speech = "Expected to arrive in " + mRoute.duration.text;
-                        tts(speech);
-                        // wait until utterance is complete before other tts's
-                        // need the while before tts
-                        while (!utteranceId.equals(speech)) ;
-                        tts(instruction.getText().toString());
-                    }
-                }, 2000);
+                String speech = "Expected to arrive in " + mRoute.duration.text;
+                tts(speech);
+                tts(instruction.getText().toString());
             } else {
                 tts(instruction.getText().toString());
             }
@@ -694,6 +681,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void updateInstruction(String text) {
+        if (text.length() > 80) {
+            instruction.setTextSize(25);
+        } else {
+            instruction.setTextSize(35);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
@@ -729,10 +722,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void tts(String text) {
-        while(!ttsReady);
+        if (!ttsReady) {
+            ttsQueue.add(text);
+            return;
+        }
+
         if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
-            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            mTts.speak(text, TextToSpeech.QUEUE_ADD, myHashAlarm);
         }
     }
 
@@ -782,7 +779,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // because we want to retain origin and not change it to our current coordinates
         String mOrigin;
         if (origin.equals("Your Location")) {
-            mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            if(mLastLocation != null) {
+                mOrigin = mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude();
+            } else {
+                tts("Please turn on your location");
+                return;
+            }
         } else {
             mOrigin = origin;
         }
@@ -990,6 +992,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onDirectionFinderSuccess(List<Route> routes) {
         loader.disableLoading();
 
+        if (routes.isEmpty()) {
+            tts("Sorry, no route was found. Please try another search.");
+            return;
+        }
+
         mRoutes = routes;
 
         mStep = 0; // restart route
@@ -1009,21 +1016,20 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true;
-            mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
-
-                @Override
-                public void onUtteranceCompleted(String s) {
-                    utteranceId = s;
-                }
-            });
-
             mTts.setLanguage(Locale.ENGLISH);
-
             myHashAlarm = new HashMap<String, String>();
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                    String.valueOf(AudioManager.STREAM_ALARM));
+                    String.valueOf(AudioManager.STREAM_MUSIC));
 
             tts("Voice Mode Activated");
+
+            // tts all in the ttsQueue
+            for (String text : ttsQueue ) {
+                tts(text);
+            }
+
+            // clear the queue
+            ttsQueue.clear();
         }
 
     }
@@ -1097,9 +1103,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             if (match.contains("destination")) {
                 // expecting 'Set destination to ____'
                 String[] phrase = match.split(" to ");
-                destination = phrase[1];
-                tts("destination set to " + destination);
-                if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                if(phrase.length == 2) {
+                    destination = phrase[1];
+                    tts("destination set to " + destination);
+                    if (DEBUG) ((TextView) findViewById(R.id.destination)).setText("Destination: " + destination); // for debugging
+                } else{
+                    tts("No command found, make sure you don't skip any required phrase");
+                }
+
             } else if (match.contains("walking")) {
                 // expecting 'Set to walking'
                 mode = 1;
@@ -1111,8 +1122,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 tts("mode set to public transit");
                 if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             } else if (match.contains("navigation")) {
-                // expecting 'Start navigation'
-                sendDirectionRequest();
+                // expecting 'Start navigation' what if they say stop navigation
+                if(match.contains("stop")){
+                    tts("Navigation has not yet started, please start navigation first");
+                } else {
+                    sendDirectionRequest();
+                }
             } else if (match.contains("touch screen")) {
                 // expecting 'Activate Touch-Screen Mode'
                 finish(); // return to previous intent
@@ -1120,16 +1135,19 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 // expecting 'Set origin to ____'
                 // i.e. 'Set origin to my location'
                 String[] phrase = match.split(" to ");
+                if(phrase.length == 2) {
+                    if (phrase[1].equals("my location")) {
+                        origin = "Your Location";
+                    } else {
+                        origin = phrase[1];
+                    }
 
-                if (phrase[1].equals("my location")) {
-                    origin = "Your Location";
+                    tts("origin set to " + origin);
+                    if (DEBUG)
+                        ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
                 } else {
-                    origin = phrase[1];
+                    tts("No command found, make sure you don't skip any required phrase");
                 }
-
-                tts("origin set to " + origin);
-                if (DEBUG)
-                    ((TextView) findViewById(R.id.origin)).setText("Origin: " + origin); // for debugging
             } else {
                 tts("No command found");
             }

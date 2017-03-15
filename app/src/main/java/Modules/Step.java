@@ -15,7 +15,7 @@ public class Step implements Serializable {
     public Coordinate endLowerThreshold; // lat, lng
     public Coordinate endUpperThreshold; // lat, lng
 
-    // current threshold is +- 4 m away from current location
+    // current threshold is +- 25 m away from current location
     public static final double dx = 0.025; // km
     public static final double dy = 0.025; // km
 
