@@ -1201,8 +1201,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 tts("mode set to public transit");
                 if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             } else if (match.contains("navigation")) {
-                // expecting 'Start navigation'
-                sendDirectionRequest();
+                // expecting 'Start navigation' what if they say stop navigation
+                if(match.contains("stop")){
+                    tts("Navigation has not yet started, please start navigation first");
+                } else {
+                    sendDirectionRequest();
+                }
             } else if (match.contains("touch screen")) {
                 // expecting 'Activate Touch-Screen Mode'
                 finish(); // return to previous intent
