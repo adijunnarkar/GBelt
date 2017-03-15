@@ -96,7 +96,11 @@ void setup()
     // Read the WHO_AM_I register
     do {
         c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
-        Serial.println(c, HEX);
+
+        #if SerialDebug
+          Serial.println(c, HEX);
+        #endif
+
         accel_gyro_connect_counter += 1;
         delay(500);
     } while (c != 0x71);
@@ -279,7 +283,7 @@ void loop()
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
         yaw = ((360 + (int)yaw) % 360);
 
-        Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
+        //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
 
         if (BTSerial.available() > 0)
         {
