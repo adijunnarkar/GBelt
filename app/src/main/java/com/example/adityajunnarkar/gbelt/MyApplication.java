@@ -1,6 +1,8 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.app.Application;
+import android.content.Context;
+import android.media.AudioManager;
 
 public class MyApplication extends Application {
     public boolean debug = true;

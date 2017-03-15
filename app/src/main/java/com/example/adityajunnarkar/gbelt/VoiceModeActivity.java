@@ -125,7 +125,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     static BluetoothDevice mConnectedHeadset;
 
     static AudioManager mAudioManager;
-
+    static boolean TTSReady = false;
     String activityMode; // Maps or Navigation
 
     // Maps mode
@@ -169,7 +169,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setVolumeControlStream(AudioManager.STREAM_ALARM);
+        //setVolumeControlStream(AudioManager.STREAM_ALARM);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_voice_mode);
 
@@ -185,11 +185,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("intentKey"));
-
+        startTextToSpeechActivity();
         setupBluetooth();
 
 
-        startTextToSpeechActivity();
 
         setUpMap();
 
@@ -242,19 +241,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 for (BluetoothDevice device : pairedDevices) {
                     if (device.getAddress().equals(((MyApplication) this.getApplication()).getBTDeviceAddress())) {
                         HC05Found = true;
-                        Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
-                        Bundle b = new Bundle();
-                        b.putParcelable("HC-05", device);
-                        intentBT.putExtras(b);
-                        startService(intentBT);
-
-                    } else if(isHandsFreeDevice(device.getBluetoothClass().getDeviceClass())){
-                        BluetoothDeviceHDP = mBluetoothAdapter.getRemoteDevice(device.getAddress());
-                        headsetFound = true;
-                        if (BluetoothDeviceHDP != null ) {
+                        if(BluetoothDeviceForHC05 == null ) {
                             Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                             Bundle b = new Bundle();
-                            b.putParcelable("hands-free", BluetoothDeviceHDP);
+                            b.putParcelable("HC-05", device);
+                            intentBT.putExtras(b);
+                            startService(intentBT);
+                        }
+
+                    } else if(isHandsFreeDevice(device.getBluetoothClass().getDeviceClass())){
+
+                        headsetFound = true;
+                        if (BluetoothDeviceHDP == null ) {
+                            // Establish connection to the proxy
+                            /*if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
+                            }*/
+                            Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                            intentBT.putExtra("paired", true);
+                            Bundle b = new Bundle();
+                            b.putParcelable("hands-free", mBluetoothAdapter.getRemoteDevice(device.getAddress()));
                             intentBT.putExtras(b);
                             startService(intentBT);
                         }
@@ -276,60 +281,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 || (deviceClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET));
     }
 
-    private BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
-        public void onServiceConnected(int profile, BluetoothProfile proxy) {
-            if (profile == BluetoothProfile.HEADSET) {
-                mBluetoothHeadset = (BluetoothHeadset) proxy;
-                Method connect = getConnectMethod();
-                //  BluetoothDevice device = findBondedDeviceByName(mAdapter, HTC_MEDIA);
-
-                try {
-                    connect.setAccessible(true);
-                    connect.invoke(proxy, BluetoothDeviceHDP);
-                } catch (InvocationTargetException ex) {
-                    ex.printStackTrace();
-                    //Log.e(TAG, "Unable to invoke connect(BluetoothDevice) method on proxy. " + ex.toString());
-                } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
-                    //Log.e(TAG, "Illegal Access! " + ex.toString());
-                }
-
-                while(mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED );
-                List<BluetoothDevice> devices = mBluetoothHeadset.getConnectedDevices();
-
-                if (devices.size() > 0)
-                {
-                    mConnectedHeadset = devices.get(0);
-                    if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
-                       Toast.makeText(getApplicationContext(), "voice recognition not supported",
-                                   Toast.LENGTH_SHORT).show();
-
-                    };
-                }
-               /* Toast.makeText(getApplicationContext(), "reached here " + devices.size(),
-                        Toast.LENGTH_SHORT).show();*/
-            }
-        }
-        public void onServiceDisconnected(int profile) {
-            if (profile == BluetoothProfile.HEADSET) {
-                mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
-                mBluetoothHeadset = null;
-            }
-        }
-    };
-
-    /**
-     * Wrapper around some reflection code to get the hidden 'connect()' method
-     * @return the connect(BluetoothDevice) method, or null if it could not be found
-     */
-    private Method getConnectMethod () {
-        try {
-            return BluetoothHeadset.class.getDeclaredMethod("connect", BluetoothDevice.class);
-        } catch (NoSuchMethodException ex) {
-            //Log.e(TAG, "Unable to find connect(BluetoothDevice) method in BluetoothA2dp proxy.");
-            return null;
-        }
-    }
 
     protected void discoverDevices(){
 
@@ -367,21 +318,21 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 //MAC address of HC05
                 if (address.equals(((MyApplication) getApplication()).getBTDeviceAddress())) {
 
-                    BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
+                    //BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
 
                     Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                     Bundle b = new Bundle();
-                    b.putParcelable("HC-05", BluetoothDeviceForHC05);
+                    b.putParcelable("HC-05", mBluetoothAdapter.getRemoteDevice(address));
                     intentBT.putExtras(b);
                     startService(intentBT);
 
                 } else if (isHandsFreeDevice(deviceClass)){
 
-                    BluetoothDeviceHDP = mBluetoothAdapter.getRemoteDevice(address);
-                    if (BluetoothDeviceHDP != null ) {
+                    //BluetoothDeviceHDP = mBluetoothAdapter.getRemoteDevice(address);
+                    if (BluetoothDeviceHDP == null ) {
                         Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                         Bundle b = new Bundle();
-                        b.putParcelable("hands-free", BluetoothDeviceHDP);
+                        b.putParcelable("hands-free", mBluetoothAdapter.getRemoteDevice(address));
                         intentBT.putExtras(b);
                         startService(intentBT);
                     }
@@ -415,12 +366,10 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         public void onReceive(Context context, Intent intent) {
 
             String message = intent.getStringExtra("key");
-            ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
-            List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
-            String currentActivity = taskInfo.get(0).topActivity.getClassName();
+
 
             if(message.equals("hc05-connected")) {
-                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
+                if(getCurrentActivity().equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
                     while (!utteranceId.equals("Voice Mode Activated")) ;
                     tts("Bluetooth connection with HC05 established");
                 } else {
@@ -430,33 +379,32 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else if(message.equals("hc05-not-connected") && BluetoothDeviceForHC05 == null){
                 discoverDevices();
             } else if(message.equals("headset-connected")) {
-                if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
-                    try {
-                        mAudioManager.setMode(0);
-                        mAudioManager.setBluetoothScoOn(true);
-                        mAudioManager.startBluetoothSco();
-                        mAudioManager.setMode(AudioManager.MODE_IN_CALL);
-                        while (!utteranceId.equals("Voice Mode Activated")) ;
-                        tts("Bluetooth connection with headset established");
-                        if (mBluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) != BluetoothHeadset.STATE_CONNECTED) {
-                            // Establish connection to the proxy
-                            if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
-                                Toast.makeText(getApplicationContext(), "established",
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                // Establish connection to the proxy
+               /* if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
+
+                }  */
+               // configureHeadSet();
+                if(getCurrentActivity().equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
+                    while (!utteranceId.equals("Voice Mode Activated"));
+                    tts("Bluetooth connection with headset established");
+
                 } else {
                     Toast.makeText(getApplicationContext(), "headset is now connected", Toast.LENGTH_LONG).show();
                 }
+
                 BluetoothDeviceHDP = intent.getParcelableExtra("hands-free");
             } else if(message.equals("headset-not-connected") && BluetoothDeviceHDP == null){
                 discoverDevices();
             }
         }
     };
+
+    public String getCurrentActivity(){
+        ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
+        String currentActivity = taskInfo.get(0).topActivity.getClassName();
+        return currentActivity;
+    }
 
     /** Defines callbacks for service binding, passed to bindService() */
    /* private ServiceConnection mConnection = new ServiceConnection() {
@@ -1159,6 +1107,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true;
+            //Intent intentTTS = new Intent(VoiceModeActivity.this, BluetoothService.class);
+            //intentTTS.putExtra("TTS initialized", true);
+            //startService(intentTTS);
             mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
 
                 @Override
@@ -1172,11 +1123,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             myHashAlarm = new HashMap<String, String>();
 
             if(BluetoothDeviceHDP != null){
-                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+               myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
                         String.valueOf(AudioManager.STREAM_VOICE_CALL));
             } else {
                 myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-                        String.valueOf(AudioManager.STREAM_ALARM));
+                        String.valueOf(AudioManager.STREAM_MUSIC));
             }
 
             tts("Voice Mode Activated");
