@@ -782,13 +782,13 @@ void calibrateMagnetometerBias(float * dest1)
 
     float avg_rad = (mag_scale[0] + mag_scale[1] + mag_scale[2]) / 3.0;
 
-    //#if SerialDebug
-    Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
-    Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
-    Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
-    Serial.println("Mag Calibration done!");
-    delay(5000);
-    //#endif
+    #if SerialDebug
+        Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
+        Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
+        Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
+        Serial.println("Mag Calibration done!");
+        delay(5000);
+    #endif
 }
 
 // Function which accumulates gyro and accelerometer data after device initialization. It calculates the average
