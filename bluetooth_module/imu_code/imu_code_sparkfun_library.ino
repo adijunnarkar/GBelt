@@ -8,8 +8,8 @@
 #define SerialDebug false  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
-#define testingWithoutPhone true // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
+#define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
+#define MAGCode "Outside_NEW" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
@@ -739,28 +739,30 @@ void calibrateMagnetometerBias(float * dest1)
         mag_max[1] = 530;  mag_min[1] = -135;
         mag_max[2] = 1;  mag_min[2] = -676;
     }
-    else if (MAGCode == "Home_OLD_mag")
+    else if (MAGCode == "Home_OLD")
     {
         mag_max[0] = 440; mag_min[0] = -121;
         mag_max[1] = 500;  mag_min[1] = -55;
         mag_max[2] = -64;  mag_min[2] = -634;
     }
-    else if (MAGCode == "Home_NEW_mag")
+    else if (MAGCode == "Home_NEW")
     {
         mag_max[0] = 317; mag_min[0] = -227;
         mag_max[1] = 415;  mag_min[1] = -128;
         mag_max[2] = 190;  mag_min[2] = -390;
     }
-    else if (MAGCode == "Outside_NEW_mag")
+    else if (MAGCode == "Outside_NEW")
     {
         mag_max[0] = 358; mag_min[0] = -224;
         mag_max[1] = 435;  mag_min[1] = -144;
         mag_max[2] = 250;  mag_min[2] = -370;
     }
-
-    mag_max[0] = 307; mag_min[0] = -146;
-    mag_max[1] = 365;  mag_min[1] = -85;
-    mag_max[2] = 159;  mag_min[2] = -311;
+    else if (MAGCode == "Needles")
+    {
+        mag_max[0] = 307; mag_min[0] = -146;
+        mag_max[1] = 365;  mag_min[1] = -85;
+        mag_max[2] = 159;  mag_min[2] = -311;
+    }
 
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
