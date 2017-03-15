@@ -3,7 +3,6 @@ package com.example.adityajunnarkar.gbelt;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
@@ -21,12 +19,10 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.KeyListener;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -111,7 +107,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     UnlockBar unlock;
     LoadingScreen loader;
-    ProgressDialog progressDialog;
 
     // Voice Recognition Request Codes
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;

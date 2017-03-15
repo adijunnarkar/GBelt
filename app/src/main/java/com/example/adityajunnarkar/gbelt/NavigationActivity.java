@@ -1,7 +1,6 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -80,12 +79,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId = "";
 
     LoadingScreen loader;
 
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
+
+    private List<String> ttsQueue = new ArrayList<>();
 
     private RelativeLayout returnContent;
     private ImageView directionIndicator;
@@ -103,8 +103,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     String destination;
 
     UnlockBar unlock;
-
-    ProgressDialog progressDialog;
 
     // Global variables across entire application used for debugging:
     boolean DEBUG;
@@ -210,8 +208,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
             @Override
-            public void onUnlock()
-            {
+            public void onUnlock() {
                 unlock.reset();
                 startVoiceMode(); // switch to voice mode => starts voice mode intent
             }
@@ -240,12 +237,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         } else {
             bundle.putSerializable("activity", (Serializable) "Maps");
             intent.putExtras(bundle);
-
-            bundle.putSerializable("origin", (Serializable) origin);
-            intent.putExtras(bundle);
         }
 
         bundle.putSerializable("mode", (Serializable) mode);
+        intent.putExtras(bundle);
+
+        bundle.putSerializable("origin", (Serializable) origin);
         intent.putExtras(bundle);
 
         bundle.putSerializable("destination", (Serializable) destination);
@@ -278,7 +275,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         loader.enableLoading();
         destroyTts();
 
-        mRoute= null;
+        mRoute = null;
 
         // should only ever go back to Maps Activity even if it returned from voice mode
         Intent intent = new Intent(this, MapsActivity.class);
@@ -298,7 +295,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void destroyTts() {
-        if(mTts != null) {
+        if (mTts != null) {
             mTts.stop();
             mTts.shutdown();
             mTts = null;
@@ -367,20 +364,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         if (mRoute != null) {
             if (mStep == 0) {
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        // wait 1 seconds to make sure tts is initialized
-                        if(mRoute != null) {
-                            String speech = "Expected to arrive in " + mRoute.duration.text;
-                            tts(speech);
-                            // wait until utterance is complete before other tts's
-                            // need the while before tts
-                            while (!utteranceId.equals(speech)) ;
-                            tts(instruction.getText().toString());
-                        }
-                    }
-                }, 2000);
+                String speech = "Expected to arrive in " + mRoute.duration.text;
+                tts(speech);
+                tts(instruction.getText().toString());
             } else {
                 tts(instruction.getText().toString());
             }
@@ -503,10 +489,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void tts(String text) {
-        while(!ttsReady);
+        if (!ttsReady) {
+            ttsQueue.add(text);
+            return;
+        }
+
         if (myHashAlarm != null && mTts!= null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
-            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            mTts.speak(text, TextToSpeech.QUEUE_ADD, myHashAlarm);
         }
     }
 
@@ -591,18 +581,17 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true;
-            mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
-
-                @Override
-                public void onUtteranceCompleted(String s) {
-                    utteranceId = s;
-                }
-            });
-
             mTts.setLanguage(Locale.ENGLISH);
-
             myHashAlarm = new HashMap<String, String>();
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+
+            // tts all in the ttsQueue
+            for (String text : ttsQueue ) {
+                tts(text);
+            }
+
+            // clear the queue
+            ttsQueue.clear();
         }
     }
 

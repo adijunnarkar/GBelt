@@ -106,7 +106,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     Location mLastLocation;
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
-    String utteranceId = "";
     TextView instruction;
 
     RelativeLayout activity;
@@ -137,6 +136,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     // Drawing map
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
+
+    private List<String> ttsQueue = new ArrayList<>();
 
     // for Timer to switch to touch screen mode
     int timerDuration = 3000; // ms, timer completion time
@@ -308,6 +309,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             // grab data from NavigationActivity
             mRoutes = (List<Route>)bundle.getSerializable("routes");
             mode = (int) bundle.getSerializable("mode");
+            origin = (String) bundle.getSerializable("origin");
             destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
             tripStarted = (boolean) bundle.getSerializable("tripStarted");
@@ -599,7 +601,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 String currentActivity = taskInfo.get(0).topActivity.getClassName();
                 //Toast.makeText(getApplicationContext(), "CURRENT Activity: " + componentInfo.getClassName(), Toast.LENGTH_LONG).show();
                 if(currentActivity.equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
-                    while (!utteranceId.equals("Voice Mode Activated")) ;
                     tts("Bluetooth connection with HC05 established");
                 } else {
                     Toast.makeText(getApplicationContext(), "HC-05 is now connected", Toast.LENGTH_LONG).show();
@@ -662,18 +663,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (mRoute != null) {
             if (mStep == 0) {
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        // wait 2 seconds to make sure tts is initialized
-                        String speech = "Expected to arrive in " + mRoute.duration.text;
-                        tts(speech);
-                        // wait until utterance is complete before other tts's
-                        // need the while before tts
-                        while (!utteranceId.equals(speech)) ;
-                        tts(instruction.getText().toString());
-                    }
-                }, 2000);
+                String speech = "Expected to arrive in " + mRoute.duration.text;
+                tts(speech);
+                tts(instruction.getText().toString());
             } else {
                 tts(instruction.getText().toString());
             }
@@ -689,6 +681,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void updateInstruction(String text) {
+        if (text.length() > 80) {
+            instruction.setTextSize(25);
+        } else {
+            instruction.setTextSize(35);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
@@ -724,10 +722,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void tts(String text) {
-        while(!ttsReady);
+        if (!ttsReady) {
+            ttsQueue.add(text);
+            return;
+        }
+
         if (myHashAlarm != null && mTts != null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
-            mTts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+            mTts.speak(text, TextToSpeech.QUEUE_ADD, myHashAlarm);
         }
     }
 
@@ -1014,21 +1016,20 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true;
-            mTts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
-
-                @Override
-                public void onUtteranceCompleted(String s) {
-                    utteranceId = s;
-                }
-            });
-
             mTts.setLanguage(Locale.ENGLISH);
-
             myHashAlarm = new HashMap<String, String>();
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
                     String.valueOf(AudioManager.STREAM_MUSIC));
 
             tts("Voice Mode Activated");
+
+            // tts all in the ttsQueue
+            for (String text : ttsQueue ) {
+                tts(text);
+            }
+
+            // clear the queue
+            ttsQueue.clear();
         }
 
     }
