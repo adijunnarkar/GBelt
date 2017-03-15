@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
@@ -23,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.text.Html;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -391,6 +391,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void updateInstruction(String text) {
+        if (text.length() > 110) {
+            instruction.setTextSize(18);
+        } else {
+            instruction.setTextSize(22);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
         } else {
@@ -428,7 +434,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                     return;
                 }
 
-                if (!mSnappedPoints.isEmpty() && passedSnappedPoint(point)) {
+                if (passedSnappedPoint(point)) {
                     onNextSnappedPoint();
                 }
 
@@ -442,10 +448,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private void recalculateRoute() {
         // Recalculate route with current location
         origin = "Your Location";
+        mSnappedPointIndex = 1;
         sendDirectionRequest();
     }
 
     public boolean passedSnappedPoint(LatLng point) {
+        if (mSnappedPointThreshold == null)
+            return false;
+
         return point.latitude > mSnappedPointThreshold.endLower.latitude
                 && point.latitude < mSnappedPointThreshold.endUpper.latitude
                 && point.longitude > mSnappedPointThreshold.endLower.longitude
@@ -453,13 +463,15 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void onNextSnappedPoint() {
-        if (mSnappedPointIndex < mSnappedPoints.size() - 1) {
+        if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4 &&
+                mSnappedPointIndex < mSnappedPoints.size() - 1) {
             mSnappedPointIndex++;
             // Calculate threshold for next snapped point
             mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
                     mSnappedPoints.get(mSnappedPointIndex));
             transmitVector();
         } else {
+            Toast.makeText(this, "Next Step", Toast.LENGTH_LONG).show();
             onNextStep();
         }
     }
@@ -516,14 +528,28 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     public double calculateVector() {
         double vector = 0;
+        double x1, y1, x2, y2;
 
-        // Starting location
-        double x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
-        double y1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
+        if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4) {
+            // Starting location
+            x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
+            y1 = mSnappedPoints.get(mSnappedPointIndex - 1).latitude;
 
-        // Ending location
-        double x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
-        double y2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
+            // Ending location
+            x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
+            y2 = mSnappedPoints.get(mSnappedPointIndex).latitude;
+        } else {
+            Coordinate start = mRoute.steps.get(mStep).startLocation;
+            Coordinate end = mRoute.steps.get(mStep).startLocation;
+
+            // Starting location
+            x1 = start.longitude;
+            y1 = start.latitude;
+
+            // Ending location
+            x2 = end.longitude;
+            y2 = end.latitude;
+        }
 
         if (x2 >= x1 && y2 >= y1 ) {
             vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
@@ -699,10 +725,20 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onSnapToRoadSuccess(List<LatLng> snappedPoints) {
+
+        Toast.makeText(this, "Snap To Road Complete", Toast.LENGTH_LONG).show();
         mSnappedPoints.clear();
         mSnappedPoints = snappedPoints;
-        mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
-                mSnappedPoints.get(mSnappedPointIndex));
+        if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4)
+            mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
+                    mSnappedPoints.get(mSnappedPointIndex));
+        else {
+            Coordinate start = mRoute.steps.get(mStep).startLocation;
+            Coordinate end = mRoute.steps.get(mStep).startLocation;
+
+            mSnappedPointThreshold = new Threshold(new LatLng (start.latitude, start.longitude),
+                    new LatLng (end.latitude, end.longitude));
+        }
         transmitVector();
     }
 }

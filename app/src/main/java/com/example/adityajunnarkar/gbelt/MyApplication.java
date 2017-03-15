@@ -5,7 +5,7 @@ import android.app.Application;
 public class MyApplication extends Application {
     public boolean debug = true;
     public boolean tts = true;
-    public boolean recalculation = false;
+    public boolean recalculation = true;
     String bluetoothAddress = "20:16:10:24:54:92";
 
     public boolean getTTS() {

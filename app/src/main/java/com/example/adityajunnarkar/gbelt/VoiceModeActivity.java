@@ -696,10 +696,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void updateInstruction(String text) {
-        if (text.length() > 80)
+        if (text.length() > 80) {
             instruction.setTextSize(25);
-        else
+        } else {
             instruction.setTextSize(35);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
@@ -1003,7 +1004,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     return;
                 }
 
-                if (!mSnappedPoints.isEmpty() && passedSnappedPoint(point)) {
+                if (passedSnappedPoint(point)) {
                     onNextSnappedPoint();
                 }
 
@@ -1021,6 +1022,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public boolean passedSnappedPoint(LatLng point) {
+        if (mSnappedPointThreshold == null)
+            return false;
+
         return point.latitude > mSnappedPointThreshold.endLower.latitude
                 && point.latitude < mSnappedPointThreshold.endUpper.latitude
                 && point.longitude > mSnappedPointThreshold.endLower.longitude

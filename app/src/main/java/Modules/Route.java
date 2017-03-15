@@ -40,7 +40,7 @@ public class Route implements Serializable {
         }
 
         boolean greatCircleSegments = true;
-        double tolerance = 35; // m
+        double tolerance = 40; // m
 
         return PolyUtil.isLocationOnEdge(location, pointsInLatLng, greatCircleSegments, tolerance);
     }
