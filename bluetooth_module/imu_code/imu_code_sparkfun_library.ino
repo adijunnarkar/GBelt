@@ -5,11 +5,11 @@
 #include "MPU9250.h"
 #include "math.h"
 
-#define SerialDebug true  // Set to true to get Serial output for debugging
+#define SerialDebug false  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
-#define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Home_NEW_mag" // location code here for mag calibration (Manual, STC, Tung, Home_OLD_mag, Home_NEW_mag)
+#define testingWithoutPhone true // certain small changes to fake bluetooth messages if no phone available
+#define MAGCode "Manual" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
@@ -269,15 +269,15 @@ void loop()
           //pitch = 0;
           //roll = 180;
         //}
-        //pitch = 90;
-        //roll = 0;
+        pitch = 0;
+        roll = 0;
 
         Xh = magAverage[2] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - magAverage[0] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
         Yh = magAverage[1] * cos(roll * DEG_TO_RAD) + magAverage[0] * sin(roll * DEG_TO_RAD);
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
         yaw = ((360 + (int)yaw) % 360);
 
-        //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
+        Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
 
         if (BTSerial.available() > 0)
         {
@@ -557,7 +557,7 @@ void loop()
 
         Serial.print("\n\n");
     #endif
-    delay(20);
+    delay(10);
 }
 
 
@@ -693,7 +693,13 @@ void calibrateMagnetometerBias(float * dest1)
         mag_max[0] = 317; mag_min[0] = -227;
         mag_max[1] = 415;  mag_min[1] = -128;
         mag_max[2] = 190;  mag_min[2] = -390;
-    }    
+    }
+    else if (MAGCode == "Outside_NEW_mag")
+    {
+        mag_max[0] = 358; mag_min[0] = -224;
+        mag_max[1] = 435;  mag_min[1] = -144;
+        mag_max[2] = 250;  mag_min[2] = -370;
+    }
 
     // Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2; // get average x mag bias in counts
