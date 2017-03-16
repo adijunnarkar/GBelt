@@ -7,11 +7,14 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -19,6 +22,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +45,7 @@ public class BluetoothService extends Service {
     static AudioManager mAudioManager;
     static BluetoothDevice BluetoothDeviceForHC05;
     static BluetoothDevice BluetoothDeviceHDP;
-
+    static private boolean mIsCountDownOn;
     //private final IBinder mBinder = new LocalBinder();
 
     @Nullable
@@ -265,10 +269,36 @@ public class BluetoothService extends Service {
 
                 List<BluetoothDevice> btHeadsets = mBluetoothHeadset.getConnectedDevices();
                 if (btHeadsets.isEmpty()) {
+
+                    Method connect = getConnectMethod();
+
+                    try {
+                        connect.setAccessible(true);
+                        connect.invoke(proxy, BluetoothDeviceHDP);
+                    } catch (InvocationTargetException ex) {
+                        ex.printStackTrace();
+                        Intent intent = new Intent("intentKey");
+                        // You can also include some extra data.
+                        intent.putExtra("key", "headset-not-connected");
+                        connectingThread_headset = null;
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                        //Log.e(TAG, "Unable to invoke connect(BluetoothDevice) method on proxy. " + ex.toString());
+                    } catch (IllegalAccessException ex) {
+                        ex.printStackTrace();
+                        Intent intent = new Intent("intentKey");
+                        // You can also include some extra data.
+                        intent.putExtra("key", "headset-not-connected");
+                        connectingThread_headset = null;
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                        //Log.e(TAG, "Illegal Access! " + ex.toString());
+                    }
+                    while (mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED) ;
                     Intent intent = new Intent("intentKey");
+                    Bundle b = new Bundle();
+                    b.putParcelable("hands-free", BluetoothDeviceHDP);
+                    intent.putExtras(b);
                     // You can also include some extra data.
-                    intent.putExtra("key", "headset-not-connected");
-                    connectingThread_headset = null;
+                    intent.putExtra("key", "headset-connected");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 } else {
                 /*Method connect = getConnectMethod();
@@ -301,11 +331,11 @@ public class BluetoothService extends Service {
                     intent.putExtra("key", "headset-connected");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
-                    if (!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)) {
+                  /*  if (!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)) {
                         Toast.makeText(getApplicationContext(), "voice recognition not supported",
                                 Toast.LENGTH_SHORT).show();
 
-                    }
+                    }*/
 
                     //   }
                 }
@@ -339,14 +369,32 @@ public class BluetoothService extends Service {
 
     public void configureHeadSet(){
         try {
+            // Register the BroadcastReceiver for ACTION_FOUND
+           IntentFilter filter = new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED);
+            this.registerReceiver(mHeadsetBroadcastReceiver, filter);
             mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            mAudioManager.setMode(0);
+          /*  mAudioManager.setMode(0);
             mAudioManager.setBluetoothScoOn(true);
             mAudioManager.startBluetoothSco();
-            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);*/
+            //int mode = mAudioManager.getMode();
 
+            //boolean a = mBluetoothHeadset.isAudioConnected(mConnectedHeadset);
+            //mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+           // mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+            mAudioManager.setMode(0);
+       /*     if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
+                Toast.makeText(getApplicationContext(), "failed",
+                        Toast.LENGTH_LONG).show();
+            }/*
+            mIsCountDownOn = true;
+            mCountDown11.start();*/
 
-
+            //mAudioManager.setSpeakerphoneOn(false);
+            //mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+           /* mAudioManager.setBluetoothScoOn(true);
+            mAudioManager.startBluetoothSco();
+            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);*/
                         /*if (mBluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) != BluetoothHeadset.STATE_CONNECTED) {
                             // Establish connection to the proxy
                             if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
@@ -370,4 +418,76 @@ public class BluetoothService extends Service {
             e.printStackTrace();
         }
     }
+
+    private BroadcastReceiver mHeadsetBroadcastReceiver = new BroadcastReceiver() {
+
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (action.equals(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED)) {
+                int new_state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE,
+                        AudioManager.ERROR);
+                int prev_state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_PREVIOUS_STATE,
+                        AudioManager.ERROR);
+                if ((new_state == AudioManager.SCO_AUDIO_STATE_CONNECTED) && (prev_state == AudioManager.SCO_AUDIO_STATE_CONNECTING))
+                {
+                    if(mBluetoothHeadset != null){
+
+                        //mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset);
+                       // Toast.makeText(getApplicationContext(), mode, Toast.LENGTH_LONG).show();*/
+                        if (mIsCountDownOn)
+                        {
+                            mIsCountDownOn = false;
+                            mCountDown11.cancel();
+                        }
+                    }
+                } else if ((new_state == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) && (prev_state == AudioManager.SCO_AUDIO_STATE_CONNECTING)){
+            //        mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+                }
+                //int mode = mAudioManager.getMode();
+                Toast.makeText(getApplicationContext(), "State: " + new_state + ", PrevState: " + prev_state, Toast.LENGTH_LONG).show();
+
+            }
+        }
+    };
+
+    /**
+     * API >= 11
+     * Try to connect to audio headset in onTick.
+     */
+    private CountDownTimer mCountDown11 = new CountDownTimer(10000, 1000)
+    {
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void onTick(long millisUntilFinished)
+        {
+            // First stick calls always returns false. The second stick
+            // always returns true if the countDownInterval is set to 1000.
+            // It is somewhere in between 500 to a 1000.
+//        	mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+            if(mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)) {
+                System.out.println("Started voice recognition");
+            } else {
+                System.out.println("Could not start recognition");
+            }
+           // System.out.println("XXXXXX" + mConnectedHeadset.getName());
+
+
+
+
+        }
+
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void onFinish()
+        {
+            // Calls to startVoiceRecognition in onStick are not successful.
+            // Should implement something to inform user of this failure
+            mIsCountDownOn = false;
+
+        }
+    };
+
 }

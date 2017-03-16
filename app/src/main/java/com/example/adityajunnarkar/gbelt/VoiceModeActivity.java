@@ -303,11 +303,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         public void onReceive(Context context, Intent intent) {
 
             String action = intent.getAction();
-
+            String address = "";
+            int deviceClass = 0;
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            String address = bluetoothDevice.getAddress();
-            int deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
+
+            if(bluetoothDevice != null) {
+                address = bluetoothDevice.getAddress();
+                deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
+            }
 
             // Whenever a remote Bluetooth device is found
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -903,6 +907,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void startVoiceRecognitionActivity() {
         attemptNumber = 1; // reset attempt number
 
+        if(mAudioManager.getMode() == AudioManager.MODE_IN_COMMUNICATION){
+            mAudioManager.setMode(0);
+            mAudioManager.setBluetoothScoOn(false);
+            mAudioManager.stopBluetoothSco();
+        }
         speech = SpeechRecognizer.createSpeechRecognizer(this);
         speech.setRecognitionListener(this);
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -1115,6 +1124,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             if(BluetoothDeviceHDP != null){
                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
                         String.valueOf(AudioManager.STREAM_VOICE_CALL));
+              //  mAudioManager.setMode(AudioManager.MODE_CURRENT);
             } else {
                 myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
                         String.valueOf(AudioManager.STREAM_MUSIC));
@@ -1338,6 +1348,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         super.onResume();
         // Register the BroadcastReceiver for ACTION_FOUND
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         this.registerReceiver(broadcastReceiver, filter);
 
     }
