@@ -69,19 +69,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import Modules.Coordinate;
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
-import Modules.SnapToRoad;
-import Modules.SnapToRoadListener;
-import Modules.Threshold;
 
 public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
         LocationListener,
-        SnapToRoadListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         TextToSpeech.OnInitListener,
@@ -166,11 +161,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
     private SpeechRecognizer speech = null;
     private Intent recognizerIntent;
-
-    // Snap to Road variables
-    List<LatLng> mSnappedPoints = new ArrayList<>();
-    int mSnappedPointIndex = 1;
-    Threshold mSnappedPointThreshold;
 
     // Global variables across entire application used for debugging:
     boolean DEBUG;
@@ -390,11 +380,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             } else if(message.equals("hc05-not-connected") && BluetoothDeviceForHC05 == null){
                 discoverDevices();
             } else if(message.equals("headset-connected")) {
-                // Establish connection to the proxy
-               /* if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
 
-                }  */
-               // configureHeadSet();
                 if(getCurrentActivity().equals("com.example.adityajunnarkar.gbelt.VoiceModeActivity")) {
 
                     tts("Bluetooth connection with headset established");
@@ -485,7 +471,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             destination = (String) bundle.getSerializable("destination");
             mStep = (int) bundle.getSerializable("step");
             tripStarted = (boolean) bundle.getSerializable("tripStarted");
-            mSnappedPointIndex = (int) bundle.getSerializable("snappedPointIndex");
         }
     }
 
@@ -647,10 +632,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         intent.putExtras(bundle);
 
 
+
         bundle.putParcelable("headset_connected", BluetoothDeviceHDP);
-
-        bundle.putSerializable("snappedPointIndex", (Serializable) mSnappedPointIndex);
-
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -733,8 +716,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         for (Route route : mRoutes) {
             mRoute = route;
 
-            sendSnapToRoadRequest();
-
             // Note: route has a Coordinate instead of LatLng because LatLng is not serializable
             // but the map only takes LatLng
             LatLng startLocation = new LatLng(route.startLocation.latitude,
@@ -749,6 +730,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
+            transmitVector();
 
             // Add Marker for destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -792,10 +774,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void updateInstruction(String text) {
-        if (text.length() > 80)
+        if (text.length() > 80) {
             instruction.setTextSize(25);
-        else
+        } else {
             instruction.setTextSize(35);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             instruction.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY));
@@ -807,10 +790,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private void onNextStep() {
         if (mStep < mRoute.steps.size() - 1) {
             mStep++;
-            mSnappedPointIndex = 1;
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             tts(instruction.getText().toString());
-            sendSnapToRoadRequest();
+            transmitVector();
         } else {
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
@@ -845,36 +827,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void transmitVector() {
-        if (mRoute != null && !mSnappedPoints.isEmpty()) {
-            double desired_theta = calculateVector();
-
+        // uncomment when we actually test for reals - uncommented this haha
+        if (mRoute != null) {
+            double desired_theta = mRoute.calculateVector(mStep);
             String message = "#" + (float) desired_theta + "~";
             transmission(message);
         }
-    }
-
-    public double calculateVector() {
-        double vector = 0;
-
-        // Starting location
-        double x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
-        double y1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
-
-        // Ending location
-        double x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
-        double y2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
-
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        }
-
-        return vector;
     }
 
     public void transmitFinish() {
@@ -1099,8 +1057,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     return;
                 }
 
-                if (!mSnappedPoints.isEmpty() && passedSnappedPoint(point)) {
-                    onNextSnappedPoint();
+                if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
                 }
 
                 updateMap();
@@ -1114,44 +1072,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Recalculate route with current location
         origin = "Your Location";
         sendDirectionRequest();
-    }
-
-    public boolean passedSnappedPoint(LatLng point) {
-        return point.latitude > mSnappedPointThreshold.endLower.latitude
-                && point.latitude < mSnappedPointThreshold.endUpper.latitude
-                && point.longitude > mSnappedPointThreshold.endLower.longitude
-                && point.longitude < mSnappedPointThreshold.endUpper.longitude;
-    }
-
-    public void onNextSnappedPoint() {
-        if (mSnappedPointIndex < mSnappedPoints.size() - 1) {
-            mSnappedPointIndex++;
-            // Calculate threshold for next snapped point
-            mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
-                    mSnappedPoints.get(mSnappedPointIndex));
-            transmitVector();
-        } else {
-            onNextStep();
-        }
-    }
-
-    public void sendSnapToRoadRequest() {
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
-
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
-
-        LatLng start = new LatLng(y1, x1);
-        LatLng end = new LatLng(y2, x2);
-
-        try {
-            new SnapToRoad(this, start, end).execute();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -1189,9 +1109,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true;
-
             mTts.setLanguage(Locale.ENGLISH);
-
             myHashAlarm = new HashMap<String, String>();
 
             if(BluetoothDeviceHDP != null){
@@ -1303,8 +1221,12 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 tts("mode set to public transit");
                 if (DEBUG) ((TextView) findViewById(R.id.mode)).setText("Mode: " + transportationModes.get(mode)); // for debugging
             } else if (match.contains("navigation")) {
-                // expecting 'Start navigation'
-                sendDirectionRequest();
+                // expecting 'Start navigation' what if they say stop navigation
+                if(match.contains("stop")){
+                    tts("Navigation has not yet started, please start navigation first");
+                } else {
+                    sendDirectionRequest();
+                }
             } else if (match.contains("touch screen")) {
                 // expecting 'Activate Touch-Screen Mode'
                 finish(); // return to previous intent
@@ -1424,23 +1346,5 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     protected void onPause() {
         super.onPause();
         this.unregisterReceiver(broadcastReceiver);
-    }
-
-    @Override
-    public void onSnapToRoadSuccess(List<LatLng> snappedPoints) {
-        mSnappedPoints.clear();
-        mSnappedPoints = snappedPoints;
-        if (!snappedPoints.isEmpty())
-            mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
-                    mSnappedPoints.get(mSnappedPointIndex));
-        else {
-            Coordinate start = mRoute.steps.get(mStep).startLocation;
-            Coordinate end = mRoute.steps.get(mStep).startLocation;
-
-            mSnappedPointThreshold = new Threshold(new LatLng (start.latitude, start.longitude),
-                    new LatLng (end.latitude, end.longitude));
-        }
-
-        transmitVector();
     }
 }

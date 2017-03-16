@@ -57,18 +57,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import Modules.Coordinate;
 import Modules.DirectionFinder;
 import Modules.DirectionFinderListener;
 import Modules.LoadingScreen;
 import Modules.Route;
-import Modules.SnapToRoad;
-import Modules.SnapToRoadListener;
-import Modules.Threshold;
 
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,
         DirectionFinderListener,
-        SnapToRoadListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         Serializable,
@@ -117,11 +112,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     String destination;
 
     UnlockBar unlock;
-
-    // Snap to Road variables
-    List<LatLng> mSnappedPoints = new ArrayList<>();
-    int mSnappedPointIndex = 1;
-    Threshold mSnappedPointThreshold;
 
     // Global variables across entire application used for debugging:
     boolean DEBUG;
@@ -194,7 +184,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
         BluetoothDeviceHDP = bundle.getParcelable("headset_connected");
 
-        mSnappedPointIndex = (int) bundle.getSerializable("snappedPointIndex");
 
     }
 
@@ -275,9 +264,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         bundle.putSerializable("tripStarted", (Serializable) tripStarted);
         intent.putExtras(bundle);
 
-        bundle.putSerializable("snappedPointIndex", (Serializable) mSnappedPointIndex);
-        intent.putExtras(bundle);
-
         startActivity(intent);
         finish();
     }
@@ -347,8 +333,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         for (Route route : mRoutes) {
             mRoute = route;
 
-            sendSnapToRoadRequest();
-
             // Note: route has a Coordinate instead of LatLng because LatLng is not serializable
             // but the map only takes LatLng
             LatLng startLocation = new LatLng(route.startLocation.latitude, route.startLocation.longitude);
@@ -367,6 +351,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             tvDistance.setText(route.distance.text);
 
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
+            transmitVector();
 
             // Add Markers for origin and destination
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -441,8 +426,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
                     return;
                 }
 
-                if (!mSnappedPoints.isEmpty() && passedSnappedPoint(point)) {
-                    onNextSnappedPoint();
+                if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
                 }
 
                 updateMap();
@@ -458,51 +443,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         sendDirectionRequest();
     }
 
-    public boolean passedSnappedPoint(LatLng point) {
-        return point.latitude > mSnappedPointThreshold.endLower.latitude
-                && point.latitude < mSnappedPointThreshold.endUpper.latitude
-                && point.longitude > mSnappedPointThreshold.endLower.longitude
-                && point.longitude < mSnappedPointThreshold.endUpper.longitude;
-    }
-
-    public void onNextSnappedPoint() {
-        if (mSnappedPointIndex < mSnappedPoints.size() - 1) {
-            mSnappedPointIndex++;
-            // Calculate threshold for next snapped point
-            mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
-                    mSnappedPoints.get(mSnappedPointIndex));
-            transmitVector();
-        } else {
-            onNextStep();
-        }
-    }
-
-    public void sendSnapToRoadRequest() {
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
-
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
-
-        LatLng start = new LatLng(y1, x1);
-        LatLng end = new LatLng(y2, x2);
-
-        try {
-            new SnapToRoad(this, start, end).execute();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void onNextStep() {
         if (mStep < mRoute.steps.size() - 1) {
             mStep++;
-            mSnappedPointIndex = 1;
             updateInstruction(mRoute.steps.get(mStep).htmlInstruction);
             tts(instruction.getText().toString());
-            sendSnapToRoadRequest();
+            transmitVector();
         } else {
             updateInstruction("Arrived at destination");
             tts("You have reached your destination");
@@ -519,36 +465,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void transmitVector() {
-        if (mRoute != null && !mSnappedPoints.isEmpty()) {
-            double desired_theta = calculateVector();
-
+        // uncomment when we actually test for reals - uncommented this haha
+        if (mRoute != null) {
+            double desired_theta = mRoute.calculateVector(mStep);
             String message = "#" + (float) desired_theta + "~";
             transmission(message);
         }
-    }
-
-    public double calculateVector() {
-        double vector = 0;
-
-        // Starting location
-        double x1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
-        double y1 = mSnappedPoints.get(mSnappedPointIndex - 1).longitude;
-
-        // Ending location
-        double x2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
-        double y2 = mSnappedPoints.get(mSnappedPointIndex).longitude;
-
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        }
-
-        return vector;
     }
 
     public void transmitFinish() {
@@ -585,7 +507,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             return;
         }
 
-        if (myHashAlarm != null && mTts != null && TTSDEBUG) {
+        if (myHashAlarm != null && mTts!= null && TTSDEBUG) {
             myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, text);
             mTts.speak(text, TextToSpeech.QUEUE_ADD, myHashAlarm);
         }
@@ -714,14 +636,5 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         recalculating = false;
 
         drawMap();
-    }
-
-    @Override
-    public void onSnapToRoadSuccess(List<LatLng> snappedPoints) {
-        mSnappedPoints.clear();
-        mSnappedPoints = snappedPoints;
-        mSnappedPointThreshold = new Threshold(mSnappedPoints.get(mSnappedPointIndex - 1),
-                mSnappedPoints.get(mSnappedPointIndex));
-        transmitVector();
     }
 }

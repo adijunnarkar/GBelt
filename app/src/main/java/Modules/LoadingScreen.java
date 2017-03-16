@@ -40,5 +40,4 @@ public class LoadingScreen {
     public void updateLoadingText(String text) {
         loadingText.setText(text);
     }
-
 }
