@@ -5,11 +5,11 @@
 #include "MPU9250.h"
 #include "math.h"
 
-#define SerialDebug false  // Set to true to get Serial output for debugging
+#define SerialDebug true  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 #define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
-#define MAGCode "Outside_NEW" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
+#define MAGCode "DC_main_NEW" // location code here for mag calibration (Manual, STC, Tung, Home_OLD, Home_NEW, Outside_NEW,)
 
 SoftwareSerial BTSerial(8, 9); // RX | Tx (10, 11 for Arduino Mega)
 
@@ -782,6 +782,18 @@ void calibrateMagnetometerBias(float * dest1)
         mag_max[0] = 307; mag_min[0] = -146;
         mag_max[1] = 365;  mag_min[1] = -85;
         mag_max[2] = 159;  mag_min[2] = -311;
+    }
+    else if (MAGCode == "DC_upstairs_NEW")
+    {
+        mag_max[0] = 357; mag_min[0] = -214;
+        mag_max[1] = 430;  mag_min[1] = -136;
+        mag_max[2] = 218;  mag_min[2] = -392;
+    }
+    else if (MAGCode == "DC_main_NEW")
+    {
+        mag_max[0] = 330; mag_min[0] = -174;
+        mag_max[1] = 401;  mag_min[1] = -107;
+        mag_max[2] = 179;  mag_min[2] = -360;
     }
 
     // Get hard iron correction
