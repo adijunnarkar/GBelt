@@ -360,8 +360,10 @@ void loop()
 
             if (inRange(theta, 350, 360) || inRange(theta, 0, 10)) // North
             {
-                if (timers.timer_east_started || timers.timer_west_started)
+                if (timers.timer_northeast_started || timers.timer_northwest_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -384,6 +386,8 @@ void loop()
             {
                 if (timers.timer_north_started || timers.timer_east_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -407,8 +411,10 @@ void loop()
             }
             else if (inRange(theta, 80, 100)) // East
             {
-                if (timers.timer_north_started || timers.timer_south_started)
+                if (timers.timer_northeast_started || timers.timer_southeast_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -431,6 +437,8 @@ void loop()
             {
                 if (timers.timer_south_started || timers.timer_east_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -454,8 +462,10 @@ void loop()
             }
             else if (inRange(theta, 170, 190)) // South
             {
-                if (timers.timer_east_started || timers.timer_west_started)
+                if (timers.timer_southeast_started || timers.timer_southwest_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -478,6 +488,8 @@ void loop()
             {
                 if (timers.timer_south_started || timers.timer_west_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -501,8 +513,10 @@ void loop()
             }
             else if (inRange(theta, 260, 280)) // West
             {
-                if (timers.timer_north_started || timers.timer_south_started)
+                if (timers.timer_northwest_started || timers.timer_southwest_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
@@ -525,6 +539,8 @@ void loop()
             {
                 if (timers.timer_north_started || timers.timer_west_started)
                 {
+                    turnAllTimersOff();
+                    turnAllMotorsOff();
                     timers.motor_already_active_deactive_timer = true;
                     motor_already_active_deactive_start_time = millis();
                 }
