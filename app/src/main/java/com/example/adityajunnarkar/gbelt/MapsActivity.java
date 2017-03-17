@@ -2,7 +2,11 @@ package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
 import android.app.Activity;
+
+import android.bluetooth.BluetoothDevice;
+
 import android.app.AlertDialog;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -107,6 +111,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     UnlockBar unlock;
     LoadingScreen loader;
+
+    static BluetoothDevice mConnectedHeadset;
+    static BluetoothDevice BluetoothDeviceHDP;
 
     // Voice Recognition Request Codes
     public static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
@@ -334,6 +341,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             if (bundle.containsKey("mode")) {
                 mode = (int) bundle.getSerializable("mode");
+            }
+
+            if(bundle.containsKey("headset_connected")){
+                BluetoothDeviceHDP = bundle.getParcelable("headset_connected");
             }
         }
     }
@@ -563,6 +574,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         bundle.putSerializable("snappedPointIndex", (Serializable) 1);
         intent.putExtras(bundle);
 
+        bundle.putParcelable("headset_connected", BluetoothDeviceHDP);
+        intent.putExtras(bundle);
+
         startActivity(intent);
         finish();
     }
@@ -692,9 +706,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mTts.setLanguage(Locale.ENGLISH);
 
             myHashAlarm = new HashMap<String, String>();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
-        }
 
+           if(BluetoothDeviceHDP != null) {
+               myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_VOICE_CALL));
+           } else {
+               myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+           }
+        }
     }
 
 

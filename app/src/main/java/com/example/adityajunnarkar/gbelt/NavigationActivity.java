@@ -1,6 +1,13 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.Manifest;
+
+
+import android.bluetooth.BluetoothDevice;
+
+import android.app.ProgressDialog;
+
+
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -83,6 +90,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
     TextToSpeech mTts;
     HashMap<String, String> myHashAlarm;
+
+    static BluetoothDevice BluetoothDeviceHDP;
 
     LoadingScreen loader;
 
@@ -183,6 +192,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         mStep = (int) bundle.getSerializable("step");
         tripStarted = (boolean) bundle.getSerializable("tripStarted");
         mSnappedPointIndex = (int) bundle.getSerializable("snappedPointIndex");
+        BluetoothDeviceHDP = bundle.getParcelable("headset_connected");
     }
 
     private void setUpDirectionsListener() {
@@ -695,7 +705,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             ttsReady = true;
             mTts.setLanguage(Locale.ENGLISH);
             myHashAlarm = new HashMap<String, String>();
-            myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+
+            if(BluetoothDeviceHDP != null) {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_VOICE_CALL));
+            } else {
+                myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+            }
 
             // tts all in the ttsQueue
             for (String text : ttsQueue ) {
@@ -704,6 +719,7 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
             // clear the queue
             ttsQueue.clear();
+
         }
     }
 

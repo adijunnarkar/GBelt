@@ -1,6 +1,7 @@
 package com.example.adityajunnarkar.gbelt;
 
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
