@@ -69,6 +69,7 @@ public class BluetoothService extends Service {
             BluetoothDeviceForHC05 = intent.getParcelableExtra("HC-05");
             BluetoothDeviceHDP = intent.getParcelableExtra("hands-free");
             boolean paired_headset = intent.getExtras().getBoolean("paired");
+            boolean stopHC = intent.getExtras().getBoolean("Stop HC");
 
             byte[] desiredVector = intent.getByteArrayExtra("vector");
             if(BluetoothDeviceForHC05 != null){
@@ -88,12 +89,14 @@ public class BluetoothService extends Service {
             if (desiredVector!= null && connectedThread != null) { // && connectedThread.isAlive()
                 connectedThread.write(desiredVector);
             }
+            if(stopHC){
+                connectingThread_hc05 = null;
+                connectedThread = null;
+                BluetoothDeviceForHC05 = null;
+            }
 
         }
-        /*  String stopservice = intent.getStringExtra("stopservice");
-        if (stopservice != null && stopservice.length() > 0) {
-            stop();
-        }*/
+
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky
         return START_STICKY;
@@ -110,8 +113,7 @@ public class BluetoothService extends Service {
             // Initiate a connection request in a separate thread
             connectingThread_hc05 = new ConnectingThread(BluetoothDeviceForHC05);
             connectingThread_hc05.start();
- /*          Toast.makeText(getApplicationContext(), "Connecting Thread Started",
-                                    Toast.LENGTH_LONG).show();*/
+
         }
     }
 
@@ -120,8 +122,7 @@ public class BluetoothService extends Service {
             // Initiate a connection request in a separate thread
             connectingThread_headset = new ConnectingThread(BluetoothDeviceHDP);
             connectingThread_headset.start();
- /*          Toast.makeText(getApplicationContext(), "Connecting Thread Started",
-                                    Toast.LENGTH_LONG).show();*/
+
         }
     }
 
@@ -181,7 +182,7 @@ public class BluetoothService extends Service {
 
             // Get a BluetoothSocket to connect with the given BluetoothDevice
             try {
-                if(device.getAddress().equals(((MyApplication)getApplication()).getBTDeviceAddress())) {  //hc - 05
+                if(device.getAddress().equals(((MyApplication)getApplication()).getBTHC05Address())) {  //hc - 05
                     temp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid_HC05);
                 } else {
                     temp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid_headset);
@@ -215,7 +216,7 @@ public class BluetoothService extends Service {
 
             // Code to manage the connection in a separate thread
             if(bluetoothSocket.isConnected()) {
-                if(bluetoothDevice.getAddress().equals(((MyApplication)getApplication()).getBTDeviceAddress())) {
+                if(bluetoothDevice.getAddress().equals(((MyApplication)getApplication()).getBTHC05Address())) {
                     Intent intent = new Intent("intentKey");
                     Bundle b = new Bundle();
                     b.putParcelable("HC-05", BluetoothDeviceForHC05);
@@ -235,7 +236,7 @@ public class BluetoothService extends Service {
                     intent.putExtra("key", "headset-connected");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 }
-            } else if(bluetoothDevice.getAddress().equals(((MyApplication)getApplication()).getBTDeviceAddress())){
+            } else if(bluetoothDevice.getAddress().equals(((MyApplication)getApplication()).getBTHC05Address())){
                 Intent intent = new Intent("intentKey");
                 // You can also include some extra data.
                 intent.putExtra("key", "hc05-not-connected");
@@ -301,28 +302,11 @@ public class BluetoothService extends Service {
                     intent.putExtra("key", "headset-connected");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 } else {
-                /*Method connect = getConnectMethod();
-
-                try {
-                    connect.setAccessible(true);
-                    connect.invoke(proxy, BluetoothDeviceHDP);
-                } catch (InvocationTargetException ex) {
-                    ex.printStackTrace();
-                    //Log.e(TAG, "Unable to invoke connect(BluetoothDevice) method on proxy. " + ex.toString());
-                } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
-                    //Log.e(TAG, "Illegal Access! " + ex.toString());
-                }
-*/
-
-                    //List<BluetoothDevice> devices = mBluetoothHeadset.getConnectedDevices();
-
-                    //    if (devices.size() > 0) {
                     mConnectedHeadset = btHeadsets.get(0);
                     //BluetoothDeviceHDP = mConnectedHeadset;
                     while (mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED) ;
                     configureHeadSet();
-    //                while(!TTSReady);
+
                     Intent intent = new Intent("intentKey");
                     Bundle b = new Bundle();
                     b.putParcelable("hands-free", BluetoothDeviceHDP);
@@ -331,18 +315,8 @@ public class BluetoothService extends Service {
                     intent.putExtra("key", "headset-connected");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
-                  /*  if (!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)) {
-                        Toast.makeText(getApplicationContext(), "voice recognition not supported",
-                                Toast.LENGTH_SHORT).show();
-
-                    }*/
-
-                    //   }
                 }
             }
-               /* Toast.makeText(getApplicationContext(), "reached here " + devices.size(),
-                        Toast.LENGTH_SHORT).show();*/
-
         }
         public void onServiceDisconnected(int profile) {
             if (profile == BluetoothProfile.HEADSET) {
@@ -373,47 +347,8 @@ public class BluetoothService extends Service {
            IntentFilter filter = new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED);
             this.registerReceiver(mHeadsetBroadcastReceiver, filter);
             mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-          /*  mAudioManager.setMode(0);
-            mAudioManager.setBluetoothScoOn(true);
-            mAudioManager.startBluetoothSco();
-            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);*/
-            //int mode = mAudioManager.getMode();
+            mAudioManager.setMode(AudioManager.MODE_IN_CALL);
 
-            //boolean a = mBluetoothHeadset.isAudioConnected(mConnectedHeadset);
-            //mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
-           // mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
-            mAudioManager.setMode(0);
-       /*     if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
-                Toast.makeText(getApplicationContext(), "failed",
-                        Toast.LENGTH_LONG).show();
-            }/*
-            mIsCountDownOn = true;
-            mCountDown11.start();*/
-
-            //mAudioManager.setSpeakerphoneOn(false);
-            //mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
-           /* mAudioManager.setBluetoothScoOn(true);
-            mAudioManager.startBluetoothSco();
-            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);*/
-                        /*if (mBluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) != BluetoothHeadset.STATE_CONNECTED) {
-                            // Establish connection to the proxy
-                            if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
-                                Toast.makeText(getApplicationContext(), "established",
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        }*/ /*else {
-                            List<BluetoothDevice> devices = mBluetoothAdapter.getConnectedDevices();
-
-                            if (devices.size() > 0)
-                            {
-                                mConnectedHeadset = devices.get(0);
-                                if(!mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset)){
-                                    Toast.makeText(getApplicationContext(), "voice recognition not supported",
-                                            Toast.LENGTH_SHORT).show();
-
-                                };
-                            }
-                        }*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -433,21 +368,10 @@ public class BluetoothService extends Service {
                         AudioManager.ERROR);
                 if ((new_state == AudioManager.SCO_AUDIO_STATE_CONNECTED) && (prev_state == AudioManager.SCO_AUDIO_STATE_CONNECTING))
                 {
-                    if(mBluetoothHeadset != null){
 
-                        //mBluetoothHeadset.startVoiceRecognition(mConnectedHeadset);
-                       // Toast.makeText(getApplicationContext(), mode, Toast.LENGTH_LONG).show();*/
-                        if (mIsCountDownOn)
-                        {
-                            mIsCountDownOn = false;
-                            mCountDown11.cancel();
-                        }
-                    }
                 } else if ((new_state == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) && (prev_state == AudioManager.SCO_AUDIO_STATE_CONNECTING)){
-            //        mBluetoothHeadset.stopVoiceRecognition(mConnectedHeadset);
+
                 }
-                //int mode = mAudioManager.getMode();
-                Toast.makeText(getApplicationContext(), "State: " + new_state + ", PrevState: " + prev_state, Toast.LENGTH_LONG).show();
 
             }
         }
@@ -472,7 +396,6 @@ public class BluetoothService extends Service {
             } else {
                 System.out.println("Could not start recognition");
             }
-           // System.out.println("XXXXXX" + mConnectedHeadset.getName());
 
 
 

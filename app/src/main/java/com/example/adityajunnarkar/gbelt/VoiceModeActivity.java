@@ -170,7 +170,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setVolumeControlStream(AudioManager.STREAM_ALARM);
+
         getSupportActionBar().hide();
         setContentView(R.layout.activity_voice_mode);
 
@@ -240,7 +240,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             if (pairedDevices.size() > 0) {
                 // There are paired devices.
                 for (BluetoothDevice device : pairedDevices) {
-                    if (device.getAddress().equals(((MyApplication) this.getApplication()).getBTDeviceAddress())) {
+                    if (device.getAddress().equals(((MyApplication) this.getApplication()).getBTHC05Address())) {
                         HC05Found = true;
                         if(BluetoothDeviceForHC05 == null ) {
                             Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
@@ -250,13 +250,11 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                             startService(intentBT);
                         }
 
-                    } else if(isHandsFreeDevice(device.getBluetoothClass().getDeviceClass())){
+                    } else if(device.getAddress().equals(((MyApplication) this.getApplication()).getHeadsetAddress())){
 
                         headsetFound = true;
                         if (BluetoothDeviceHDP == null ) {
-                            // Establish connection to the proxy
-                            /*if (mBluetoothAdapter.getProfileProxy(getApplicationContext(), mProfileListener, BluetoothProfile.HEADSET)) {
-                            }*/
+
                             Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                             intentBT.putExtra("paired", true);
                             Bundle b = new Bundle();
@@ -282,7 +280,6 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                 || (deviceClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET));
     }
 
-
     protected void discoverDevices(){
 
         // Register the BroadcastReceiver for ACTION_FOUND
@@ -292,8 +289,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
         // To scan for remote Bluetooth devices
         if (mBluetoothAdapter.startDiscovery()) {
-/*            Toast.makeText(getApplicationContext(), "Discovering other bluetooth devices...",
-                    Toast.LENGTH_SHORT).show();*/
+
         }
 
     }
@@ -321,9 +317,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                         Toast.LENGTH_SHORT).show();
 
                 //MAC address of HC05
-                if (address.equals(((MyApplication) getApplication()).getBTDeviceAddress())) {
-
-                    //BluetoothDeviceForHC05 = mBluetoothAdapter.getRemoteDevice(address);
+                if (address.equals(((MyApplication) getApplication()).getBTHC05Address())) {
 
                     Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                     Bundle b = new Bundle();
@@ -331,9 +325,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     intentBT.putExtras(b);
                     startService(intentBT);
 
-                } else if (isHandsFreeDevice(deviceClass)){
+                } else if (address.equals(((MyApplication) getApplication()).getHeadsetAddress())){
 
-                    //BluetoothDeviceHDP = mBluetoothAdapter.getRemoteDevice(address);
                     if (BluetoothDeviceHDP == null ) {
                         Intent intentBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
                         Bundle b = new Bundle();
@@ -343,10 +336,9 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                     }
                 }
             } else if(BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
-                if (isHandsFreeDevice(deviceClass)){
+                if (address.equals(((MyApplication) getApplication()).getHeadsetAddress())){
 
                     try {
-
                         mAudioManager.setMode(AudioManager.MODE_NORMAL);
                         mAudioManager.setBluetoothScoOn(false);
                         mAudioManager.stopBluetoothSco();
@@ -354,11 +346,17 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
                         // Establish connection to the proxy
                         if(mBluetoothHeadset != null){
                             mBluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET,  mBluetoothHeadset);
-
                         }
+
                     }catch(Exception e){
                         e.printStackTrace();
                     }
+                } else if (address.equals(((MyApplication) getApplication()).getBTHC05Address())) {
+                    tts("HC 05 connection lost");
+                    Intent intentStopBT = new Intent(VoiceModeActivity.this, BluetoothService.class);
+                    intentStopBT.putExtra("Stop HC", true);
+                    startService(intentStopBT);
+                    checkPairedOrDoDiscovery();
                 }
             }
         }
