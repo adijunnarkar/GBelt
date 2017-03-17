@@ -145,7 +145,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     private List<String> ttsQueue = new ArrayList<>();
 
     // for Timer to switch to touch screen mode
-    int timerDuration = 3000; // ms, timer completion time
+    int timerDuration = 1500; // ms, timer completion time
     int timerTimeout = 200; // ms, call run every 100 ms
     int timerCount = 0; // ms, keep count of the timer
 
@@ -752,13 +752,14 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         if (mRoute != null && !mSnappedPoints.isEmpty()) {
             double desired_theta = calculateVector();
 
-            String message = "#" + (float) desired_theta + "~";
-            transmission(message);
+            if (!(Double.isNaN(desired_theta))) {
+                String message = "#" + (float) desired_theta + "~";
+                transmission(message);
+            }
         }
     }
 
     public double calculateVector() {
-        double vector;
         double x1, y1, x2, y2;
 
         if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4) {
@@ -782,17 +783,15 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
             y2 = end.latitude;
         }
 
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        if (x2 >= x1 && y2 > y1 ) {
+            return Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        } else if (x2 > x1 && y2 <= y1) {
+            return 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else if (x2 <= x1 && y2 < y1) {
+            return 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
         } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+            return 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
         }
-
-        return vector;
     }
 
     public void transmitFinish() {
@@ -1019,6 +1018,8 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
 
                 if (passedSnappedPoint(point)) {
                     onNextSnappedPoint();
+                } else if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
                 }
 
                 updateMap();
@@ -1032,6 +1033,7 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
         // Recalculate route with current location
         origin = "Your Location";
         mSnappedPointIndex = 1;
+        tts("Recalculating");
         sendDirectionRequest();
     }
 
@@ -1059,23 +1061,25 @@ public class VoiceModeActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     public void sendSnapToRoadRequest() {
-        mSnappedPoints.clear();
+        if (mRoute != null) {
+            mSnappedPoints.clear();
 
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
+            // Starting location
+            double x1 = mRoute.steps.get(mStep).startLocation.longitude;
+            double y1 = mRoute.steps.get(mStep).startLocation.latitude;
 
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
+            // Ending location
+            double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+            double y2 = mRoute.steps.get(mStep).endLocation.latitude;
 
-        LatLng start = new LatLng(y1, x1);
-        LatLng end = new LatLng(y2, x2);
+            LatLng start = new LatLng(y1, x1);
+            LatLng end = new LatLng(y2, x2);
 
-        try {
-            new SnapToRoad(this, start, end).execute();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            try {
+                new SnapToRoad(this, start, end).execute();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     }
 

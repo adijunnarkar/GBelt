@@ -8,9 +8,9 @@ public class Threshold  {
     public LatLng endLower;
     public LatLng endUpper;
 
-    // current threshold is +- 25 m away from current location
-    public static final double dx = 0.025; // km
-    public static final double dy = 0.025; // km
+    // current threshold is +- 20 m away from current location
+    public static final double dx = 0.020; // km
+    public static final double dy = 0.020; // km
     public static final double rEarth = 6371; // km
 
     public Threshold(LatLng start, LatLng end) {

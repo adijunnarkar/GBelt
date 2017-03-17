@@ -190,7 +190,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         directionIndicator.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createDirectionsActivity();
+                if (tripStarted) {
+                    createDirectionsActivity();
+                }
             }
         });
 
@@ -198,7 +200,9 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         instruction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createDirectionsActivity();
+                if (tripStarted) {
+                    createDirectionsActivity();
+                }
             }
         });
     }
@@ -436,6 +440,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
 
                 if (passedSnappedPoint(point)) {
                     onNextSnappedPoint();
+                } else if (mRoute.steps.get(mStep).stepCompleted(point)) {
+                    onNextStep();
                 }
 
                 updateMap();
@@ -476,23 +482,25 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void sendSnapToRoadRequest() {
-        mSnappedPoints.clear();
+        if (mRoute != null) {
+            mSnappedPoints.clear();
 
-        // Starting location
-        double x1 = mRoute.steps.get(mStep).startLocation.longitude;
-        double y1 = mRoute.steps.get(mStep).startLocation.latitude;
+            // Starting location
+            double x1 = mRoute.steps.get(mStep).startLocation.longitude;
+            double y1 = mRoute.steps.get(mStep).startLocation.latitude;
 
-        // Ending location
-        double x2 = mRoute.steps.get(mStep).endLocation.longitude;
-        double y2 = mRoute.steps.get(mStep).endLocation.latitude;
+            // Ending location
+            double x2 = mRoute.steps.get(mStep).endLocation.longitude;
+            double y2 = mRoute.steps.get(mStep).endLocation.latitude;
 
-        LatLng start = new LatLng(y1, x1);
-        LatLng end = new LatLng(y2, x2);
+            LatLng start = new LatLng(y1, x1);
+            LatLng end = new LatLng(y2, x2);
 
-        try {
-            new SnapToRoad(this, start, end).execute();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            try {
+                new SnapToRoad(this, start, end).execute();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -522,13 +530,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         if (mRoute != null && !mSnappedPoints.isEmpty()) {
             double desired_theta = calculateVector();
 
-            String message = "#" + (float) desired_theta + "~";
-            transmission(message);
+            if (!(Double.isNaN(desired_theta))) {
+                String message = "#" + (float) desired_theta + "~";
+                transmission(message);
+            }
         }
     }
 
     public double calculateVector() {
-        double vector;
         double x1, y1, x2, y2;
 
         if (!mSnappedPoints.isEmpty() && mSnappedPoints.size() > 4) {
@@ -552,17 +561,15 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
             y2 = end.latitude;
         }
 
-        if (x2 >= x1 && y2 >= y1 ) {
-            vector = Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
-        } else if (x2 > x1 && y2 < y1) {
-            vector = 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
-        } else if (x2 < x1 && y2 < y1) {
-            vector = 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        if (x2 >= x1 && y2 > y1 ) {
+            return Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
+        } else if (x2 > x1 && y2 <= y1) {
+            return 90.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+        } else if (x2 <= x1 && y2 < y1) {
+            return 180.0 + Math.toDegrees(Math.atan(Math.abs(x2-x1)/Math.abs(y2-y1)));
         } else {
-            vector = 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
+            return 270.0 + Math.toDegrees(Math.atan(Math.abs(y2-y1)/Math.abs(x2-x1)));
         }
-
-        return vector;
     }
 
     public void transmitFinish() {

@@ -20,7 +20,11 @@ import java.util.List;
 
 
 public class SnapToRoad {
-    private static final String API_KEY = "AIzaSyCKkaeFF0jmNamkkew9FriLm5lXCX2Ds7A";
+    // First Key: AIzaSyBi7VkQHCcjkKUgBKKcapNDKjSEz-XsZwI
+    // Second Key: AIzaSyCKkaeFF0jmNamkkew9FriLm5lXCX2Ds7A
+    // Third key: AIzaSyAFWqZ8U8EMPhK6s-tSZvA6jfooTF6Y_Qk
+    // Fourth key: AIzaSyDhf5EssS_WVMqWJw_Rw5U0ecBEIzT2o1w
+    private static final String API_KEY = "AIzaSyCAH0fuLmYXS2FGEdLsgzYKUSjMXFOu8C0";
     private static final String TAG = SnapToRoad.class.getSimpleName();
     private SnapToRoadListener listener;
     private LatLng start;
@@ -28,11 +32,7 @@ public class SnapToRoad {
 
     private static List<LatLng> snappedPoints;
 
-    private static final int READ_TIME_OUT = 10000;
-    private static final int CONNECT_TIME_OUT = 15000;
-    private static final int TIME_OUT = 2000;
-
-    private String tempURL = tempURL = "https://roads.googleapis.com/v1/snapToRoads?path=";
+    private String tempURL = "https://roads.googleapis.com/v1/snapToRoads?path=";
     private String FOOTER = "&interpolate=true&key=" + API_KEY;
 
     public SnapToRoad(SnapToRoadListener listener, LatLng start, LatLng end) {
