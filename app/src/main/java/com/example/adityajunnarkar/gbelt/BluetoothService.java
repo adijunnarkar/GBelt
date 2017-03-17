@@ -271,7 +271,7 @@ public class BluetoothService extends Service {
                 List<BluetoothDevice> btHeadsets = mBluetoothHeadset.getConnectedDevices();
                 if (btHeadsets.isEmpty()) {
 
-                    Method connect = getConnectMethod();
+                   /* Method connect = getConnectMethod();
 
                     try {
                         connect.setAccessible(true);
@@ -292,8 +292,8 @@ public class BluetoothService extends Service {
                         connectingThread_headset = null;
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                         //Log.e(TAG, "Illegal Access! " + ex.toString());
-                    }
-                    while (mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED) ;
+                    }*/
+                    //while (mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED) ;
                     Intent intent = new Intent("intentKey");
                     Bundle b = new Bundle();
                     b.putParcelable("hands-free", BluetoothDeviceHDP);
@@ -304,7 +304,7 @@ public class BluetoothService extends Service {
                 } else {
                     mConnectedHeadset = btHeadsets.get(0);
                     //BluetoothDeviceHDP = mConnectedHeadset;
-                    while (mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED) ;
+                   // while (mBluetoothHeadset.getConnectionState(BluetoothDeviceHDP) != BluetoothProfile.STATE_CONNECTED) ;
                     configureHeadSet();
 
                     Intent intent = new Intent("intentKey");
