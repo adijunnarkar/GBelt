@@ -5,7 +5,7 @@
 #include "MPU9250.h"
 #include "math.h"
 
-#define SerialDebug true  // Set to true to get Serial output for debugging
+#define SerialDebug false  // Set to true to get Serial output for debugging
 #define PWM true
 #define avgCount 5 // set the number of samples to take to calculate an average
 #define testingWithoutPhone false // certain small changes to fake bluetooth messages if no phone available
@@ -33,7 +33,7 @@ int range = 70;
 unsigned long motor_start_time, motor_deactive_start_time, motor_already_active_deactive_start_time = 0; // to activate motors for an interval of time
 int motor_active_time = 1000; // length of time each motor will be active in [ms]
 int motor_deactive_time = 750; // length of time motor will be deactive in [ms]
-int motor_already_active_deactive_time = 250; // length of time motors will stay off if we are constantly changing between two directions that are next to each other
+int motor_already_active_deactive_time = 750; // length of time motors will stay off if we are constantly changing between two directions that are next to each other
 
 float pitch, yaw, roll, Xh, Yh, theta = -1.0, thetaDesired;
 
@@ -281,7 +281,7 @@ void loop()
         Xh = magAverage[2] * cos(pitch * DEG_TO_RAD) + magAverage[1] * sin(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD) - magAverage[0] * cos(roll * DEG_TO_RAD) * sin(pitch * DEG_TO_RAD);
         Yh = magAverage[1] * cos(roll * DEG_TO_RAD) + magAverage[0] * sin(roll * DEG_TO_RAD);
         yaw = atan2(-Yh, Xh) * RAD_TO_DEG - 9.65;
-        yaw = ((360 + (int)yaw) % 360);
+        yaw = ((360 + (int)yaw + 20) % 360); // added offset to correct for sketchy yaw readings in DC
 
         //Serial.println("Yaw: " + String(yaw) + "; Pitch: " + String(pitch) + "; Roll: " + String(roll));
 
