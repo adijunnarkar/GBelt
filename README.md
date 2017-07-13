@@ -14,4 +14,4 @@ The mobile application for the 2017 Mechatronics fourth year capstone project: O
 ## Voice Command Interface ##
 <img src="http://omninavtech.com/images/blog/2017-02-12/02.png" width="250"> <img src="http://omninavtech.com/images/blog/2017-02-12/05.png" width="250">
 
-## [Check out the website](omninavtech.com) ##
+## [Check out the website](www.omninavtech.com) ##
